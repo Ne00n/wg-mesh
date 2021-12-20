@@ -5,9 +5,7 @@ import sys, os
 
 wg = Wireguard()
 
-if os.geteuid() != 0:
-    print("You need to run this as root")
-    exit()
+if os.geteuid() != 0: exit("You need to run this as root")
 
 if len(sys.argv) == 1:
     print("join <name>")
