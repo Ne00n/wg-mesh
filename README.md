@@ -1,6 +1,4 @@
 # wg-mesh
-wg-mesh
-
 ## Work in Progress
 
 **Idea**<br />
@@ -27,3 +25,17 @@ wg-mesh
 
 **Setup**<br />
 - TBA
+
+**Example**<br />
+Initialize the first Node<br>
+```
+./wg-mesh.py init Node1 1
+```
+Generate the Wireguard files for the Client/Server
+```
+./wg-mesh.py join Node2
+```
+Connect Node2 to Node1
+```
+TBA
+```

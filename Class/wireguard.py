@@ -1,5 +1,5 @@
 from Class.templator import Templator
-import subprocess, re, os
+import subprocess, json, re, os
 
 class Wireguard:
     prefix = "pipe"
@@ -7,6 +7,13 @@ class Wireguard:
     def cmd(self,command):
         p = subprocess.run(f"{command}", stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         return p.stdout.decode('utf-8')
+
+    def init(self,name,id):
+        path = f"{os.path.dirname(os.path.realpath(__file__))}/config.json"
+        if os.path.isfile(path): exit("Config already exists")
+        config = {"name":name,"id":id}
+        with open(path, 'w') as f:
+            json.dump(config, f)
 
     def join(self,name):
         T = Templator()
