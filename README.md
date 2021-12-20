@@ -11,6 +11,7 @@ wg-mesh
 **Software**<br />
 - python3
 - wireguard
+- bird2
 
 **Features (Planned)**<br />
 - join nodes with simple cli command
