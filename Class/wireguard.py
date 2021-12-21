@@ -42,6 +42,11 @@ class Wireguard:
         keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')
         privateKeyClient, publicKeyClient = keys.splitlines()
         serverConfig = T.genServer(config['id'],ip,port,privateKeyServer,publicKeyClient)
-        print(serverConfig)
         cientConfig = T.genClient(config['id'],ip,config['ipv4'],port,privateKeyClient,publicKeyServer)
-        print(cientConfig)
+        print(f'Creating & Starting {name} on {config["name"]}')
+        self.cmd(f'echo "{serverConfig}" > /etc/wireguard/{self.prefix}{name}Serv.conf && systemctl enable wg-quick@{self.prefix}{name}Serv && systemctl start wg-quick@{self.prefix}{name}Serv')
+        print(f'Run this on {name} to connect to {config["name"]}')
+        print(f'curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/install.sh | bash - connect')
+
+    def connect(self,data):
+        print(f'Connecting....')

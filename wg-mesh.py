@@ -13,3 +13,5 @@ elif sys.argv[1] == "init":
     wg.init(sys.argv[2],sys.argv[3])
 elif sys.argv[1] == "join":
     wg.join(sys.argv[2])
+elif sys.argv[1] == "connect":
+    wg.connect(sys.argv[2:])
