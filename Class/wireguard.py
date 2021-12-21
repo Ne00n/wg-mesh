@@ -54,7 +54,7 @@ class Wireguard:
         print(f'Creating & Starting {data[0]}')
         config = f'{self.prefix}{data[0]}'
         self.cmd(f'echo "{cientConfig}" > /etc/wireguard/{config}.conf && systemctl enable wg-quick@{config} && systemctl start wg-quick@{config}')
-        ping = self.cmd(f'fping 10.0.{data[1]}.{int(data[2])+1}')
+        ping = self.cmd(f'fping 10.0.{data[1]}.{data[2]}')
         if "alive" in ping:
             print("Connected, Link is up")
         else:
