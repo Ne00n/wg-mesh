@@ -3,6 +3,7 @@ import subprocess, urllib.request, json, re, os
 
 class Wireguard:
     path = os.path.dirname(os.path.realpath(__file__))
+    Templator = Templator()
     prefix = "pipe"
 
     def cmd(self,command):
@@ -24,8 +25,6 @@ class Wireguard:
         return ip,port
 
     def join(self,name):
-        T = Templator()
-
         if not os.path.isfile(f"{self.path}/config.json"): exit("Config missing")
         with open(f'{self.path}/config.json') as f: config = json.load(f)
 
@@ -41,12 +40,23 @@ class Wireguard:
         privateKeyServer, publicKeyServer = keys.splitlines()
         keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')
         privateKeyClient, publicKeyClient = keys.splitlines()
-        serverConfig = T.genServer(config['id'],ip,port,privateKeyServer,publicKeyClient)
-        cientConfig = T.genClient(config['id'],ip,config['ipv4'],port,privateKeyClient,publicKeyServer)
+        serverConfig = self.Templator.genServer(config['id'],ip,port,privateKeyServer,publicKeyClient)
+        cientConfig = self.Templator.genClient(config['id'],ip,config['ipv4'],port,privateKeyClient,publicKeyServer)
         print(f'Creating & Starting {name} on {config["name"]}')
-        self.cmd(f'echo "{serverConfig}" > /etc/wireguard/{self.prefix}{name}Serv.conf && systemctl enable wg-quick@{self.prefix}{name}Serv && systemctl start wg-quick@{self.prefix}{name}Serv')
+        config = f'{self.prefix}{name}Serv'
+        self.cmd(f'echo "{serverConfig}" > /etc/wireguard/{config}.conf && systemctl enable wg-quick@{config} && systemctl start wg-quick@{config}')
         print(f'Run this on {name} to connect to {config["name"]}')
-        print(f'curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash - connect')
+        print(f'curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- connect {config["name"]} {config["id"]} {ip} {config["ipv4"]} {port} {privateKeyClient} {publicKeyServer}')
 
     def connect(self,data):
         print(f'Connecting....')
+        cientConfig = self.Templator.genClient(data[1],data[2],data[3],data[4],data[5],data[6])
+        print(f'Creating & Starting {data[0]}')
+        config = f'{self.prefix}{data[0]}'
+        self.cmd(f'echo "{cientConfig}" > /etc/wireguard/{config}.conf && systemctl enable wg-quick@{config} && systemctl start wg-quick@{config}')
+        ping = self.cmd(f'fping 10.0.{data[1]}.{int(data[2])+1}')
+        if "alive" in ping:
+            print("Connected, Link is up")
+        else:
+            print("Link not pingable, something went wrong")
+

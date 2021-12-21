@@ -12,7 +12,7 @@ AllowedIPs = 0.0.0.0/0'''
         return template
     def genClient(self,serverID,serverIP,serverIPExternal,serverPort,clientPrivateKey,serverPublicKey):
         template = f'''[Interface]
-Address = 10.0.{serverID}.{serverIP+1}/31
+Address = 10.0.{serverID}.{int(serverIP)+1}/31
 PrivateKey = {clientPrivateKey}
 Table = off
 [Peer]

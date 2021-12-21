@@ -12,21 +12,21 @@
 - bird2
 
 **Features (Planned)**<br />
-- join nodes with simple cli command
 - automatic mesh buildup when node has joined
 - dualstack and/or singlestack (v4/v6)
 - remove nodes
 
 **Features**<br />
-- TBA
+- join nodes with simple cli command
 
 **Todo**<br />
 - everything
 
-**Setup**<br />
-- TBA
-
 **Example**<br />
+Install wg-mesh on the first node<br>
+```
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- install
+```
 Initialize the first Node<br>
 ```
 ./wg-mesh.py init Node1 1
@@ -37,5 +37,5 @@ Generate the Wireguard files for the Client/Server
 ```
 Connect Node2 to Node1
 ```
-TBA
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- connect <name> <id> <ip> <externalip> <port> <privkey> <publickey>
 ```
