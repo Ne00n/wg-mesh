@@ -21,7 +21,23 @@ class Wireguard:
         config = {"name":name,"id":id,"ipv4":ipv4}
         with open(f"{self.path}/config.json", 'w') as f: json.dump(config, f)
 
-    def minimal(self,files,ip=1,port=51820):
+    def minimal(self,files,ip=4,port=51820):
+        ips,ports = [],[]
+        for file in files:
+            with open(f"/etc/wireguard/{file}.conf", 'r') as f: config = f.read()
+            configPort = re.findall(f"^Endpoint = .*?:([0-9]+)",config, re.MULTILINE)
+            configIP = re.findall(f"^Address =.*?([0-9]+)\/",config, re.MULTILINE)
+            if configPort:
+                ports.append(int(configPort[0]))
+                ips.append(int(configIP[0]))
+        for i in range(port, port + 200): 
+            if i not in ports: 
+                port = i
+                break
+        for i in range(ip,ip + 200):
+            if i not in ips and i % 2 == 0:
+                ip = i
+                break
         return ip,port
 
     def join(self,name):
@@ -43,8 +59,8 @@ class Wireguard:
         serverConfig = self.Templator.genServer(config['id'],ip,port,privateKeyServer,publicKeyClient)
         cientConfig = self.Templator.genClient(config['id'],ip,config['ipv4'],port,privateKeyClient,publicKeyServer)
         print(f'Creating & Starting {name} on {config["name"]}')
-        config = f'{self.prefix}{name}Serv'
-        self.cmd(f'echo "{serverConfig}" > /etc/wireguard/{config}.conf && systemctl enable wg-quick@{config} && systemctl start wg-quick@{config}')
+        file = f'{self.prefix}{name}Serv'
+        self.cmd(f'echo "{serverConfig}" > /etc/wireguard/{file}.conf && systemctl enable wg-quick@{file} && systemctl start wg-quick@{file}')
         print(f'Run this on {name} to connect to {config["name"]}')
         print(f'curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- connect {config["name"]} {config["id"]} {ip} {config["ipv4"]} {port} {privateKeyClient} {publicKeyServer}')
 
