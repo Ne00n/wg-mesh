@@ -7,6 +7,11 @@ class Wireguard(Base):
     Templator = Templator()
     prefix = "pipe"
 
+    def genKeys(self):
+        keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')
+        privateKeyServer, publicKeyServer = keys.splitlines()
+        return privateKeyServer, publicKeyServer
+
     def init(self,name,id):
         if os.path.isfile(f"{self.path}/config.json"): exit("Config already exists")
         print("Getting external IPv4")
@@ -17,6 +22,10 @@ class Wireguard(Base):
         print("Generating config.json")
         config = {"name":name,"id":id,"ipv4":ipv4}
         with open(f"{self.path}/config.json", 'w') as f: json.dump(config, f)
+        print("Setting up wireguard dummy for xlan,forwarding...")
+        privateKeyServer, publicKeyServer = self.genKeys()
+        config = self.Templator.genDummy(id,privateKeyServer)
+        self.cmd(f'echo "{config}" > /etc/wireguard/dummy.conf && systemctl enable wg-quick@dummy && systemctl start wg-quick@dummy')
 
     def minimal(self,files,ip=4,port=51820):
         ips,ports = [],[]
@@ -49,10 +58,8 @@ class Wireguard(Base):
         ip,port = self.minimal(parsed)
 
         print("Generating Wireguard keypair")
-        keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')
-        privateKeyServer, publicKeyServer = keys.splitlines()
-        keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')
-        privateKeyClient, publicKeyClient = keys.splitlines()
+        privateKeyServer, publicKeyServer = self.genKeys()
+        privateKeyClient, publicKeyClient = self.genKeys()
         serverConfig = self.Templator.genServer(config['id'],ip,port,privateKeyServer,publicKeyClient)
         cientConfig = self.Templator.genClient(config['id'],ip,config['ipv4'],port,privateKeyClient,publicKeyServer)
         print(f'Creating & Starting {name} on {config["name"]}')

@@ -8,8 +8,8 @@
 
 **Software**<br />
 - python3
-- wireguard
-- bird2
+- wireguard (vpn)
+- bird2 (routing)
 
 **Planned**<br />
 - automatic mesh buildup when node has joined
@@ -21,6 +21,9 @@
 
 **Todo**<br />
 - everything
+
+This has been build for Debian and Ubuntu.<br>
+Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
 
 **Example 2 nodes**<br />
 Install wg-mesh and initialize the first node<br>
