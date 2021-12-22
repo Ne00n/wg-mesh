@@ -1,14 +1,11 @@
 from Class.templator import Templator
-import subprocess, urllib.request, json, re, os
+import urllib.request, json, re, os
+from Class.base import Base
 
-class Wireguard:
+class Wireguard(Base):
     path = os.path.dirname(os.path.realpath(__file__))
     Templator = Templator()
     prefix = "pipe"
-
-    def cmd(self,command):
-        p = subprocess.run(f"{command}", stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        return p.stdout.decode('utf-8')
 
     def init(self,name,id):
         if os.path.isfile(f"{self.path}/config.json"): exit("Config already exists")
@@ -65,7 +62,7 @@ class Wireguard:
         print(f'curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- connect {config["name"]} {config["id"]} {ip} {config["ipv4"]} {port} {privateKeyClient} {publicKeyServer}')
 
     def connect(self,data):
-        print(f'Connecting....')
+        print('Generating client config')
         cientConfig = self.Templator.genClient(data[1],data[2],data[3],data[4],data[5],data[6])
         print(f'Creating & Starting {data[0]}')
         config = f'{self.prefix}{data[0]}'
@@ -75,4 +72,3 @@ class Wireguard:
             print("Connected, Link is up")
         else:
             print("Link not pingable, something went wrong")
-

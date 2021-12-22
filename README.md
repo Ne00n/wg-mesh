@@ -22,7 +22,7 @@
 **Todo**<br />
 - everything
 
-**Example**<br />
+**Example 2 nodes**<br />
 Install wg-mesh on the first node<br>
 ```
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- install
