@@ -12,6 +12,11 @@ class Wireguard(Base):
         privateKeyServer, publicKeyServer = keys.splitlines()
         return privateKeyServer, publicKeyServer
 
+    def loadConfigs(self):
+        if not os.path.isdir('/etc/wireguard/'): exit("Wireguard directory not found, not installed?")
+        configs = self.cmd('ls /etc/wireguard/')
+        return re.findall(f"^{self.prefix}[A-Za-z0-9]+",configs, re.MULTILINE)
+
     def init(self,name,id):
         if os.path.isfile(f"{self.path}/config.json"): exit("Config already exists")
         print("Getting external IPv4")
@@ -50,12 +55,9 @@ class Wireguard(Base):
         if not os.path.isfile(f"{self.path}/config.json"): exit("Config missing")
         with open(f'{self.path}/config.json') as f: config = json.load(f)
 
-        if not os.path.isdir('/etc/wireguard/'): exit("Wireguard directory not found, not installed?")
-        configs = self.cmd('ls /etc/wireguard/')
-        parsed = re.findall(f"^{self.prefix}[A-Za-z0-9]+",configs, re.MULTILINE)
-        if f"{self.prefix}{name}" in parsed: exit("Wireguard config already exists with same name")
-
-        ip,port = self.minimal(parsed)
+        configs = self.loadConfigs()
+        if f"{self.prefix}{name}" in configs: exit("Wireguard config already exists with same name")
+        ip,port = self.minimal(configs)
 
         print("Generating Wireguard keypair")
         privateKeyServer, publicKeyServer = self.genKeys()
@@ -79,3 +81,30 @@ class Wireguard(Base):
             print("Connected, Link is up")
         else:
             print("Link not pingable, something went wrong")
+
+    def shutdown(self):
+        configs = self.loadConfigs()
+        print(f'Shutting down dummy')
+        self.cmd(f'systemctl stop wg-quick@dummy')
+        if not configs: exit(f"No {self.prefix} configs found")
+        for config in configs:
+            print(f'Shutting down {config}')
+            self.cmd(f'systemctl stop wg-quick@{config}')
+
+    def startup(self):
+        configs = self.loadConfigs()
+        print(f'Starting dummy')
+        self.cmd(f'systemctl start wg-quick@dummy')
+        if not configs: exit(f"No {self.prefix} configs found")
+        for config in configs:
+            print(f'Starting {config}')
+            self.cmd(f'systemctl start wg-quick@{config}')
+
+    def clean(self):
+        configs = self.loadConfigs()
+        if not configs: exit(f"No {self.prefix} configs found")
+        for config in configs:
+            print(f'Shutting down {config}')
+            self.cmd(f'systemctl stop wg-quick@{config}')
+            print(f'Deleting {config}')
+            os.remove(f"/etc/wireguard/{config}.conf")

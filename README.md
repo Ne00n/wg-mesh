@@ -29,7 +29,7 @@ curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | ba
 ```
 Generate the Wireguard files for the Client/Server
 ```
-./wg-mesh.py join Node2
+/opt/wg-mesh/cli.py join Node2
 ```
 Connect Node2 to Node1
 ```
