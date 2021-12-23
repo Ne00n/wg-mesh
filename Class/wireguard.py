@@ -3,7 +3,7 @@ import urllib.request, json, re, os
 from Class.base import Base
 
 class Wireguard(Base):
-    path = os.path.dirname(os.path.realpath(__file__))
+    path = os.path.dirname(os.path.realpath(__file__)).replace("Class","configs")
     Templator = Templator()
     prefix = "pipe"
 
