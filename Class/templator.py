@@ -31,7 +31,7 @@ Endpoint = {serverIPExternal}:{serverPort}'''
     def genDummy(self,id,privateKey,targets=[]):
         template = f'''[Interface]
         Address = 127.11.11.11/32
-        ListenPort = 51820
+        ListenPort = 52820
         PrivateKey = '''+str(privateKey)
         template += f'\nPostUp =  echo 1 > /proc/sys/net/ipv4/ip_forward; echo 0 > /proc/sys/net/ipv4/conf/all/rp_filter; echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter; echo "fq" > /proc/sys/net/core/default_qdisc; echo "bbr" > /proc/sys/net/ipv4/tcp_congestion_control; ip addr add 10.0.{id}.1/30 dev lo;'
         template += "iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {print $5}') -j MASQUERADE;"
