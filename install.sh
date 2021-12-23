@@ -5,5 +5,5 @@ cd /root/
 git clone https://github.com/Ne00n/wg-mesh.git
 cd wg-mesh
 if [ "$1" != "install" ];  then
-./wg-mesh.py $@
+./cli.py $@
 fi
