@@ -79,20 +79,24 @@ class Wireguard(Base):
         serverConfig = self.Templator.genServer(config['id'],ip,port,privateKeyServer,publicKeyClient)
         #cientConfig = self.Templator.genClient(config['id'],ip,config['ipv4'],port,privateKeyClient,publicKeyServer)
         print(f'Creating & Starting {name} on {config["name"]}')
-        file = f'{self.prefix}{name}Serv'
-        self.cmd(f'echo "{serverConfig}" > /etc/wireguard/{file}.conf && systemctl enable wg-quick@{file} && systemctl start wg-quick@{file}')
         externalIP = self.getIP(config)
+        suffix = 'v6' if ":" in externalIP else ""
+        file = f'{self.prefix}{name}{suffix}Serv'
+        self.cmd(f'echo "{serverConfig}" > /etc/wireguard/{file}.conf && systemctl enable wg-quick@{file} && systemctl start wg-quick@{file}')
         print(f'Run this on {name} to connect to {config["name"]}')
         print(f'curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- connect {config["name"]} {config["id"]} {ip} {externalIP} {port} {privateKeyClient} {publicKeyServer}')
 
-    def connect(self,data):
+    def connect(self,name,id,vpnIP,externalIP,port,privateKeyClient,publicKeyServer):
         print('Generating client config')
-        ip = f'[{data[3].rstrip()}]' if ":" in data[3] else data[3]
-        cientConfig = self.Templator.genClient(data[1],data[2],ip,data[4],data[5],data[6])
-        print(f'Creating & Starting {data[0]}')
-        config = f'{self.prefix}{data[0]}'
+        if ":" in externalIP:
+            ip,suffix = f'[{externalIP}]',"v6"
+        else:
+            ip,suffix = externalIP,""
+        cientConfig = self.Templator.genClient(id,vpnIP,ip,port,privateKeyClient,publicKeyServer)
+        print(f'Creating & Starting {name}')
+        config = f'{self.prefix}{name}{suffix}'
         self.cmd(f'echo "{cientConfig}" > /etc/wireguard/{config}.conf && systemctl enable wg-quick@{config} && systemctl start wg-quick@{config}')
-        ping = self.cmd(f'fping 10.0.{data[1]}.{data[2]}')
+        ping = self.cmd(f'fping 10.0.{id}.{vpnIP}')
         if "alive" in ping:
             print("Connected, Link is up")
         else:

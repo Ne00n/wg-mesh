@@ -20,7 +20,7 @@ elif sys.argv[1] == "bird":
 elif sys.argv[1] == "clean":
     wg.clean()
 elif sys.argv[1] == "connect":
-    wg.connect(sys.argv[2:])
+    wg.connect(sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6],sys.argv[7],sys.argv[8])
 elif sys.argv[1] == "shutdown":
     wg.shutdown()
 elif sys.argv[1] == "startup":
