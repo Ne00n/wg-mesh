@@ -19,9 +19,6 @@
 **Features**<br />
 - join nodes with simple cli command
 
-**Todo**<br />
-- everything
-
 This has been build for Debian and Ubuntu.<br>
 Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
 
