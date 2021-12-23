@@ -46,6 +46,10 @@ class Wireguard(Base):
         config = self.Templator.genDummy(id,privateKeyServer)
         self.cmd(f'echo "{config}" > /etc/wireguard/dummy.conf && systemctl enable wg-quick@dummy && systemctl start wg-quick@dummy')
 
+    def findLowest(self,min,list):
+        for i in range(min,min + 200):
+            if i not in list and i % 2 == 0: return i
+
     def minimal(self,files,ip=4,port=51820):
         ips,ports = [],[]
         for file in files:
@@ -55,14 +59,8 @@ class Wireguard(Base):
             if configPort:
                 ports.append(int(configPort[0]))
                 ips.append(int(configIP[0]))
-        for i in range(port, port + 200): 
-            if i not in ports: 
-                port = i
-                break
-        for i in range(ip,ip + 200):
-            if i not in ips and i % 2 == 0:
-                ip = i
-                break
+        port = self.findLowest(port,ports)
+        ip = self.findLowest(ip,ips)
         return ip,port
 
     def join(self,name):
