@@ -17,15 +17,29 @@ class Wireguard(Base):
         configs = self.cmd('ls /etc/wireguard/')
         return re.findall(f"^{self.prefix}[A-Za-z0-9]+",configs, re.MULTILINE)
 
+    def fetch(self,url):
+        try:
+            request = urllib.request.urlopen(url, timeout=3)
+            if (request.getcode() != 200): 
+                print(f"Failed to fetch {url}")
+                return
+        except:
+            return
+        return request.read().decode('utf-8').strip() 
+
+    def getIP(self,config):
+        for key,ip in config['connectivity'].items():
+            if ip is not None: return ip
+
     def init(self,name,id):
         if os.path.isfile(f"{self.path}/config.json"): exit("Config already exists")
-        print("Getting external IPv4")
-        request = urllib.request.urlopen("https://checkip.amazonaws.com", timeout=3)
-        if (request.getcode() != 200): exit("Failed to get external IPv4")
-        ipv4 = request.read().decode('utf-8').strip()
-        print(f"Got {ipv4} as IPv4")
+        print("Getting external IPv4 and IPv6")
+        ipv4 = self.fetch("https://checkip.amazonaws.com")
+        ipv6 = self.fetch("https://api6.ipify.org/")
+        print(f"Got {ipv4} and {ipv6}")
+
         print("Generating config.json")
-        config = {"name":name,"id":id,"ipv4":ipv4}
+        config = {"name":name,"id":id,"connectivity":{"ipv4":ipv4,"ipv6":ipv6}}
         with open(f"{self.path}/config.json", 'w') as f: json.dump(config, f)
         print("Setting up wireguard dummy for xlan,forwarding...")
         privateKeyServer, publicKeyServer = self.genKeys()
@@ -63,16 +77,18 @@ class Wireguard(Base):
         privateKeyServer, publicKeyServer = self.genKeys()
         privateKeyClient, publicKeyClient = self.genKeys()
         serverConfig = self.Templator.genServer(config['id'],ip,port,privateKeyServer,publicKeyClient)
-        cientConfig = self.Templator.genClient(config['id'],ip,config['ipv4'],port,privateKeyClient,publicKeyServer)
+        #cientConfig = self.Templator.genClient(config['id'],ip,config['ipv4'],port,privateKeyClient,publicKeyServer)
         print(f'Creating & Starting {name} on {config["name"]}')
         file = f'{self.prefix}{name}Serv'
         self.cmd(f'echo "{serverConfig}" > /etc/wireguard/{file}.conf && systemctl enable wg-quick@{file} && systemctl start wg-quick@{file}')
+        externalIP = self.getIP(config)
         print(f'Run this on {name} to connect to {config["name"]}')
-        print(f'curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- connect {config["name"]} {config["id"]} {ip} {config["ipv4"]} {port} {privateKeyClient} {publicKeyServer}')
+        print(f'curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- connect {config["name"]} {config["id"]} {ip} {externalIP} {port} {privateKeyClient} {publicKeyServer}')
 
     def connect(self,data):
         print('Generating client config')
-        cientConfig = self.Templator.genClient(data[1],data[2],data[3],data[4],data[5],data[6])
+        ip = f'[{data[3].rstrip()}]' if ":" in data[3] else data[3]
+        cientConfig = self.Templator.genClient(data[1],data[2],ip,data[4],data[5],data[6])
         print(f'Creating & Starting {data[0]}')
         config = f'{self.prefix}{data[0]}'
         self.cmd(f'echo "{cientConfig}" > /etc/wireguard/{config}.conf && systemctl enable wg-quick@{config} && systemctl start wg-quick@{config}')
