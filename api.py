@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from functools import partial
 import socket, json, os, re
