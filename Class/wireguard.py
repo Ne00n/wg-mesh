@@ -1,5 +1,5 @@
 from Class.templator import Templator
-import urllib.request, json, re, os
+import urllib.request, random, string, json, re, os
 from Class.base import Base
 
 class Wireguard(Base):
@@ -108,31 +108,38 @@ class Wireguard(Base):
         if not ips: exit("bird returned no routes, did you setup bird?")
         configs = self.loadConfigs()
         if not configs: exit(f"No {self.prefix} configs found")
-        
+
+
+    def linkDown(self,link):
+        print(f'Shutting down {link}')
+        return self.cmd(f'systemctl stop wg-quick@{link}')
+
+    def linkUp(self,link):
+        print(f'Starting {link}')
+        return self.cmd(f'systemctl start wg-quick@{link}')
 
     def shutdown(self):
         configs = self.loadConfigs()
-        print(f'Shutting down dummy')
-        self.cmd(f'systemctl stop wg-quick@dummy')
+        self.linkDown("dummy")
         if not configs: exit(f"No {self.prefix} configs found")
         for config in configs:
-            print(f'Shutting down {config}')
-            self.cmd(f'systemctl stop wg-quick@{config}')
+            self.linkDown(config)
 
     def startup(self):
         configs = self.loadConfigs()
-        print(f'Starting dummy')
-        self.cmd(f'systemctl start wg-quick@dummy')
+        self.linkUp("dummy")
         if not configs: exit(f"No {self.prefix} configs found")
         for config in configs:
-            print(f'Starting {config}')
-            self.cmd(f'systemctl start wg-quick@{config}')
+            self.linkUp(config)
 
     def clean(self):
+        print(f"Warning, this will clean all {self.prefix} wireguard links")
+        phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        answer = input(f"Enter {phrase} to continue: ")
+        if answer != phrase: exit()
         configs = self.loadConfigs()
         if not configs: exit(f"No {self.prefix} configs found")
         for config in configs:
-            print(f'Shutting down {config}')
-            self.cmd(f'systemctl stop wg-quick@{config}')
+            self.linkDown(config)
             print(f'Deleting {config}')
             os.remove(f"/etc/wireguard/{config}.conf")
