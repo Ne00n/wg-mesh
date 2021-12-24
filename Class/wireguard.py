@@ -12,10 +12,12 @@ class Wireguard(Base):
         privateKeyServer, publicKeyServer = keys.splitlines()
         return privateKeyServer, publicKeyServer
 
-    def loadConfigs(self):
+    def loadConfigs(self,abort=True):
         if not os.path.isdir('/etc/wireguard/'): exit("Wireguard directory not found, not installed?")
-        configs = self.cmd('ls /etc/wireguard/')
-        return re.findall(f"^{self.prefix}[A-Za-z0-9]+",configs, re.MULTILINE)
+        files = self.cmd('ls /etc/wireguard/')
+        configs = re.findall(f"^{self.prefix}[A-Za-z0-9]+",files, re.MULTILINE)
+        if not configs and abort: exit(f"No {self.prefix} configs found")
+        return configs
 
     def fetch(self,url):
         try:
@@ -67,7 +69,7 @@ class Wireguard(Base):
         if not os.path.isfile(f"{self.path}/config.json"): exit("Config missing")
         with open(f'{self.path}/config.json') as f: config = json.load(f)
 
-        configs = self.loadConfigs()
+        configs = self.loadConfigs(False)
         if f"{self.prefix}{name}" in configs: exit("Wireguard config already exists with same name")
         ip,port = self.minimal(configs)
 
@@ -107,7 +109,6 @@ class Wireguard(Base):
         ips = re.findall(f"\[[0-9.]+\]",routes, re.MULTILINE)
         if not ips: exit("bird returned no routes, did you setup bird?")
         configs = self.loadConfigs()
-        if not configs: exit(f"No {self.prefix} configs found")
 
 
     def linkDown(self,link):
@@ -119,16 +120,14 @@ class Wireguard(Base):
         return self.cmd(f'systemctl start wg-quick@{link}')
 
     def shutdown(self):
-        configs = self.loadConfigs()
         self.linkDown("dummy")
-        if not configs: exit(f"No {self.prefix} configs found")
+        configs = self.loadConfigs()
         for config in configs:
             self.linkDown(config)
 
     def startup(self):
-        configs = self.loadConfigs()
         self.linkUp("dummy")
-        if not configs: exit(f"No {self.prefix} configs found")
+        configs = self.loadConfigs()
         for config in configs:
             self.linkUp(config)
 
@@ -138,7 +137,6 @@ class Wireguard(Base):
         answer = input(f"Enter {phrase} to continue: ")
         if answer != phrase: exit()
         configs = self.loadConfigs()
-        if not configs: exit(f"No {self.prefix} configs found")
         for config in configs:
             self.linkDown(config)
             print(f'Deleting {config}')
