@@ -100,6 +100,16 @@ class Wireguard(Base):
         else:
             print("Link not pingable, something went wrong")
 
+    def mesh(self):
+        proc = self.cmd("pgrep bird")
+        if proc == "": exit("bird not running")
+        routes = self.cmd("birdc show route")
+        ips = re.findall(f"\[[0-9.]+\]",routes, re.MULTILINE)
+        if not ips: exit("bird returned no routes, did you setup bird?")
+        configs = self.loadConfigs()
+        if not configs: exit(f"No {self.prefix} configs found")
+        
+
     def shutdown(self):
         configs = self.loadConfigs()
         print(f'Shutting down dummy')
