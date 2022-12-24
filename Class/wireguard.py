@@ -86,7 +86,7 @@ class Wireguard(Base):
             print(f"clientPublicKey {resp['clientPublicKey']}")
             resp = req.json()
             serverConfig = self.Templator.genServer(self.config['id'],ip,port,privateKeyServer,resp['clientPublicKey'])
-            print(f"Creating & Starting {resp[resp['id']]}")
+            print(f"Creating & Starting {resp['id']}")
             self.saveConfig(serverConfig,resp['id'],"Serv")
             fping = self.cmd(f"fping 10.0.{self.config['id']}.{int(ip)+1}")
             if "alive" in fping:
