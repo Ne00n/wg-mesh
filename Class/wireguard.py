@@ -82,6 +82,9 @@ class Wireguard(Base):
             print(f"clientPublicKey {resp['clientPublicKey']}")
             resp = req.json()
             serverConfig = self.Templator.genServer(self.config['id'],ip,port,privateKeyServer,resp['clientPublicKey'])
+            print(f'Creating & Starting {resp[resp['id']]}')
+            file = f'{self.prefix}{resp['id']}Serv'
+            self.cmd(f'echo "{serverConfig}" > /etc/wireguard/{file}.conf && systemctl enable wg-quick@{file} && systemctl start wg-quick@{file}')
         else:
             print(f"Failed to connect to {ip}")
 
