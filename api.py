@@ -43,10 +43,7 @@ class MyHandler(SimpleHTTPRequestHandler):
         empty, type = self.path.split('/')
         if type == "connect":
             payload = json.loads(payload)
-            print(payload)
-            print(self.client_address[0])
             clientPrivateKey, ClientPublicKey = self.wg.genKeys()
-            print(self.config['id'],clientPrivateKey)
             clientConfig = self.templator.genClient(self.config['id'],payload['ip'],self.client_address[0],payload['port'],clientPrivateKey,payload['publicKeyServer'])
             self.response(200,"clientPublicKey",ClientPublicKey)
             return

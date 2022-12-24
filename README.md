@@ -32,5 +32,5 @@ Install wg-mesh and initialize the second node<br>
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init Node 2
 Connect Node1 to Node2
 ```
-python3 cli.py connect <Node2IP>
+python3 cli.py connect Node2IP
 ```

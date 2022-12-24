@@ -7,7 +7,8 @@ class Wireguard(Base):
     Templator = Templator()
     prefix = "pipe"
 
-    def __init__(self):
+    def __init__(self,skip=False):
+        if skip: return
         if not os.path.isfile(f"{self.path}/config.json"): exit("Config missing")
         with open(f'{self.path}/config.json') as f: self.config = json.load(f)
 
