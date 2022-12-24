@@ -52,7 +52,7 @@ with open('configs/config.json') as f:
     config = json.load(f)
 
 MyHandler = partial(MyHandler, config)
-server = HTTPServer((f'10.0.{config["id"]}.1', 8080), MyHandler)
+server = HTTPServer(('', 8080), MyHandler)
 print("Ready")
 try:
     server.serve_forever()
