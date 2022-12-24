@@ -68,7 +68,7 @@ class Wireguard(Base):
 
     def saveConfig(self,config,id,type=""):
         file = f"{self.prefix}{id}{type}"
-        self.cmd(f'echo "{config}" > /etc/wireguard/{file}.conf && systemctl enable wg-quick@{file} && systemctl start wg-quick@{file}')
+        self.cmd(f'echo "{config}" > /etc/wireguard/{file}.conf && sudo systemctl enable wg-quick@{file} && sudo systemctl start wg-quick@{file}')
 
     def connect(self,dest):
         print(f"Connecting to {dest}")
