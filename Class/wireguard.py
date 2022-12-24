@@ -43,10 +43,6 @@ class Wireguard(Base):
         print("Generating config.json")
         config = {"name":name,"id":id,"connectivity":{"ipv4":ipv4,"ipv6":ipv6}}
         with open(f"{self.path}/config.json", 'w') as f: json.dump(config, f ,indent=4)
-        print("Setting up wireguard dummy for xlan,forwarding...")
-        privateKeyServer, publicKeyServer = self.genKeys()
-        config = self.Templator.genDummy(id,privateKeyServer)
-        self.cmd(f'echo "{config}" > /etc/wireguard/dummy.conf && systemctl enable wg-quick@dummy && systemctl start wg-quick@dummy')
 
     def findLowest(self,min,list):
         for i in range(min,min + 200):
