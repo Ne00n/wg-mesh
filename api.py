@@ -45,7 +45,7 @@ class MyHandler(SimpleHTTPRequestHandler):
             payload = json.loads(payload)
             clientPrivateKey, ClientPublicKey = self.wg.genKeys()
             clientConfig = self.templator.genClient(self.config['id'],payload['ip'],self.client_address[0],payload['port'],clientPrivateKey,payload['publicKeyServer'])
-            file = f'{self.prefix}{payload['id']}'
+            file = f"{self.prefix}{payload['id']}"
             self.cmd(f'echo "{cientConfig}" > /etc/wireguard/{file}.conf && systemctl enable wg-quick@{file} && systemctl start wg-quick@{file}')
             self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
             return
