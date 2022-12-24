@@ -112,22 +112,6 @@ class Wireguard(Base):
         print(f'Run this on {name} to connect to {config["name"]}')
         print(f'curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- connect {config["name"]} {config["id"]} {ip} {externalIP} {port} {privateKeyClient} {publicKeyServer}')
 
-    def oldConnect(self,name,id,vpnIP,externalIP,port,privateKeyClient,publicKeyServer):
-        print('Generating client config')
-        if ":" in externalIP:
-            ip,suffix = f'[{externalIP}]',"v6"
-        else:
-            ip,suffix = externalIP,""
-        cientConfig = self.Templator.genClient(id,vpnIP,ip,port,privateKeyClient,publicKeyServer)
-        print(f'Creating & Starting {name}')
-        config = f'{self.prefix}{name}{suffix}'
-        self.cmd(f'echo "{cientConfig}" > /etc/wireguard/{config}.conf && systemctl enable wg-quick@{config} && systemctl start wg-quick@{config}')
-        ping = self.cmd(f'fping 10.0.{id}.{vpnIP}')
-        if "alive" in ping:
-            print("Connected, Link is up")
-        else:
-            print("Link not pingable, something went wrong")
-
     def mesh(self):
         proc = self.cmd("pgrep bird")
         if proc == "": exit("bird not running")
