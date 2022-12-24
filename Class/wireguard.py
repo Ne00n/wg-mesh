@@ -91,27 +91,6 @@ class Wireguard(Base):
     def disconnect(self):
         print("Disconnecting")
 
-    def join(self,name):
-        if not os.path.isfile(f"{self.path}/config.json"): exit("Config missing")
-        with open(f'{self.path}/config.json') as f: config = json.load(f)
-
-        configs = self.loadConfigs(False)
-        if f"{self.prefix}{name}" in configs: exit("Wireguard config already exists with same name")
-        ip,port = self.minimal(configs)
-
-        print("Generating Wireguard keypair")
-        privateKeyServer, publicKeyServer = self.genKeys()
-        privateKeyClient, publicKeyClient = self.genKeys()
-        serverConfig = self.Templator.genServer(config['id'],ip,port,privateKeyServer,publicKeyClient)
-        #cientConfig = self.Templator.genClient(config['id'],ip,config['ipv4'],port,privateKeyClient,publicKeyServer)
-        print(f'Creating & Starting {name} on {config["name"]}')
-        externalIP = self.getIP(config)
-        suffix = 'v6' if ":" in externalIP else ""
-        file = f'{self.prefix}{name}{suffix}Serv'
-        self.cmd(f'echo "{serverConfig}" > /etc/wireguard/{file}.conf && systemctl enable wg-quick@{file} && systemctl start wg-quick@{file}')
-        print(f'Run this on {name} to connect to {config["name"]}')
-        print(f'curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- connect {config["name"]} {config["id"]} {ip} {externalIP} {port} {privateKeyClient} {publicKeyServer}')
-
     def mesh(self):
         proc = self.cmd("pgrep bird")
         if proc == "": exit("bird not running")
