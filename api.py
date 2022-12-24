@@ -45,7 +45,7 @@ class MyHandler(SimpleHTTPRequestHandler):
             payload = json.loads(payload)
             clientPrivateKey, ClientPublicKey = self.wg.genKeys()
             clientConfig = self.templator.genClient(self.config['id'],payload['ip'],self.client_address[0],payload['port'],clientPrivateKey,payload['publicKeyServer'])
-            self.wg.saveConfig(serverConfig,payload['id'])
+            self.wg.saveConfig(clientConfig,payload['id'])
             self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
             return
 
