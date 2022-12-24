@@ -48,24 +48,6 @@ class MyHandler(SimpleHTTPRequestHandler):
             self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
             return
 
-    #/connectivity
-    def do_GET(self):
-        print("get")
-        if len(self.path) > 200:
-            self.response(414,{"error":"way to fucking long"})
-            return
-        parts = self.path.split('/')
-        del parts[0]
-        if len(parts) != 1 and len(parts) != 5:
-            self.response(400,{"error":"incomplete"})
-            return
-        if len(parts) == 1:
-            empty, type = self.path.split('/')
-        elif len(parts) == 5:
-            empty, type, requestType, wgType, protocol, name  = self.path.split('/')
-        if type == "connectivity":
-            self.response(200,{"success":self.config['connectivity']})
-
 print("Loading config")
 with open('configs/config.json') as f:
     config = json.load(f)
