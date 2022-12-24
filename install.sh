@@ -9,6 +9,8 @@ cd wg-mesh
 useradd wg-mesh -r -d /opt/wg-mesh -s /bin/bash
 chown -R wg-mesh:wg-mesh /opt/wg-mesh/
 chmod -R 700 /opt/wg-mesh/
+chgrp wg-mesh /etc/wireguard/
+chmod 770 /etc/wireguard/
 echo -e "[Unit]
 Description=wgmesh service
 Wants=network-online.target
