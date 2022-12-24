@@ -27,11 +27,10 @@ Install wg-mesh and initialize the first node<br>
 ```
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init Node 1
 ```
-Generate the Wireguard files for the Client/Server
+Install wg-mesh and initialize the second node<br>
 ```
-/opt/wg-mesh/cli.py join Node2
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init Node 2
+Connect Node1 to Node2
 ```
-Connect Node2 to Node1
-```
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- connect...
+python3 cli.py connect <ip>
 ```

@@ -1,11 +1,15 @@
 from Class.templator import Templator
-import urllib.request, random, string, json, re, os
+import urllib.request, requests, random, string, json, re, os
 from Class.base import Base
 
 class Wireguard(Base):
     path = os.path.dirname(os.path.realpath(__file__)).replace("Class","configs")
     Templator = Templator()
     prefix = "pipe"
+
+    def __init__(self):
+        if not os.path.isfile(f"{self.path}/config.json"): exit("Config missing")
+        with open(f'{self.path}/config.json') as f: self.config = json.load(f)
 
     def genKeys(self):
         keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')
@@ -61,6 +65,28 @@ class Wireguard(Base):
         ip = self.findLowest(ip,ips)
         return ip,port
 
+    def connect(self,dest):
+        print(f"Connecting to {dest}")
+        privateKeyServer, publicKeyServer = self.genKeys()
+        configs = self.loadConfigs(False)
+        ip,port = self.minimal(configs)
+        #call destination
+        try:
+            req = requests.post(f'http://{dest}:8080/connect', json={"publicKeyServer":publicKeyServer,"id":self.config['id'],"ip":ip,"port":port})
+        except Exception as ex:
+            exit(ex)
+        if req.status_code == 200:
+            print("Got 200")
+            resp = req.json()
+            print(f"clientPublicKey {resp['clientPublicKey']}")
+            resp = req.json()
+            serverConfig = self.Templator.genServer(self.config['id'],ip,port,privateKeyServer,resp['clientPublicKey'])
+        else:
+            print(f"Failed to connect to {ip}")
+
+    def disconnect(self):
+        print("Disconnecting")
+
     def join(self,name):
         if not os.path.isfile(f"{self.path}/config.json"): exit("Config missing")
         with open(f'{self.path}/config.json') as f: config = json.load(f)
@@ -82,7 +108,7 @@ class Wireguard(Base):
         print(f'Run this on {name} to connect to {config["name"]}')
         print(f'curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- connect {config["name"]} {config["id"]} {ip} {externalIP} {port} {privateKeyClient} {publicKeyServer}')
 
-    def connect(self,name,id,vpnIP,externalIP,port,privateKeyClient,publicKeyServer):
+    def oldConnect(self,name,id,vpnIP,externalIP,port,privateKeyClient,publicKeyServer):
         print('Generating client config')
         if ":" in externalIP:
             ip,suffix = f'[{externalIP}]',"v6"
@@ -106,7 +132,6 @@ class Wireguard(Base):
         if not ips: exit("bird returned no routes, did you setup bird?")
         configs = self.loadConfigs()
 
-
     def linkDown(self,link):
         print(f'Shutting down {link}')
         return self.cmd(f'systemctl stop wg-quick@{link}')
@@ -114,18 +139,6 @@ class Wireguard(Base):
     def linkUp(self,link):
         print(f'Starting {link}')
         return self.cmd(f'systemctl start wg-quick@{link}')
-
-    def shutdown(self):
-        self.linkDown("dummy")
-        configs = self.loadConfigs()
-        for config in configs:
-            self.linkDown(config)
-
-    def startup(self):
-        self.linkUp("dummy")
-        configs = self.loadConfigs()
-        for config in configs:
-            self.linkUp(config)
 
     def clean(self):
         print(f"Warning, this will clean all {self.prefix} wireguard links")

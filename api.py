@@ -1,14 +1,18 @@
 #!/usr/bin/python3
 
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from Class.wireguard import Wireguard
+from Class.templator import Templator
 from functools import partial
 import socket, json, os, re
 from pathlib import Path
 
 class MyHandler(SimpleHTTPRequestHandler):
-    dir = "/opt/wg-mesh/"
 
     def __init__(self, config, *args, **kwargs):
+        self.folder = "/opt/wg-mesh/"
+        self.templator = Templator()
+        self.wg = Wireguard()
         self.config = config
         # BaseHTTPRequestHandler calls do_GET **inside** __init__ !!!
         # So we have to call super().__init__ after setting attributes.
@@ -26,10 +30,30 @@ class MyHandler(SimpleHTTPRequestHandler):
     def saveFile(self,file,data):
         with open(file, "w") as file: file.write(data)
 
+    def do_POST(self):
+        print("post")
+        length = int(self.headers['Content-Length'])
+        if length > 200:
+            self.response(414,"error","way to fucking long")
+            return
+        if len(self.path) > 200:
+            self.response(414,"error","way to fucking long")
+            return
+        payload = self.rfile.read(length).decode("utf-8")
+        empty, type = self.path.split('/')
+        if type == "connect":
+            payload = json.loads(payload)
+            print(payload)
+            print(self.client_address[0])
+            clientPrivateKey, ClientPublicKey = self.wg.genKeys()
+            print(self.config['id'],clientPrivateKey)
+            clientConfig = self.templator.genClient(self.config['id'],payload['ip'],self.client_address[0],payload['port'],clientPrivateKey,payload['publicKeyServer'])
+            self.response(200,"clientPublicKey",ClientPublicKey)
+            return
+
     #/connectivity
-    #/wireguard/request/server|client/v4|v6/name
-    #/wireguard/delete/....
     def do_GET(self):
+        print("get")
         if len(self.path) > 200:
             self.response(414,"error","way to fucking long")
             return
@@ -44,8 +68,6 @@ class MyHandler(SimpleHTTPRequestHandler):
             empty, type, requestType, wgType, protocol, name  = self.path.split('/')
         if type == "connectivity":
             self.response(200,"success",self.config['connectivity'])
-        elif type == "wireguard":
-            self.response(200,"success","soon")
 
 print("Loading config")
 with open('configs/config.json') as f:

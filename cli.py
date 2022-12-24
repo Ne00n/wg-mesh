@@ -10,3 +10,7 @@ if len(sys.argv) == 1:
     print("init <name> <id>")
 elif sys.argv[1] == "init":
     wg.init(sys.argv[2],sys.argv[3])
+elif sys.argv[1] == "connect":
+    wg.connect(sys.argv[2])
+elif sys.argv[1] == "disconnect":
+    wg.disconnect()
