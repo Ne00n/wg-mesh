@@ -4,6 +4,7 @@ from Class.base import Base
 
 class Wireguard(Base):
     path = os.path.dirname(os.path.realpath(__file__)).replace("Class","configs")
+    folder = "/opt/wg-mesh/"
     Templator = Templator()
     prefix = "pipe"
 
@@ -93,20 +94,34 @@ class Wireguard(Base):
             print(f"clientPublicKey {resp['clientPublicKey']}")
             resp = req.json()
             interface = self.getInterface(resp['id'],"Serv")
-            serverConfig = self.Templator.genServer(interface,self.config['id'],ip,port,resp['clientPublicKey'])
+            serverConfig = self.Templator.genServer(interface,dest,self.config['id'],ip,port,resp['clientPublicKey'])
             print(f"Creating & Starting {interface}")
             self.saveFile(privateKeyServer,f"/opt/wg-mesh/links/{interface}.key")
             self.saveConfig(serverConfig,interface)
-            fping = self.cmd(f"fping 10.0.{self.config['id']}.{int(ip)+1}")
-            if "alive" in fping:
-                print("Connected, Link is up")
-            else:
-                print("Link not pingable, something went wrong")
         else:
             print(f"Failed to connect to {ip}")
 
     def disconnect(self):
         print("Disconnecting")
+        files = os.listdir(f"{self.folder}links/")
+        for findex, filename in enumerate(files):
+            if not filename.endswith(".sh"): continue
+            with open(f"{self.folder}links/{filename}", 'r') as file:
+                config = file.read()
+            if "endpoint" in config:
+                destination = re.findall(f"endpoint\s([0-9.]+)",config, re.MULTILINE)
+            elif "listen-port" in config:
+                destination = re.findall(f"client\s([0-9.]+)",config, re.MULTILINE)
+            publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=]+)",config,re.MULTILINE)
+            interface = filename.replace(".sh","")
+            #call destination
+            try:
+                req = requests.post(f'http://{destination[0]}:8080/disconnect', json={"publicKeyServer":publicKeyServer[0],"interface":interface})
+                if req.status_code == 200:
+                    self.cmd(f'bash /opt/wg-mesh/links/{filename}.sh')
+                    os.remove(f"/opt/wg-mesh/links/{filename}.sh")
+            except Exception as ex:
+                exit(ex)
 
     def mesh(self):
         proc = self.cmd("pgrep bird")
@@ -115,22 +130,3 @@ class Wireguard(Base):
         ips = re.findall(f"\[[0-9.]+\]",routes, re.MULTILINE)
         if not ips: exit("bird returned no routes, did you setup bird?")
         configs = self.loadConfigs()
-
-    def linkDown(self,link):
-        print(f'Shutting down {link}')
-        return self.cmd(f'systemctl stop wg-quick@{link}')
-
-    def linkUp(self,link):
-        print(f'Starting {link}')
-        return self.cmd(f'systemctl start wg-quick@{link}')
-
-    def clean(self):
-        print(f"Warning, this will clean all {self.prefix} wireguard links")
-        phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-        answer = input(f"Enter {phrase} to continue: ")
-        if answer != phrase: exit()
-        configs = self.loadConfigs()
-        for config in configs:
-            self.linkDown(config)
-            print(f'Deleting {config}')
-            os.remove(f"/etc/wireguard/{config}.conf")

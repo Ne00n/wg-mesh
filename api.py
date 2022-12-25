@@ -43,6 +43,20 @@ class MyHandler(SimpleHTTPRequestHandler):
             self.wg.saveConfig(clientConfig,interface)
             self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
             return
+        elif type == "disconnect":
+            payload = json.loads(payload)
+            if os.path.isfile(f"{self.folder}links/{payload['interface']}.sh"):
+                with open(f"{self.folder}links/{payload['interface']}.sh", 'r') as file:
+                    config = file.read()
+                publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=]+)",config,re.MULTILINE)
+                if payload['publicKeyServer'] == publicKeyServer[0]:
+                    self.cmd(f'bash {self.folder}links/{payload['interface']}.sh')
+                    os.remove(f"{self.folder}links/{payload['interface']}.sh")
+                    self.response(200,{"success":True})
+                else:
+                    self.response(400,{"error":"invalid public key"})
+            else:
+                self.response(400,{"error":"invalid link"})
 
 print("Loading config")
 with open('configs/config.json') as f:
