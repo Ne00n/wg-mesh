@@ -24,14 +24,7 @@ class MyHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(bytes(json.dumps(payload).encode()))
 
-    def loadFile(self,file):
-        with open(file, 'r') as file: return file.read()
-
-    def saveFile(self,file,data):
-        with open(file, "w") as file: file.write(data)
-
     def do_POST(self):
-        print("post")
         length = int(self.headers['Content-Length'])
         if length > 200:
             self.response(414,{"error":"way to fucking long"})
@@ -44,8 +37,10 @@ class MyHandler(SimpleHTTPRequestHandler):
         if type == "connect":
             payload = json.loads(payload)
             clientPrivateKey, ClientPublicKey = self.wg.genKeys()
-            clientConfig = self.templator.genClient(payload['id'],payload['ip'],self.client_address[0],payload['port'],clientPrivateKey,payload['publicKeyServer'])
-            self.wg.saveConfig(clientConfig,payload['id'])
+            interface = self.wg.getInterface(payload['id'])
+            clientConfig = self.templator.genClient(interface,payload['id'],payload['ip'],self.client_address[0],payload['port'],payload['publicKeyServer'])
+            self.wg.saveFile(clientPrivateKey,f"/opt/wg-mesh/links/{interface}.key")
+            self.wg.saveConfig(clientConfig,interface)
             self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
             return
 
