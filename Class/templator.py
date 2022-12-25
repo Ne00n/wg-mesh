@@ -1,26 +1,29 @@
 class Templator:
-    
-    def genServer(self,serverID,serverIP,serverPort,serverPrivateKey,ClientPublicKey):
-        template = f'''[Interface]
-Address = 10.0.{serverID}.{serverIP}/31
-ListenPort = {serverPort}
-PrivateKey = {serverPrivateKey}
-SaveConfig = true
-Table = off
-[Peer]
-PublicKey = {ClientPublicKey}
-AllowedIPs = 0.0.0.0/0'''
+
+    def genServer(self,interface,serverID,serverIP,serverPort,ClientPublicKey):
+        template = f'''
+#!/bin/bash
+if [ "$1" == "up" ];  then
+    sudo ip link add dev {interface} type wireguard
+    sudo ip address add dev {interface} 10.0.{serverID}.{serverIP}/31
+    sudo wg set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {ClientPublicKey} allowed-ips 0.0.0.0/0
+    sudo ip link set up dev {interface}
+else
+    sudo ip link delete dev {interface}
+fi'''
         return template
-    
-    def genClient(self,serverID,serverIP,serverIPExternal,serverPort,clientPrivateKey,serverPublicKey):
-        template = f'''[Interface]
-Address = 10.0.{serverID}.{int(serverIP)+1}/31
-PrivateKey = {clientPrivateKey}
-Table = off
-[Peer]
-PublicKey = {serverPublicKey}
-AllowedIPs = 0.0.0.0/0
-Endpoint = {serverIPExternal}:{serverPort}'''
+
+    def genClient(self,interface,serverID,serverIP,serverIPExternal,serverPort,serverPublicKey):
+        template = f'''
+#!/bin/bash
+if [ "$1" == "up" ];  then
+    sudo ip link add dev {interface} type wireguard
+    sudo ip address add dev {interface} 10.0.{serverID}.{int(serverIP)+1}/31
+    sudo wg set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} allowed-ips 0.0.0.0/0 endpoint {serverIPExternal}:{serverPort}
+    sudo ip link set up dev {interface}
+else
+    sudo ip link delete dev {interface}
+fi'''
         return template
 
     def genVXLAN(self,targets):

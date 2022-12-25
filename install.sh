@@ -10,16 +10,10 @@ cd wg-mesh
 useradd wg-mesh -r -d /opt/wg-mesh -s /bin/bash
 chown -R wg-mesh:wg-mesh /opt/wg-mesh/
 chmod -R 700 /opt/wg-mesh/
-#wireguard permissions
-chgrp wg-mesh /etc/wireguard/
-chmod 770 /etc/wireguard/
 #sudo permissions
-echo "wg-mesh ALL=(ALL) NOPASSWD: /bin/systemctl enable wg-quick@*" >> /etc/sudoers
-echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/systemctl enable wg-quick@*" >> /etc/sudoers
-echo "wg-mesh ALL=(ALL) NOPASSWD: /bin/systemctl start wg-quick@*" >> /etc/sudoers
-echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/systemctl start wg-quick@*" >> /etc/sudoers
-echo "wg-mesh ALL=(ALL) NOPASSWD: /bin/systemctl stop wg-quick@*" >> /etc/sudoers
-echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/systemctl stop wg-quick@*" >> /etc/sudoers
+echo "wg-mesh ALL=(ALL) NOPASSWD: /sbin/ip*" >> /etc/sudoers
+echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/ip*" >> /etc/sudoers
+echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/wg*" >> /etc/sudoers
 #systemd service
 echo -e "[Unit]
 Description=wgmesh service

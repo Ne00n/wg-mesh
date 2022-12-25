@@ -66,9 +66,16 @@ class Wireguard(Base):
         ip = self.findLowest(ip,ips)
         return ip,port
 
-    def saveConfig(self,config,id,type=""):
-        file = f"{self.prefix}{id}{type}"
-        self.cmd(f'echo "{config}" > /etc/wireguard/{file}.conf && sudo systemctl enable wg-quick@{file} && sudo systemctl start wg-quick@{file}')
+    def getInterface(self,id,type=""):
+        return f"{self.prefix}{id}{type}"
+
+    def saveConfig(self,config,file):
+        self.saveFile(config,f"/opt/wg-mesh/links/{file}.sh")
+        self.cmd(f'bash /opt/wg-mesh/links/{file}.sh up')
+
+    def saveFile(self,data,path):
+        with open(path, 'w') as file:
+            file.write(data)
 
     def connect(self,dest):
         print(f"Connecting to {dest}")
@@ -85,9 +92,11 @@ class Wireguard(Base):
             resp = req.json()
             print(f"clientPublicKey {resp['clientPublicKey']}")
             resp = req.json()
-            serverConfig = self.Templator.genServer(self.config['id'],ip,port,privateKeyServer,resp['clientPublicKey'])
-            print(f"Creating & Starting {resp['id']}")
-            self.saveConfig(serverConfig,resp['id'],"Serv")
+            interface = self.getInterface(resp['id'],"Serv")
+            serverConfig = self.Templator.genServer(interface,self.config['id'],ip,port,resp['clientPublicKey'])
+            print(f"Creating & Starting {interface}")
+            self.saveFile(privateKeyServer,f"/opt/wg-mesh/links/{interface}.key")
+            self.saveConfig(serverConfig,interface)
             fping = self.cmd(f"fping 10.0.{self.config['id']}.{int(ip)+1}")
             if "alive" in fping:
                 print("Connected, Link is up")
