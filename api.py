@@ -56,7 +56,7 @@ class MyHandler(SimpleHTTPRequestHandler):
                 if payload['publicKeyServer'] == publicKeyServer[0]:
                     self.cmd(f'bash {self.folder}links/{payload['interface']}.sh')
                     os.remove(f"{self.folder}links/{payload['interface']}.sh")
-                    self.response(200,{"success":True})
+                    self.response(200,{"success":"link terminated"})
                 else:
                     self.response(400,{"error":"invalid public key"})
             else:
