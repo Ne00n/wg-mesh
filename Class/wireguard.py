@@ -71,7 +71,7 @@ class Wireguard(Base):
         return f"{self.prefix}{id}{type}"
 
     def saveConfig(self,config,file):
-        self.saveFile(config,f"/opt/wg-mesh/links/{file}.sh")
+        self.saveFile(config,f"{self.folder}links/{file}.sh")
         self.cmd(f'bash /opt/wg-mesh/links/{file}.sh up')
 
     def saveFile(self,data,path):
@@ -118,8 +118,8 @@ class Wireguard(Base):
             try:
                 req = requests.post(f'http://{destination[0]}:8080/disconnect', json={"publicKeyServer":publicKeyServer[0],"interface":interface})
                 if req.status_code == 200:
-                    self.cmd(f'bash /opt/wg-mesh/links/{filename}.sh')
-                    os.remove(f"/opt/wg-mesh/links/{filename}.sh")
+                    self.cmd(f'bash {self.folder}links/{filename}.sh')
+                    os.remove(f"{self.folder}links/{filename}.sh")
             except Exception as ex:
                 exit(ex)
 
