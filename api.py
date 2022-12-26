@@ -58,7 +58,7 @@ class MyHandler(SimpleHTTPRequestHandler):
                     config = file.read()
                 publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=]+)",config,re.MULTILINE)
                 if payload['publicKeyServer'] == publicKeyServer[0]:
-                    self.cmd(f'bash {self.folder}links/{payload['interface']}.sh')
+                    self.cmd(f"bash {self.folder}links/{payload['interface']}.sh")
                     os.remove(f"{self.folder}links/{payload['interface']}.sh")
                     self.response(200,{"success":"link terminated"})
                 else:
