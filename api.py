@@ -45,6 +45,10 @@ class MyHandler(SimpleHTTPRequestHandler):
             return
         elif type == "disconnect":
             payload = json.loads(payload)
+            interface = re.findall(f"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
+            if not interface:
+                self.response(400,{"error":"invalid link"})
+                return
             if os.path.isfile(f"{self.folder}links/{payload['interface']}.sh"):
                 with open(f"{self.folder}links/{payload['interface']}.sh", 'r') as file:
                     config = file.read()
