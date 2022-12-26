@@ -24,6 +24,10 @@ class MyHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(bytes(json.dumps(payload).encode()))
 
+     def do_GET(self):
+        self.response(418,{"teapot":True})
+        return
+
     def do_POST(self):
         length = int(self.headers['Content-Length'])
         if length > 200:
