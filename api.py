@@ -60,8 +60,7 @@ class MyHandler(SimpleHTTPRequestHandler):
                 publicKeyServer = self.wg.getPublic(privateKeyServer)
                 if payload['publicKeyServer'] == publicKeyServer:
                     self.wg.setInterface(payload['interface'],"down")
-                    os.remove(f"{self.folder}links/{payload['interface']}.sh")
-                    os.remove(f"{self.folder}links/{payload['interface']}.key")
+                    self.wg.cleanInterface(payload['interface'])
                     self.response(200,{"success":"link terminated"})
                 else:
                     self.response(400,{"error":"invalid public key"})

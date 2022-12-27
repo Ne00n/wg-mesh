@@ -82,6 +82,10 @@ class Wireguard(Base):
     def setInterface(self,file,state):
         self.cmd(f'bash {self.folder}links/{file}.sh {state}')
 
+    def cleanInterface(self,interface):
+        os.remove(f"{self.folder}links/{interface}.sh")
+        os.remove(f"{self.folder}links/{interface}.key")
+
     def saveFile(self,data,path):
         with open(path, 'w') as file:
             file.write(data)
@@ -128,8 +132,7 @@ class Wireguard(Base):
                 if req.status_code == 200:
                     interface = self.filterInterface(filename)
                     self.setInterface(interface,"down")
-                    os.remove(f"{self.folder}links/{interface}.sh")
-                    os.remove(f"{self.folder}links/{interface}.key")
+                    self.cleanInterface(interface)
                 else:
                     print(f"Got {req.status_code} with {req.text} aborting")
             except Exception as ex:
