@@ -14,10 +14,10 @@
 **Planned**<br />
 - automatic mesh buildup when node has joined
 - dualstack and/or singlestack (v4/v6)
-- remove nodes
 
 **Features**<br />
-- join nodes with simple cli command
+- join nodes via cli
+- disconnect nodes via cli
 
 This has been build for Debian and Ubuntu.<br>
 Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
@@ -25,13 +25,14 @@ Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues wit
 **Example 2 nodes**<br />
 Install wg-mesh and initialize the first node<br>
 ```
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init Node 1
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init Node1 1
 ```
+- The ID and the Name needs to be unique, otherwise it will result in collisions<br<>
 Install wg-mesh and initialize the second node<br>
 ```
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init Node 2
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init Node2 2
 ```
 Connect Node1 to Node2
 ```
-python3 cli.py connect <Node2IP>
+python3 cli.py connect <Node2IP> <token|publicKey>
 ```

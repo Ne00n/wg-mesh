@@ -4,16 +4,17 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 from Class.wireguard import Wireguard
 from Class.templator import Templator
 from functools import partial
-import socket, json, os, re
+import socket, random, string, json, os, re
 from pathlib import Path
 
 class MyHandler(SimpleHTTPRequestHandler):
 
-    def __init__(self, config, *args, **kwargs):
-        self.folder = "/opt/wg-mesh/"
+    def __init__(self, config, folder, tokens, *args, **kwargs):
+        self.folder = folder
         self.templator = Templator()
         self.wg = Wireguard()
         self.config = config
+        self.tokens = tokens
         # BaseHTTPRequestHandler calls do_GET **inside** __init__ !!!
         # So we have to call super().__init__ after setting attributes.
         super().__init__(*args, **kwargs)
@@ -23,6 +24,19 @@ class MyHandler(SimpleHTTPRequestHandler):
         self.send_header("Content-Type", "application/json")
         self.end_headers()
         self.wfile.write(bytes(json.dumps(payload).encode()))
+
+    def validateToken(self,payload):
+        if not "token" in payload:
+            self.response(400,{"error":"missing token"})
+            return False
+        token = re.findall(r"^([A-Za-z0-9/.=+]{3,50})$",payload['token'],re.MULTILINE | re.DOTALL)
+        if not token:
+            self.response(401,{"error":"invalid token"})
+            return False
+        if payload['token'] not in self.tokens:
+            self.response(401,{"error":"invalid token"})
+            return False
+        return True
 
     def do_GET(self):
         self.response(200,{"status":"ok"})
@@ -40,9 +54,16 @@ class MyHandler(SimpleHTTPRequestHandler):
         empty, type = self.path.split('/')
         if type == "connect":
             payload = json.loads(payload)
+            #validate token
+            result = self.validateToken(payload)
+            if not result: return
+            #generate new key pair
             clientPrivateKey, ClientPublicKey = self.wg.genKeys()
+            #generate interface name
             interface = self.wg.getInterface(payload['id'])
+            #generate wireguard config
             clientConfig = self.templator.genClient(interface,payload['id'],payload['ip'],self.client_address[0],payload['port'],payload['publicKeyServer'])
+            #save
             self.wg.saveFile(clientPrivateKey,f"{self.folder}links/{interface}.key")
             self.wg.saveFile(clientConfig,f"{self.folder}links/{interface}.sh")
             self.wg.setInterface(interface,"up")
@@ -50,14 +71,20 @@ class MyHandler(SimpleHTTPRequestHandler):
             return
         elif type == "disconnect":
             payload = json.loads(payload)
+            #validate interface name
             interface = re.findall(r"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
             if not interface:
                 self.response(400,{"error":"invalid link name"})
                 return
+            #check if interface exists
             if os.path.isfile(f"{self.folder}links/{payload['interface']}.sh"):
+                #read private key
                 with open(f"{self.folder}links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
+                #get public key from private key
                 publicKeyServer = self.wg.getPublic(privateKeyServer)
+                #check if they match
                 if payload['publicKeyServer'] == publicKeyServer:
+                    #terminate the link
                     self.wg.setInterface(payload['interface'],"down")
                     self.wg.cleanInterface(payload['interface'])
                     self.response(200,{"success":"link terminated"})
@@ -70,7 +97,18 @@ print("Loading config")
 with open('configs/config.json') as f:
     config = json.load(f)
 
-MyHandler = partial(MyHandler, config)
+tokens = []
+folder = "/opt/wg-mesh/"
+#check for existing configs
+wg = Wireguard()
+configs = wg.loadConfigs(False)
+if not configs:
+    token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=12))
+    print(f"Adding Token {token}")
+    wg.saveFile(f"{token}\n",f"{folder}token")
+    tokens.append(token)
+
+MyHandler = partial(MyHandler, config, folder, tokens)
 server = HTTPServer(('', 8080), MyHandler)
 print("Ready")
 try:

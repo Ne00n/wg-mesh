@@ -90,14 +90,14 @@ class Wireguard(Base):
     def saveFile(self,data,path):
         with open(path, 'w') as file: file.write(data)
 
-    def connect(self,dest):
+    def connect(self,dest,token):
         print(f"Connecting to {dest}")
         privateKeyServer, publicKeyServer = self.genKeys()
         configs = self.loadConfigs(False)
         ip,port = self.minimal(configs)
         #call destination
         try:
-            req = requests.post(f'http://{dest}:8080/connect', json={"publicKeyServer":publicKeyServer,"id":self.config['id'],"ip":ip,"port":port})
+            req = requests.post(f'http://{dest}:8080/connect', json={"publicKeyServer":publicKeyServer,"id":self.config['id'],"ip":ip,"port":port,"token":token})
         except Exception as ex:
             exit(ex)
         if req.status_code == 200:
@@ -110,7 +110,8 @@ class Wireguard(Base):
             self.saveFile(serverConfig,f"{self.folder}links/{interface}.sh")
             self.setInterface(interface,"up")
         else:
-            print(f"Failed to connect to {ip}")
+            print(f"Failed to connect to {dest}")
+            print(f"Got {req.text} as response")
 
     def disconnect(self):
         print("Disconnecting")
