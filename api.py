@@ -25,7 +25,7 @@ class MyHandler(SimpleHTTPRequestHandler):
         self.wfile.write(bytes(json.dumps(payload).encode()))
 
     def do_GET(self):
-        self.response(418,{"teapot":True})
+        self.response(200,{"status":"ok"})
         return
 
     def do_POST(self):
@@ -43,23 +43,25 @@ class MyHandler(SimpleHTTPRequestHandler):
             clientPrivateKey, ClientPublicKey = self.wg.genKeys()
             interface = self.wg.getInterface(payload['id'])
             clientConfig = self.templator.genClient(interface,payload['id'],payload['ip'],self.client_address[0],payload['port'],payload['publicKeyServer'])
-            self.wg.saveFile(clientPrivateKey,f"/opt/wg-mesh/links/{interface}.key")
-            self.wg.saveConfig(clientConfig,interface)
+            self.wg.saveFile(clientPrivateKey,f"{self.folder}links/{interface}.key")
+            self.wg.saveFile(clientConfig,f"{self.folder}links/{interface}.sh")
+            self.wg.setInterface(interface,"up")
             self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
             return
         elif type == "disconnect":
             payload = json.loads(payload)
-            interface = re.findall(f"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
+            interface = re.findall(r"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
             if not interface:
-                self.response(400,{"error":"invalid link"})
+                self.response(400,{"error":"invalid link name"})
                 return
             if os.path.isfile(f"{self.folder}links/{payload['interface']}.sh"):
-                with open(f"{self.folder}links/{payload['interface']}.sh", 'r') as file:
-                    config = file.read()
-                publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=]+)",config,re.MULTILINE)
-                if payload['publicKeyServer'] == publicKeyServer[0]:
-                    self.cmd(f"bash {self.folder}links/{payload['interface']}.sh")
+                with open(f"{self.folder}links/{payload['interface']}.key", 'r') as file:
+                    privateKeyServer = file.read()
+                publicKeyServer = self.wg.getPublic(privateKeyServer)
+                if payload['publicKeyServer'] == publicKeyServer:
+                    self.wg.setInterface(payload['interface'],"down")
                     os.remove(f"{self.folder}links/{payload['interface']}.sh")
+                    os.remove(f"{self.folder}links/{payload['interface']}.key")
                     self.response(200,{"success":"link terminated"})
                 else:
                     self.response(400,{"error":"invalid public key"})

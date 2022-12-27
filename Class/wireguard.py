@@ -18,6 +18,9 @@ class Wireguard(Base):
         privateKeyServer, publicKeyServer = keys.splitlines()
         return privateKeyServer, publicKeyServer
 
+    def getPublic(self,private):
+        return self.cmd(f'echo {private} | wg pubkey').rstrip()
+
     def loadConfigs(self,abort=True):
         if not os.path.isdir('/etc/wireguard/'): exit("Wireguard directory not found, not installed?")
         files = self.cmd('ls /etc/wireguard/')
@@ -70,9 +73,14 @@ class Wireguard(Base):
     def getInterface(self,id,type=""):
         return f"{self.prefix}{id}{type}"
 
-    def saveConfig(self,config,file):
-        self.saveFile(config,f"{self.folder}links/{file}.sh")
-        self.cmd(f'bash /opt/wg-mesh/links/{file}.sh up')
+    def filterInterface(self,interface):
+        return interface.replace(".sh","")
+
+    def filterInterfaceRemote(self,interface):
+        return interface.replace(".sh","").replace("Serv","")
+
+    def setInterface(self,file,state):
+        self.cmd(f'bash {self.folder}links/{file}.sh {state}')
 
     def saveFile(self,data,path):
         with open(path, 'w') as file:
@@ -91,13 +99,12 @@ class Wireguard(Base):
         if req.status_code == 200:
             print("Got 200")
             resp = req.json()
-            print(f"clientPublicKey {resp['clientPublicKey']}")
-            resp = req.json()
             interface = self.getInterface(resp['id'],"Serv")
             serverConfig = self.Templator.genServer(interface,dest,self.config['id'],ip,port,resp['clientPublicKey'])
             print(f"Creating & Starting {interface}")
-            self.saveFile(privateKeyServer,f"/opt/wg-mesh/links/{interface}.key")
-            self.saveConfig(serverConfig,interface)
+            self.saveFile(privateKeyServer,f"{self.folder}links/{interface}.key")
+            self.saveFile(serverConfig,f"{self.folder}links/{interface}.sh")
+            self.setInterface(interface,"up")
         else:
             print(f"Failed to connect to {ip}")
 
@@ -106,20 +113,25 @@ class Wireguard(Base):
         files = os.listdir(f"{self.folder}links/")
         for findex, filename in enumerate(files):
             if not filename.endswith(".sh"): continue
+            print(f"Reading Link {filename}")
             with open(f"{self.folder}links/{filename}", 'r') as file:
                 config = file.read()
             if "endpoint" in config:
                 destination = re.findall(f"endpoint\s([0-9.]+)",config, re.MULTILINE)
             elif "listen-port" in config:
                 destination = re.findall(f"client\s([0-9.]+)",config, re.MULTILINE)
-            publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=]+)",config,re.MULTILINE)
-            interface = filename.replace(".sh","")
+            publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)
+            interface = self.filterInterfaceRemote(filename)
             #call destination
             try:
                 req = requests.post(f'http://{destination[0]}:8080/disconnect', json={"publicKeyServer":publicKeyServer[0],"interface":interface})
                 if req.status_code == 200:
-                    self.cmd(f'bash {self.folder}links/{filename}.sh')
-                    os.remove(f"{self.folder}links/{filename}.sh")
+                    interface = self.filterInterface(filename)
+                    self.setInterface(interface,"down")
+                    os.remove(f"{self.folder}links/{interface}.sh")
+                    os.remove(f"{self.folder}links/{interface}.key")
+                else:
+                    print(f"Got {req.status_code} with {req.text} aborting")
             except Exception as ex:
                 exit(ex)
 
