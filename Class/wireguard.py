@@ -4,7 +4,7 @@ from Class.base import Base
 
 class Wireguard(Base):
     path = os.path.dirname(os.path.realpath(__file__)).replace("Class","configs")
-    folder = "/opt/wg-mesh/"
+    folder = "/home/aero/wg-mesh/"
     Templator = Templator()
     prefix = "pipe"
 
@@ -22,11 +22,12 @@ class Wireguard(Base):
         return self.cmd(f'echo {private} | wg pubkey').rstrip()
 
     def loadConfigs(self,abort=True):
-        if not os.path.isdir('/etc/wireguard/'): exit("Wireguard directory not found, not installed?")
-        files = self.cmd('ls /etc/wireguard/')
-        configs = re.findall(f"^{self.prefix}[A-Za-z0-9]+",files, re.MULTILINE)
-        if not configs and abort: exit(f"No {self.prefix} configs found")
-        return configs
+        files = self.cmd(f'ls {self.folder}links/')
+        files = files.splitlines()
+        for file in list(files):
+            if not file.endswith(".sh"): files.remove(file)
+        if not files and abort: exit(f"No {self.prefix} configs found")
+        return files
 
     def fetch(self,url):
         try:
@@ -60,9 +61,9 @@ class Wireguard(Base):
     def minimal(self,files,ip=4,port=51820):
         ips,ports = [],[]
         for file in files:
-            with open(f"/etc/wireguard/{file}.conf", 'r') as f: config = f.read()
-            configPort = re.findall(f"^Endpoint = .*?:([0-9]+)",config, re.MULTILINE)
-            configIP = re.findall(f"^Address =.*?([0-9]+)\/",config, re.MULTILINE)
+            with open(f"{self.folder}links/{file}", 'r') as f: config = f.read()
+            configPort = re.findall(f"listen-port\s([0-9]+)",config, re.MULTILINE)
+            configIP = re.findall(f"ip address add dev.*?([0-9]+)\/",config, re.MULTILINE)
             if configPort:
                 ports.append(int(configPort[0]))
                 ips.append(int(configIP[0]))
@@ -118,8 +119,7 @@ class Wireguard(Base):
         for findex, filename in enumerate(files):
             if not filename.endswith(".sh"): continue
             print(f"Reading Link {filename}")
-            with open(f"{self.folder}links/{filename}", 'r') as file:
-                config = file.read()
+            with open(f"{self.folder}links/{filename}", 'r') as file: config = file.read()
             if "endpoint" in config:
                 destination = re.findall(f"endpoint\s([0-9.]+)",config, re.MULTILINE)
             elif "listen-port" in config:

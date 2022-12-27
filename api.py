@@ -55,8 +55,7 @@ class MyHandler(SimpleHTTPRequestHandler):
                 self.response(400,{"error":"invalid link name"})
                 return
             if os.path.isfile(f"{self.folder}links/{payload['interface']}.sh"):
-                with open(f"{self.folder}links/{payload['interface']}.key", 'r') as file:
-                    privateKeyServer = file.read()
+                with open(f"{self.folder}links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
                 publicKeyServer = self.wg.getPublic(privateKeyServer)
                 if payload['publicKeyServer'] == publicKeyServer:
                     self.wg.setInterface(payload['interface'],"down")
