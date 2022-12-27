@@ -33,5 +33,5 @@ curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | ba
 ```
 Connect Node1 to Node2
 ```
-python3 cli.py connect Node2IP
+python3 cli.py connect <Node2IP>
 ```
