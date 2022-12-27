@@ -4,7 +4,7 @@ from Class.base import Base
 
 class Wireguard(Base):
     path = os.path.dirname(os.path.realpath(__file__)).replace("Class","configs")
-    folder = "/home/aero/wg-mesh/"
+    folder = "/opt/wg-mesh/"
     Templator = Templator()
     prefix = "pipe"
 
@@ -88,8 +88,7 @@ class Wireguard(Base):
         os.remove(f"{self.folder}links/{interface}.key")
 
     def saveFile(self,data,path):
-        with open(path, 'w') as file:
-            file.write(data)
+        with open(path, 'w') as file: file.write(data)
 
     def connect(self,dest):
         print(f"Connecting to {dest}")
