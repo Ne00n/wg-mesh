@@ -47,12 +47,12 @@ class MyHandler(SimpleHTTPRequestHandler):
         if length > 200:
             self.response(414,{"error":"way to fucking long"})
             return
-        if len(self.path) > 200:
+        if len(self.path) > 20:
             self.response(414,{"error":"way to fucking long"})
             return
         payload = self.rfile.read(length).decode("utf-8")
-        empty, type = self.path.split('/')
-        if type == "connect":
+        parts = self.path.split('/')
+        if parts[1] == "connect":
             payload = json.loads(payload)
             #validate token
             result = self.validateToken(payload)
@@ -69,7 +69,7 @@ class MyHandler(SimpleHTTPRequestHandler):
             self.wg.setInterface(interface,"up")
             self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
             return
-        elif type == "disconnect":
+        elif parts[1] == "disconnect":
             payload = json.loads(payload)
             #validate interface name
             interface = re.findall(r"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
@@ -92,6 +92,8 @@ class MyHandler(SimpleHTTPRequestHandler):
                     self.response(400,{"error":"invalid public key"})
             else:
                 self.response(400,{"error":"invalid link"})
+        else:
+            self.response(501,{"error":"not implemented"})
 
 print("Loading config")
 with open('configs/config.json') as f:
