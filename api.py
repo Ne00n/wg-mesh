@@ -4,7 +4,7 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 from Class.wireguard import Wireguard
 from Class.templator import Templator
 from functools import partial
-import socket, random, string, json, os, re
+import ipaddress, socket, random, string, json, os, re
 from pathlib import Path
 
 class MyHandler(SimpleHTTPRequestHandler):
@@ -52,11 +52,13 @@ class MyHandler(SimpleHTTPRequestHandler):
             return
         payload = self.rfile.read(length).decode("utf-8")
         parts = self.path.split('/')
+        isInternal =  ipaddress.ip_address(self.client_address[0]) in ipaddress.ip_network('10.0.0.0/8')
         if parts[1] == "connect":
             payload = json.loads(payload)
             #validate token
-            result = self.validateToken(payload)
-            if not result: return
+            if not isInternal:
+                result = self.validateToken(payload)
+                if not result: return
             #generate new key pair
             clientPrivateKey, ClientPublicKey = self.wg.genKeys()
             #generate interface name
@@ -107,7 +109,10 @@ configs = wg.loadConfigs(False)
 if not configs:
     token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=12))
     print(f"Adding Token {token}")
-    wg.saveFile(f"{token}\n",f"{folder}token")
+    try:
+        wg.saveFile(f"{token}\n",f"{folder}token")
+    except:
+        print("Failed to write token file")
     tokens.append(token)
 
 MyHandler = partial(MyHandler, config, folder, tokens)
