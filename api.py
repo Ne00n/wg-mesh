@@ -110,7 +110,7 @@ if not configs:
     token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=12))
     print(f"Adding Token {token}")
     try:
-        wg.saveFile(f"{token}\n",f"{folder}token")
+        wg.saveFile(f"{token}\n",f"{folder}/token")
     except:
         print("Failed to write token file")
     tokens.append(token)
