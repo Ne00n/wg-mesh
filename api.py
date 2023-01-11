@@ -107,7 +107,7 @@ folder = os.path.dirname(os.path.realpath(__file__))
 wg = Wireguard()
 configs = wg.loadConfigs(False)
 if not configs:
-    token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=12))
+    token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=18))
     print(f"Adding Token {token}")
     try:
         wg.saveFile(f"{token}\n",f"{folder}/token")
