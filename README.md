@@ -5,6 +5,8 @@
 - Build a [wireguard](https://www.wireguard.com/) mesh vpn in [tinc](https://www.tinc-vpn.org/) style
 - Simple CLI to add and manage nodes
 - Replacement for https://github.com/Ne00n/pipe-builder-3000/
+- Simple Token auth
+- Decentralized
 
 **Software**<br />
 - python3
@@ -27,12 +29,12 @@ Install wg-mesh and initialize the first node<br>
 ```
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init Node1 1
 ```
-- The ID and the Name needs to be unique, otherwise it will result in collisions<br<>
+- The ID and the Name needs to be unique, otherwise it will result in collisions<br>
 Install wg-mesh and initialize the second node<br>
 ```
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init Node2 2
 ```
 Connect Node1 to Node2
 ```
-python3 cli.py connect <Node2IP> <token|publicKey>
+python3 cli.py connect <Node2IP> <token>
 ```
