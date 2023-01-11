@@ -137,11 +137,3 @@ class Wireguard(Base):
                     print(f"Got {req.status_code} with {req.text} aborting")
             except Exception as ex:
                 exit(ex)
-
-    def mesh(self):
-        proc = self.cmd("pgrep bird")
-        if proc == "": exit("bird not running")
-        routes = self.cmd("birdc show route")
-        ips = re.findall(f"\[[0-9.]+\]",routes, re.MULTILINE)
-        if not ips: exit("bird returned no routes, did you setup bird?")
-        configs = self.loadConfigs()
