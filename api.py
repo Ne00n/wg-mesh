@@ -66,8 +66,8 @@ class MyHandler(SimpleHTTPRequestHandler):
             #generate wireguard config
             clientConfig = self.templator.genClient(interface,payload['id'],payload['ip'],self.client_address[0],payload['port'],payload['publicKeyServer'])
             #save
-            self.wg.saveFile(clientPrivateKey,f"{self.folder}links/{interface}.key")
-            self.wg.saveFile(clientConfig,f"{self.folder}links/{interface}.sh")
+            self.wg.saveFile(clientPrivateKey,f"{self.folder}/links/{interface}.key")
+            self.wg.saveFile(clientConfig,f"{self.folder}/links/{interface}.sh")
             self.wg.setInterface(interface,"up")
             self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
             return
@@ -79,9 +79,9 @@ class MyHandler(SimpleHTTPRequestHandler):
                 self.response(400,{"error":"invalid link name"})
                 return
             #check if interface exists
-            if os.path.isfile(f"{self.folder}links/{payload['interface']}.sh"):
+            if os.path.isfile(f"{self.folder}/links/{payload['interface']}.sh"):
                 #read private key
-                with open(f"{self.folder}links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
+                with open(f"{self.folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
                 #get public key from private key
                 publicKeyServer = self.wg.getPublic(privateKeyServer)
                 #check if they match
@@ -102,7 +102,7 @@ with open('configs/config.json') as f:
     config = json.load(f)
 
 tokens = []
-folder = "/opt/wg-mesh/"
+folder = os.path.dirname(os.path.realpath(__file__))
 #check for existing configs
 wg = Wireguard()
 configs = wg.loadConfigs(False)
