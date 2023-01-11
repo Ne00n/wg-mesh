@@ -37,7 +37,7 @@ class Wireguard(Base):
         ips = []
         for config in configs:
             data = re.findall(f"(10\.0\.[0-9]+).",config, re.MULTILINE)
-            ips.append(f"{data[0]}1")
+            ips.append(f"{data[0]}.1")
         ips = list(set(ips))
         return ips
 
