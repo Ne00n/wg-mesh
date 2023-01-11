@@ -3,14 +3,14 @@ import urllib.request, requests, random, string, json, re, os
 from Class.base import Base
 
 class Wireguard(Base):
-    path = os.path.dirname(os.path.realpath(__file__)).replace("Class","configs")
     Templator = Templator()
     prefix = "pipe"
 
-    def __init__(self,skip=False):
+    def __init__(self,path,skip=False):
+        self.path = path
         if skip: return
-        if not os.path.isfile(f"{self.path}/config.json"): exit("Config missing")
-        with open(f'{self.path}/config.json') as f: self.config = json.load(f)
+        if not os.path.isfile(f"{self.path}/configs/config.json"): exit("Config missing")
+        with open(f'{self.path}/configs/config.json') as f: self.config = json.load(f)
 
     def genKeys(self):
         keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')
@@ -20,13 +20,26 @@ class Wireguard(Base):
     def getPublic(self,private):
         return self.cmd(f'echo {private} | wg pubkey').rstrip()
 
-    def loadConfigs(self,abort=True):
-        files = self.cmd(f'ls {self.path}/links/')
-        files = files.splitlines()
+    def loadConfigs(self,files):
+        configs = []
+        for config in files:
+            with open(f'{self.path}/links/{config}') as f: configs.append(f.read())
+        return configs
+
+    def getConfigs(self,abort=True):
+        files = os.listdir(f'{self.path}/links/')
         for file in list(files):
             if not file.endswith(".sh"): files.remove(file)
         if not files and abort: exit(f"No {self.prefix} configs found")
         return files
+        
+    def getEndpoints(self,configs):
+        ips = []
+        for config in configs:
+            data = re.findall(f"(10\.0\.[0-9]+).",config, re.MULTILINE)
+            ips.append(f"{data[0]}1")
+        ips = list(set(ips))
+        return ips
 
     def fetch(self,url):
         try:
@@ -51,7 +64,7 @@ class Wireguard(Base):
 
         print("Generating config.json")
         config = {"name":name,"id":id,"connectivity":{"ipv4":ipv4,"ipv6":ipv6}}
-        with open(f"{self.path}/config.json", 'w') as f: json.dump(config, f ,indent=4)
+        with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
 
     def findLowest(self,min,list):
         for i in range(min,min + 200):
@@ -92,7 +105,7 @@ class Wireguard(Base):
     def connect(self,dest,token):
         print(f"Connecting to {dest}")
         privateKeyServer, publicKeyServer = self.genKeys()
-        configs = self.loadConfigs(False)
+        configs = self.getConfigs(False)
         ip,port = self.minimal(configs)
         #call destination
         try:

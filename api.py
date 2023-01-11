@@ -12,7 +12,7 @@ class MyHandler(SimpleHTTPRequestHandler):
     def __init__(self, config, folder, tokens, *args, **kwargs):
         self.folder = folder
         self.templator = Templator()
-        self.wg = Wireguard()
+        self.wg = Wireguard(folder)
         self.config = config
         self.tokens = tokens
         # BaseHTTPRequestHandler calls do_GET **inside** __init__ !!!
@@ -39,8 +39,14 @@ class MyHandler(SimpleHTTPRequestHandler):
         return True
 
     def do_GET(self):
-        self.response(200,{"status":"ok"})
-        return
+        parts = self.path.split('/')
+        if parts[1] == "peers":
+            configs = self.wg.getConfigs(False)
+            configs = self.wg.loadConfigs(configs)
+            endpoints = self.wg.getEndpoints(configs)
+            self.response(200,endpoints)
+        else:
+            self.response(200,{"status":"ok"})
 
     def do_POST(self):
         length = int(self.headers['Content-Length'])
@@ -104,8 +110,8 @@ with open('configs/config.json') as f:
 tokens = []
 folder = os.path.dirname(os.path.realpath(__file__))
 #check for existing configs
-wg = Wireguard()
-configs = wg.loadConfigs(False)
+wg = Wireguard(folder)
+configs = wg.getConfigs(False)
 if not configs:
     token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=18))
     print(f"Adding Token {token}")
