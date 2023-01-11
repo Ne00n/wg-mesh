@@ -4,7 +4,6 @@ from Class.base import Base
 
 class Wireguard(Base):
     path = os.path.dirname(os.path.realpath(__file__)).replace("Class","configs")
-    folder = "/opt/wg-mesh/"
     Templator = Templator()
     prefix = "pipe"
 
@@ -22,7 +21,7 @@ class Wireguard(Base):
         return self.cmd(f'echo {private} | wg pubkey').rstrip()
 
     def loadConfigs(self,abort=True):
-        files = self.cmd(f'ls {self.folder}links/')
+        files = self.cmd(f'ls {self.path}/links/')
         files = files.splitlines()
         for file in list(files):
             if not file.endswith(".sh"): files.remove(file)
@@ -61,7 +60,7 @@ class Wireguard(Base):
     def minimal(self,files,ip=4,port=51820):
         ips,ports = [],[]
         for file in files:
-            with open(f"{self.folder}links/{file}", 'r') as f: config = f.read()
+            with open(f"{self.path}/links/{file}", 'r') as f: config = f.read()
             configPort = re.findall(f"listen-port\s([0-9]+)",config, re.MULTILINE)
             configIP = re.findall(f"ip address add dev.*?([0-9]+)\/",config, re.MULTILINE)
             if configPort:
@@ -81,11 +80,11 @@ class Wireguard(Base):
         return interface.replace(".sh","").replace("Serv","")
 
     def setInterface(self,file,state):
-        self.cmd(f'bash {self.folder}links/{file}.sh {state}')
+        self.cmd(f'bash {self.path}/links/{file}.sh {state}')
 
     def cleanInterface(self,interface):
-        os.remove(f"{self.folder}links/{interface}.sh")
-        os.remove(f"{self.folder}links/{interface}.key")
+        os.remove(f"{self.path}/links/{interface}.sh")
+        os.remove(f"{self.path}/links/{interface}.key")
 
     def saveFile(self,data,path):
         with open(path, 'w') as file: file.write(data)
@@ -106,8 +105,8 @@ class Wireguard(Base):
             interface = self.getInterface(resp['id'],"Serv")
             serverConfig = self.Templator.genServer(interface,dest,self.config['id'],ip,port,resp['clientPublicKey'])
             print(f"Creating & Starting {interface}")
-            self.saveFile(privateKeyServer,f"{self.folder}links/{interface}.key")
-            self.saveFile(serverConfig,f"{self.folder}links/{interface}.sh")
+            self.saveFile(privateKeyServer,f"{self.path}/links/{interface}.key")
+            self.saveFile(serverConfig,f"{self.path}/links/{interface}.sh")
             self.setInterface(interface,"up")
         else:
             print(f"Failed to connect to {dest}")
@@ -115,11 +114,11 @@ class Wireguard(Base):
 
     def disconnect(self):
         print("Disconnecting")
-        files = os.listdir(f"{self.folder}links/")
+        files = os.listdir(f"{self.path}/links/")
         for findex, filename in enumerate(files):
             if not filename.endswith(".sh"): continue
             print(f"Reading Link {filename}")
-            with open(f"{self.folder}links/{filename}", 'r') as file: config = file.read()
+            with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
             if "endpoint" in config:
                 destination = re.findall(f"endpoint\s([0-9.]+)",config, re.MULTILINE)
             elif "listen-port" in config:
