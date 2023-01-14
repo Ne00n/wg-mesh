@@ -4,7 +4,6 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 from Class.wireguard import Wireguard
 from Class.templator import Templator
 from functools import partial
-from Class.bird import Bird
 import ipaddress, socket, random, string, json, os, re
 from pathlib import Path
 
@@ -16,7 +15,6 @@ class MyHandler(SimpleHTTPRequestHandler):
         self.wg = Wireguard(folder)
         self.config = config
         self.tokens = tokens
-        self.bird = Bird()
         # BaseHTTPRequestHandler calls do_GET **inside** __init__ !!!
         # So we have to call super().__init__ after setting attributes.
         super().__init__(*args, **kwargs)

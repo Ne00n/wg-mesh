@@ -15,7 +15,7 @@ echo "wg-mesh ALL=(ALL) NOPASSWD: /sbin/ip*" >> /etc/sudoers
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/ip*" >> /etc/sudoers
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/wg*" >> /etc/sudoers
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/sysctl*" >> /etc/sudoers
-#systemd service
+#systemd wg-mesh service
 echo -e "[Unit]
 Description=wgmesh service
 Wants=network-online.target
@@ -29,6 +29,18 @@ ExecStart=/usr/bin/python3 api.py
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/wgmesh.service
 systemctl enable wgmesh && systemctl start wgmesh
+#systemd bird service
+echo -e "[Unit]
+Description=wgmesh-bird service
+Wants=network-online.target
+After=network-online.target
+[Service]
+Type=simple
+WorkingDirectory=/opt/wg-mesh/cron
+ExecStart=/usr/bin/python3 bird.py
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/wgmesh-bird.service
+systemctl enable wgmesh-bird && systemctl start wgmesh-bird
 if [ "$1" == "init" ];  then
 ./cli.py $@
 fi
