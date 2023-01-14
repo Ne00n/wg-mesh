@@ -76,7 +76,7 @@ class MyHandler(SimpleHTTPRequestHandler):
             self.wg.saveFile(clientConfig,f"{self.folder}/links/{interface}.sh")
             self.wg.setInterface(interface,"up")
             #check for dummy
-            if not self.hasDummy():
+            if not self.wg.hasDummy():
                 dummyConfig = self.Templator.genDummy(self.config['id'])
                 self.wg.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
                 self.wg.setInterface("dummy","up")
