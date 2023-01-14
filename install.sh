@@ -15,6 +15,11 @@ echo "wg-mesh ALL=(ALL) NOPASSWD: /sbin/ip*" >> /etc/sudoers
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/ip*" >> /etc/sudoers
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/wg*" >> /etc/sudoers
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/sysctl*" >> /etc/sudoers
+#bird permissions
+echo "wg-mesh ALL=(ALL) NOPASSWD: /bin/systemctl reload bird" >> /etc/sudoers
+echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload bird" >> /etc/sudoers
+usermod -a -G bird wg-mesh
+chmod -R 770 /etc/bird/
 #systemd wg-mesh service
 echo -e "[Unit]
 Description=wgmesh service
