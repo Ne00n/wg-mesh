@@ -40,6 +40,8 @@ Description=wgmesh-bird service
 Wants=network-online.target
 After=network-online.target
 [Service]
+User=wg-mesh
+Group=wg-mesh
 Type=simple
 WorkingDirectory=/opt/wg-mesh/cron
 ExecStart=/usr/bin/python3 bird.py
