@@ -84,6 +84,7 @@ class MyHandler(SimpleHTTPRequestHandler):
                 dummyConfig = self.templator.genDummy(self.config['id'])
                 self.wg.saveFile(dummyConfig,f"{self.folder}/links/dummy.sh")
                 self.wg.setInterface("dummy","up")
+            self.wg.pingIP(f"10.0.{payload['id']}.{payload['ip']}")
             self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
             return
         elif parts[1] == "disconnect":
