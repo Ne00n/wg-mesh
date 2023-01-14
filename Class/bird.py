@@ -71,6 +71,7 @@ class Bird(Base):
         latencyData = self.getLatency(nodes)
         print("Generating config")
         bird = self.Templator.genBird(latencyData,local,int(time.time()))
+        if bird == "": exit("No bird config generated")
         print("Writing config")
         self.cmd(f'echo "{bird}" > /etc/bird/bird.conf')
         proc = self.cmd("pgrep bird")

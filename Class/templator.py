@@ -57,6 +57,7 @@ fi'''
 
     def genBird(self,latency,local,time):
         firstNode = self.getFirst(latency)
+        if not firstNode: return ""
         if not local:
             routerID = latency[firstNode]["origin"]
         else:
