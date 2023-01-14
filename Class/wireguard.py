@@ -141,6 +141,7 @@ class Wireguard(Base):
         print("Disconnecting")
         files = os.listdir(f"{self.path}/links/")
         for findex, filename in enumerate(files):
+            if filename == "dummy.sh": continue
             if not filename.endswith(".sh"): continue
             print(f"Reading Link {filename}")
             with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
@@ -161,3 +162,6 @@ class Wireguard(Base):
                     print(f"Got {req.status_code} with {req.text} aborting")
             except Exception as ex:
                 exit(ex)
+        #clean dummy
+        self.setInterface("dummy","down")
+        self.cleanInterface("dummy")
