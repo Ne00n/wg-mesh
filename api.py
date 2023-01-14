@@ -109,17 +109,14 @@ with open('configs/config.json') as f:
 
 tokens = []
 folder = os.path.dirname(os.path.realpath(__file__))
-#check for existing configs
 wg = Wireguard(folder)
-configs = wg.getConfigs(False)
-if not configs:
-    token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=18))
-    print(f"Adding Token {token}")
-    try:
-        wg.saveFile(f"{token}\n",f"{folder}/token")
-    except:
-        print("Failed to write token file")
-    tokens.append(token)
+token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=18))
+print(f"Adding Token {token}")
+try:
+    wg.saveFile(f"{token}\n",f"{folder}/token")
+except:
+    print("Failed to write token file")
+tokens.append(token)
 
 MyHandler = partial(MyHandler, config, folder, tokens)
 server = HTTPServer(('', 8080), MyHandler)
