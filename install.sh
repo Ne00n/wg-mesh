@@ -14,7 +14,6 @@ chmod -R 700 /opt/wg-mesh/
 echo "wg-mesh ALL=(ALL) NOPASSWD: /sbin/ip*" >> /etc/sudoers
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/ip*" >> /etc/sudoers
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/wg*" >> /etc/sudoers
-echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/sysctl*" >> /etc/sudoers
 #bird permissions
 echo "wg-mesh ALL=(ALL) NOPASSWD: /bin/systemctl reload bird" >> /etc/sudoers
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload bird" >> /etc/sudoers

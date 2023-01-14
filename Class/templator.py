@@ -29,14 +29,6 @@ fi'''
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
     sudo ip addr add 10.0.{serverID}.1/30 dev lo;
-    #forwarding
-    sudo sysctl -w net.ipv4.ip_forward=1
-    #reverse path filter
-    sudo sysctl -w net.ipv4.conf.all.rp_filter=0
-    sudo sysctl -w net.ipv4.conf.default.rp_filter=0
-    #bbr
-    sudo sysctl -w net.core.default_qdisc=fq 
-    sudo sysctl -w net.ipv4.tcp_congestion_control=bbr
 else
     sudo ip addr del 10.0.{serverID}.1/30 dev lo;
 fi'''
