@@ -75,6 +75,11 @@ class MyHandler(SimpleHTTPRequestHandler):
             self.wg.saveFile(clientPrivateKey,f"{self.folder}/links/{interface}.key")
             self.wg.saveFile(clientConfig,f"{self.folder}/links/{interface}.sh")
             self.wg.setInterface(interface,"up")
+            #check for dummy
+            if not self.hasDummy():
+                dummyConfig = self.Templator.genDummy(self.config['id'])
+                self.wg.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
+                self.wg.setInterface("dummy","up")
             self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
             return
         elif parts[1] == "disconnect":
