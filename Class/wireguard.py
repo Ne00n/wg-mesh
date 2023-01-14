@@ -126,8 +126,10 @@ class Wireguard(Base):
             self.saveFile(privateKeyServer,f"{self.path}/links/{interface}.key")
             self.saveFile(serverConfig,f"{self.path}/links/{interface}.sh")
             self.setInterface(interface,"up")
+            #load configs
+            configs = self.getConfigs()
             #check for dummy
-            if not self.hasDummy():
+            if not self.hasDummy(configs):
                 dummyConfig = self.Templator.genDummy(self.config['id'])
                 self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
                 self.setInterface("dummy","up")

@@ -75,10 +75,12 @@ class MyHandler(SimpleHTTPRequestHandler):
             self.wg.saveFile(clientPrivateKey,f"{self.folder}/links/{interface}.key")
             self.wg.saveFile(clientConfig,f"{self.folder}/links/{interface}.sh")
             self.wg.setInterface(interface,"up")
+            #load configs
+            configs = self.wg.getConfigs()
             #check for dummy
-            if not self.wg.hasDummy():
-                dummyConfig = self.Templator.genDummy(self.config['id'])
-                self.wg.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
+            if not self.wg.hasDummy(configs):
+                dummyConfig = self.templator.genDummy(self.config['id'])
+                self.wg.saveFile(dummyConfig,f"{self.folder}/links/dummy.sh")
                 self.wg.setInterface("dummy","up")
             self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
             return
