@@ -16,7 +16,6 @@ class CLI:
     def connect(self,dest,token):
         self.wg = Wireguard(self.path)
         self.wg.connect(dest,token)
-        self.bird.bird()
 
     def disconnect(self):
         self.wg = Wireguard(self.path)
