@@ -74,13 +74,8 @@ class Bird(Base):
         if bird == "": exit("No bird config generated")
         print("Writing config")
         self.cmd(f'echo "{bird}" > /etc/bird/bird.conf')
-        proc = self.cmd("pgrep bird")
-        if proc == "":
-            print("Starting bird")
-            self.cmd("service bird start")
-        else:
-            print("Reloading bird")
-            self.cmd("service bird reload")
+        print("Reloading bird")
+        self.cmd("sudo service bird reload")
 
     def mesh(self):
         proc = self.cmd("pgrep bird")
