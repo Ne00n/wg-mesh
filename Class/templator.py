@@ -28,22 +28,9 @@ fi'''
     def genDummy(self,serverID):
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
-    ip addr add 10.0.{serverID}.1/30 dev lo;
-    #forwarding
-    echo 1 > /proc/sys/net/ipv4/ip_forward;
-    echo 1 > /proc/sys/net/ipv6/conf/all/forwarding;
-    #reverse path filter
-    echo 0 > /proc/sys/net/ipv4/conf/all/rp_filter;
-    echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter;
-    #bbr
-    echo "fq" > /proc/sys/net/core/default_qdisc; 
-    echo "bbr" > /proc/sys/net/ipv4/tcp_congestion_control;
+    sudo ip addr add 10.0.{serverID}.1/30 dev lo;
 else
-    echo 0 > /proc/sys/net/ipv4/ip_forward;
-    echo 0 > /proc/sys/net/ipv6/conf/all/forwarding;
-    echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter;
-    echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter;
-    ip addr del 10.0.{serverID}.1/30 dev lo;
+    sudo ip addr del 10.0.{serverID}.1/30 dev lo;
 fi'''
         return template
 
