@@ -4,3 +4,4 @@ systemctl disable wgmesh && systemctl stop wgmesh
 systemctl disable wgmesh-bird && systemctl stop wgmesh-bird
 userdel -r wg-mesh
 rm /etc/sysctl.d/wg-mesh.conf
+rm /etc/sudoers.d/wg-mesh.conf
