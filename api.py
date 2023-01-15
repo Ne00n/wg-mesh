@@ -70,7 +70,7 @@ class MyHandler(SimpleHTTPRequestHandler):
             #generate interface name
             interface = self.wg.getInterface(payload['id'])
             #generate wireguard config
-            clientConfig = self.templator.genClient(interface,payload['id'],payload['ip'],self.client_address[0],payload['port'],payload['publicKeyServer'])
+            clientConfig = self.templator.genClient(interface,payload['id'],payload['lastbyte'],self.client_address[0],payload['port'],payload['publicKeyServer'])
             #save
             self.wg.saveFile(clientPrivateKey,f"{self.folder}/links/{interface}.key")
             self.wg.saveFile(clientConfig,f"{self.folder}/links/{interface}.sh")
@@ -82,7 +82,7 @@ class MyHandler(SimpleHTTPRequestHandler):
                 dummyConfig = self.templator.genDummy(self.config['id'])
                 self.wg.saveFile(dummyConfig,f"{self.folder}/links/dummy.sh")
                 self.wg.setInterface("dummy","up")
-            self.wg.pingIP(f"10.0.{payload['id']}.{payload['ip']}")
+            self.wg.pingIP(f"10.0.{payload['id']}.{payload['lastbyte']}")
             self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
             return
         elif parts[1] == "disconnect":

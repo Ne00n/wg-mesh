@@ -75,7 +75,7 @@ class Wireguard(Base):
         for i in range(min,min + 200):
             if i not in list and i % 2 == 0: return i
 
-    def minimal(self,files,ip=4,port=51820):
+    def minimal(self,files,lastbyte=4,port=51820):
         ips,ports = [],[]
         for file in files:
             with open(f"{self.path}/links/{file}", 'r') as f: config = f.read()
@@ -85,8 +85,8 @@ class Wireguard(Base):
                 ports.append(int(configPort[0]))
                 ips.append(int(configIP[0]))
         port = self.findLowest(port,ports)
-        ip = self.findLowest(ip,ips)
-        return ip,port
+        lastbyte = self.findLowest(ip,ips)
+        return lastbyte,port
 
     def getInterface(self,id,type=""):
         return f"{self.prefix}{id}{type}"
@@ -115,10 +115,10 @@ class Wireguard(Base):
         print(f"Connecting to {dest}")
         privateKeyServer, publicKeyServer = self.genKeys()
         configs = self.getConfigs(False)
-        ip,port = self.minimal(configs)
+        lastbyte,port = self.minimal(configs)
         #call destination
         try:
-            req = requests.post(f'http://{dest}:8080/connect', json={"publicKeyServer":publicKeyServer,"id":self.config['id'],"ip":ip,"port":port,"token":token})
+            req = requests.post(f'http://{dest}:8080/connect', json={"publicKeyServer":publicKeyServer,"id":self.config['id'],"lastbyte":lastbyte,"port":port,"token":token})
         except Exception as ex:
             exit(ex)
         if req.status_code == 200:
