@@ -42,13 +42,13 @@ You can find the Token in /opt/wg-mesh/token<br>
 After connecting successfully, a dummy.sh will be created, which assigns a 10.0.nodeID.1/30 to lo.<br>
 This will be picked up by bird, so on booth nodes on 10.0.1.1 and 10.0.2.1 should be reachable after bird ran.<br>
 
-**Disconnect**
+**Disconnect**<br>
 To disconnect all links on a Node
 ```
 python3 cli.py disconnect
 ```
 
-**Deinstall**
+**Removal**
 ```
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/deinstall.sh | bash
 ```
