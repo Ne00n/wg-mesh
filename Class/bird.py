@@ -79,7 +79,7 @@ class Bird(Base):
         print("Writing config")
         self.cmd(f"echo '{bird}' > /etc/bird/bird.conf")
         print("Reloading bird")
-        self.cmd("sudo service bird reload")
+        self.cmd("sudo systemctl reload bird")
 
     def mesh(self):
         proc = self.cmd("pgrep bird")
