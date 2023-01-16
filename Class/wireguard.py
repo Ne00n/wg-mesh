@@ -17,6 +17,9 @@ class Wireguard(Base):
         privateKeyServer, publicKeyServer = keys.splitlines()
         return privateKeyServer, publicKeyServer
 
+    def getConfig(self):
+        return self.config
+
     def getPublic(self,private):
         return self.cmd(f'echo {private} | wg pubkey').rstrip()
 

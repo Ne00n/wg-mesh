@@ -111,10 +111,6 @@ class MyHandler(SimpleHTTPRequestHandler):
         else:
             self.response(501,{"error":"not implemented"})
 
-print("Loading config")
-with open('configs/config.json') as f:
-    config = json.load(f)
-
 tokens = []
 folder = os.path.dirname(os.path.realpath(__file__))
 wg = Wireguard(folder)
@@ -126,7 +122,7 @@ except:
     print("Failed to write token file")
 tokens.append(token)
 
-MyHandler = partial(MyHandler, config, folder, tokens)
+MyHandler = partial(MyHandler, wg.getConfig(), folder, tokens)
 server = HTTPServer(('', 8080), MyHandler)
 print("Ready")
 try:
