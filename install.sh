@@ -26,6 +26,9 @@ echo "net.ipv4.conf.default.rp_filter=0" >> /etc/sysctl.d/wg-mesh.conf
 echo "net.core.default_qdisc=fq " >> /etc/sysctl.d/wg-mesh.conf
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.d/wg-mesh.conf
 sysctl --system
+if [ "$1" == "init" ];  then
+./cli.py $@
+fi
 #systemd wg-mesh service
 echo -e "[Unit]
 Description=wgmesh service
@@ -54,6 +57,3 @@ ExecStart=/usr/bin/python3 bird.py
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/wgmesh-bird.service
 systemctl enable wgmesh-bird && systemctl start wgmesh-bird
-if [ "$1" == "init" ];  then
-./cli.py $@
-fi
