@@ -7,7 +7,7 @@ class CLI:
     def __init__(self,path):
         self.path = path
         self.templator = Templator()
-        self.wg = Wireguard(path,False)
+        self.wg = Wireguard(path,True)
         self.bird = Bird()
 
     def init(self,name,id):
