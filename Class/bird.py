@@ -64,14 +64,18 @@ class Bird(Base):
         configs = self.cmd('ip addr show')
         links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
         local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/(32|30) scope global lo",configs, re.MULTILINE | re.DOTALL)
-        if not links: exit("No wireguard interfaces found")
+        if not links: 
+            print("No wireguard interfaces found") 
+            return False
         print("Getting Network targets")
         nodes = self.genTargets(links)
         print("Latency messurement")
         latencyData = self.getLatency(nodes)
         print("Generating config")
         bird = self.Templator.genBird(latencyData,local,int(time.time()))
-        if bird == "": exit("No bird config generated")
+        if bird == "": 
+            print("No bird config generated")
+            return False
         print("Writing config")
         self.cmd(f'echo "{bird}" > /etc/bird/bird.conf')
         print("Reloading bird")
