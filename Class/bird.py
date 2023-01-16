@@ -77,7 +77,7 @@ class Bird(Base):
             print("No bird config generated")
             return False
         print("Writing config")
-        self.cmd(f'echo "{bird}" > /etc/bird/bird.conf')
+        self.cmd(f"echo '{bird}' > /etc/bird/bird.conf")
         print("Reloading bird")
         self.cmd("sudo service bird reload")
 
