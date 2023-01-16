@@ -88,7 +88,7 @@ class Wireguard(Base):
                 ports.append(int(configPort[0]))
                 ips.append(int(configIP[0]))
         port = self.findLowest(port,ports)
-        lastbyte = self.findLowest(ip,ips)
+        lastbyte = self.findLowest(lastbyte,ips)
         return lastbyte,port
 
     def getInterface(self,id,type=""):
