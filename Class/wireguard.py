@@ -128,7 +128,7 @@ class Wireguard(Base):
             print("Got 200")
             resp = req.json()
             interface = self.getInterface(resp['id'],"Serv")
-            serverConfig = self.Templator.genServer(interface,dest,self.config['id'],ip,port,resp['clientPublicKey'])
+            serverConfig = self.Templator.genServer(interface,dest,self.config['id'],lastbyte,port,resp['clientPublicKey'])
             print(f"Creating & Starting {interface}")
             self.saveFile(privateKeyServer,f"{self.path}/links/{interface}.key")
             self.saveFile(serverConfig,f"{self.path}/links/{interface}.sh")
