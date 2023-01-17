@@ -18,6 +18,6 @@ while True:
     currentLinks = os.listdir(path)
     if links != currentLinks:
         bird.bird()
-        links = currentLinks
         bird.mesh()
+        links = currentLinks
     time.sleep(60)
