@@ -52,8 +52,8 @@ class MyHandler(SimpleHTTPRequestHandler):
         payload = self.rfile.read(length).decode("utf-8")
         parts = self.path.split('/')
         isInternal =  ipaddress.ip_address(self.client_address[0]) in ipaddress.ip_network('10.0.0.0/8')
+        payload = json.loads(payload)
         if parts[1] == "connect":
-            payload = json.loads(payload)
             #validate token
             if not isInternal:
                 result = self.validateToken(payload)
@@ -82,7 +82,6 @@ class MyHandler(SimpleHTTPRequestHandler):
             self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
             return
         elif parts[1] == "disconnect":
-            payload = json.loads(payload)
             #validate interface name
             interface = re.findall(r"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
             if not interface:
