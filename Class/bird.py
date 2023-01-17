@@ -1,4 +1,4 @@
-import netaddr, random, time, json, re
+import netaddr, random, time, json, re, os
 from Class.templator import Templator
 from Class.wireguard import Wireguard
 from Class.base import Base
