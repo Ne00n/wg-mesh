@@ -127,8 +127,9 @@ class Bird(Base):
             print("meshing™")
             results = {}
             for target in targets:
+                dest = f"{target[:-1]}1"
                 #no token needed but external IP for the client
-                resp = wg.connect(target,"",config['connectivity']['ipv4'])
+                resp = wg.connect(dest,"",config['connectivity']['ipv4'])
                 if resp:
                     results[target] = True
                 else:
