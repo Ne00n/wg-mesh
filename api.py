@@ -57,13 +57,16 @@ class MyHandler(SimpleHTTPRequestHandler):
             #validate token
             if not isInternal:
                 result = self.validateToken(payload)
+                serverIP = self.client_address[0]
                 if not result: return
+            else:
+                serverIP = payload['external']
             #generate new key pair
             clientPrivateKey, ClientPublicKey = self.wg.genKeys()
             #generate interface name
             interface = self.wg.getInterface(payload['id'])
             #generate wireguard config
-            clientConfig = self.templator.genClient(interface,payload['id'],payload['lastbyte'],self.client_address[0],payload['port'],payload['publicKeyServer'])
+            clientConfig = self.templator.genClient(interface,payload['id'],payload['lastbyte'],serverIP,payload['port'],payload['publicKeyServer'])
             #save
             self.wg.saveFile(clientPrivateKey,f"{self.folder}/links/{interface}.key")
             self.wg.saveFile(clientConfig,f"{self.folder}/links/{interface}.sh")

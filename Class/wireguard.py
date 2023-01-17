@@ -114,14 +114,14 @@ class Wireguard(Base):
     def saveFile(self,data,path):
         with open(path, 'w') as file: file.write(data)
 
-    def connect(self,dest,token=""):
+    def connect(self,dest,token="",external=""):
         print(f"Connecting to {dest}")
         privateKeyServer, publicKeyServer = self.genKeys()
         configs = self.getConfigs(False)
         lastbyte,port = self.minimal(configs)
         #call destination
         try:
-            req = requests.post(f'http://{dest}:8080/connect', json={"publicKeyServer":publicKeyServer,"id":self.config['id'],"lastbyte":lastbyte,"port":port,"token":token})
+            req = requests.post(f'http://{dest}:8080/connect', json={"publicKeyServer":publicKeyServer,"id":self.config['id'],"lastbyte":lastbyte,"port":port,"token":token,"external":external})
         except Exception as ex:
             exit(ex)
         if req.status_code == 200:
