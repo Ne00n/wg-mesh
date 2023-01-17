@@ -27,7 +27,7 @@ echo "net.core.default_qdisc=fq " >> /etc/sysctl.d/wg-mesh.conf
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.d/wg-mesh.conf
 sysctl --system
 if [ "$1" == "init" ];  then
-./cli.py $@
+su wg-mesh -c "python3 /opt/wg-mesh/cli.py $@"
 fi
 #systemd wg-mesh service
 echo -e "[Unit]
