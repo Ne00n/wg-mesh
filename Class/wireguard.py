@@ -4,13 +4,13 @@ from Class.base import Base
 
 class Wireguard(Base):
     Templator = Templator()
-    prefix = "pipe"
 
     def __init__(self,path,skip=False):
         self.path = path
         if skip: return
         if not os.path.isfile(f"{self.path}/configs/config.json"): exit("Config missing")
         with open(f'{self.path}/configs/config.json') as f: self.config = json.load(f)
+        self.prefix = self.config['prefix']
 
     def genKeys(self):
         keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')
@@ -71,7 +71,7 @@ class Wireguard(Base):
         print(f"Got {ipv4} and {ipv6}")
 
         print("Generating config.json")
-        config = {"name":name,"id":id,"connectivity":{"ipv4":ipv4,"ipv6":ipv6}}
+        config = {"name":name,"prefix":"pipe","id":id,"connectivity":{"ipv4":ipv4,"ipv6":ipv6}}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
 
     def findLowest(self,min,list):
