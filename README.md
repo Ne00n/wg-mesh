@@ -37,7 +37,7 @@ curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | ba
 ```
 Connect Node1 to Node2
 ```
-python3 cli.py connect <Node2IP> <token>
+su wg-mesh -c "/opt/wg-mesh/cli.py connect <Node2IP> <token>"
 ```
 You can find the Token in /opt/wg-mesh/token<br>
 After connecting successfully, a dummy.sh will be created, which assigns a 10.0.nodeID.1/30 to lo.<br>

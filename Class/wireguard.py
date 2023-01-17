@@ -114,7 +114,7 @@ class Wireguard(Base):
     def saveFile(self,data,path):
         with open(path, 'w') as file: file.write(data)
 
-    def error(run):
+    def error(self,run):
         print(f"Retrying {run+1} of 4")
         if run == 3:
             print("Aborting, limit reached.")
