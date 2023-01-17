@@ -140,6 +140,7 @@ class Wireguard(Base):
                 dummyConfig = self.Templator.genDummy(self.config['id'])
                 self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
                 self.setInterface("dummy","up")
+            return True
         else:
             print(f"Failed to connect to {dest}")
             print(f"Got {req.text} as response")

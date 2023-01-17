@@ -116,3 +116,21 @@ class Bird(Base):
                 if f"pipe{splitted[2]}" in link[0]:
                     targets.remove(ip)
         print("Possible targets",targets)
+        #To prevent creating connections to new nodes joined afterwards, save state
+        if os.path.isfile(f"{self.path}/configs/state.json"):
+            print("state.json already exist, skipping")
+        else:
+            #wireguard
+            wg = Wireguard(path)
+            config = wg.getConfig()
+            print("meshing™")
+            results = {}
+            for target in targets:
+                #no token needed but external IP for the client
+                resp = wg.connect(target,"",config['connectivity']['ipv4'])
+                if resp:
+                    results[target] = True
+                else:
+                    results[target] = False
+            print("saving state.json")
+            with open(f"{self.path}/configs/state.json", 'w') as f: json.dump(targets, f ,indent=4)
