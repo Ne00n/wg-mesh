@@ -6,6 +6,9 @@ class Bird(Base):
     Templator = Templator()
     prefix = "pipe"
 
+    def __init__(self,path):
+        self.path = path
+
     def resolve(self,ip,range,netmask):
         rangeDecimal = int(netaddr.IPAddress(range))
         ipDecimal = int(netaddr.IPAddress(ip))
@@ -82,9 +85,34 @@ class Bird(Base):
         self.cmd("sudo systemctl reload bird")
 
     def mesh(self):
+        configs = self.cmd('ip addr show')
+        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/30 scope global lo",configs, re.MULTILINE | re.DOTALL)
+        if not links or not local: 
+            print("No wireguard interfaces found") 
+            return False
         proc = self.cmd("pgrep bird")
-        if proc == "": exit("bird not running")
+        if proc == "": 
+            print("bird not running")
+            return False
         routes = self.cmd("birdc show route")
-        ips = re.findall(f"\[[0-9.]+\]",routes, re.MULTILINE)
-        if not ips: exit("bird returned no routes, did you setup bird?")
-        configs = self.loadConfigs()
+        targets = re.findall(f"(10\.0\.[0-9]+\.0)\/30",routes, re.MULTILINE)
+        if not targets: 
+            print("bird returned no routes, did you setup bird?")
+            return False
+        #remove local machine from list
+        for ip in list(targets):
+            if self.resolve(local[0],ip,30):
+                targets.remove(ip)
+        #run against existing links
+        for ip in list(targets):
+            for link in links:
+                if self.resolve(link[1],ip,24):
+                    targets.remove(ip)
+        #run against local link names
+        for ip in list(targets):
+            for link in links:
+                splitted = ip.split(".")
+                if f"pipe{splitted[2]}" in link[0]:
+                    targets.remove(ip)
+        print("Possible targets",targets)
