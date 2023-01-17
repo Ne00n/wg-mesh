@@ -39,14 +39,7 @@ class MyHandler(SimpleHTTPRequestHandler):
         return True
 
     def do_GET(self):
-        parts = self.path.split('/')
-        if parts[1] == "peers":
-            configs = self.wg.getConfigs(False)
-            configs = self.wg.loadConfigs(configs)
-            endpoints = self.wg.getEndpoints(configs)
-            self.response(200,endpoints)
-        else:
-            self.response(200,{"status":"ok"})
+        self.response(200,{"status":"ok"})
 
     def do_POST(self):
         length = int(self.headers['Content-Length'])

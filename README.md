@@ -51,7 +51,6 @@ Currently the webservice / API is exposed at ::8080, without TLS yet<br>
 - /connect needs a valid token, otherwise the service will refuse to setup a wg link<br>
 Internal requests from 10.0.0.0/8 don't need a token.
 - /disconnect needs a valid wg public key and link name, otherwise will refuse to disconnect a specific link<br>
-- /peers is public, however only exposes local wg ip's, no public ones<br>
 
 **Disconnect**<br>
 To disconnect all links on a Node
