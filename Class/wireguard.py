@@ -1,5 +1,5 @@
 from Class.templator import Templator
-import urllib.request, requests, random, string, json, re, os
+import urllib.request, requests, random, string, json, time, re, os
 from Class.base import Base
 
 class Wireguard(Base):
@@ -114,16 +114,30 @@ class Wireguard(Base):
     def saveFile(self,data,path):
         with open(path, 'w') as file: file.write(data)
 
+    def error(run):
+        print(f"Retrying {run+1} of 4")
+        if run == 3:
+            print("Aborting, limit reached.")
+            return False
+        time.sleep(2)
+        return True
+
     def connect(self,dest,token="",external=""):
         print(f"Connecting to {dest}")
         privateKeyServer, publicKeyServer = self.genKeys()
         configs = self.getConfigs(False)
         lastbyte,port = self.minimal(configs)
         #call destination
-        try:
-            req = requests.post(f'http://{dest}:8080/connect', json={"publicKeyServer":publicKeyServer,"id":self.config['id'],"lastbyte":lastbyte,"port":port,"token":token,"external":external})
-        except Exception as ex:
-            exit(ex)
+        for run in range(4):
+            try:
+                req = requests.post(f'http://{dest}:8080/connect', json={"publicKeyServer":publicKeyServer,"id":self.config['id'],"lastbyte":lastbyte,"port":port,"token":token,"external":external})
+                if req.status_code == 200: break
+                resp = self.error(run)
+                if not resp: return False
+            except Exception as ex:
+                print(f"Error {ex}")
+                resp = self.error(run)
+                if not resp: return False
         if req.status_code == 200:
             print("Got 200")
             resp = req.json()
