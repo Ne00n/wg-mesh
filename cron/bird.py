@@ -19,4 +19,5 @@ while True:
     if links != currentLinks:
         bird.bird()
         links = currentLinks
+        bird.mesh()
     time.sleep(60)
