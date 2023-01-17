@@ -100,12 +100,11 @@ class Wireguard(Base):
     def filterInterface(self,interface):
         return interface.replace(".sh","")
 
-    def filterInterfaceRemote(self,interface):
-        interface = interface.replace(".sh","")
+    def getInterfaceRemote(self,interface):
         if "Serv" in interface:
-            return interface.replace("Serv","")
+            return f"{self.prefix}1"
         else:
-            return f"{interface}Serv"
+            return f"{self.prefix}{self.config['id']}Serv"
 
     def setInterface(self,file,state):
         self.cmd(f'bash {self.path}/links/{file}.sh {state}')
@@ -177,10 +176,10 @@ class Wireguard(Base):
             elif "listen-port" in config:
                 destination = re.findall(f"client\s([0-9.]+)",config, re.MULTILINE)
             publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)
-            interface = self.filterInterfaceRemote(filename)
+            interfaceRemote = self.getInterfaceRemote(filename)
             #call destination
             try:
-                req = requests.post(f'http://{destination[0]}:8080/disconnect', json={"publicKeyServer":publicKeyServer[0],"interface":interface})
+                req = requests.post(f'http://{destination[0]}:8080/disconnect', json={"publicKeyServer":publicKeyServer[0],"interface":interfaceRemote})
                 if req.status_code == 200:
                     interface = self.filterInterface(filename)
                     self.setInterface(interface,"down")
