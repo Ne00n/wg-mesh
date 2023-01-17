@@ -101,7 +101,11 @@ class Wireguard(Base):
         return interface.replace(".sh","")
 
     def filterInterfaceRemote(self,interface):
-        return interface.replace(".sh","").replace("Serv","")
+        interface = interface.replace(".sh","")
+        if "Serv" in interface:
+            return interface.replace("Serv","")
+        else:
+            return f"{interface}Serv"
 
     def setInterface(self,file,state):
         self.cmd(f'bash {self.path}/links/{file}.sh {state}')
