@@ -132,6 +132,7 @@ class Wireguard(Base):
             try:
                 req = requests.post(f'http://{dest}:8080/connect', json={"publicKeyServer":publicKeyServer,"id":self.config['id'],"lastbyte":lastbyte,"port":port,"token":token,"external":external})
                 if req.status_code == 200: break
+                print(f"Got {req.text} as response")
                 resp = self.error(run)
                 if not resp: return False
             except Exception as ex:
