@@ -8,6 +8,9 @@ cd /opt/
 git clone https://github.com/Ne00n/wg-mesh.git
 cd wg-mesh
 useradd wg-mesh -r -d /opt/wg-mesh -s /bin/bash
+if [ "$1" == "init" ];  then
+./cli.py $@
+fi
 chown -R wg-mesh:wg-mesh /opt/wg-mesh/
 chmod -R 700 /opt/wg-mesh/
 #sudo permissions
@@ -26,9 +29,6 @@ echo "net.ipv4.conf.default.rp_filter=0" >> /etc/sysctl.d/wg-mesh.conf
 echo "net.core.default_qdisc=fq " >> /etc/sysctl.d/wg-mesh.conf
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.d/wg-mesh.conf
 sysctl --system
-if [ "$1" == "init" ];  then
-su wg-mesh -c "python3 /opt/wg-mesh/cli.py $@"
-fi
 #systemd wg-mesh service
 echo -e "[Unit]
 Description=wgmesh service
