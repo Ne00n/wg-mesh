@@ -14,10 +14,10 @@
 - bird2 (Routing, OSPF)
 
 **Planned**<br />
-- automatic mesh buildup when node has joined
 - dual-stack and/or single-stack (v4/v6)
 
 **Features**<br />
+- automatic mesh buildup when node has joined
 - join nodes via cli
 - disconnect nodes via cli
 - single-stack v4
