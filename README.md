@@ -88,7 +88,7 @@ Internal requests from 10.0.0.0/8 don't need a token.
 **Disconnect**<br>
 To disconnect all links on a Node
 ```
-python3 cli.py disconnect
+su wg-mesh -c "/opt/wg-mesh/cli.py disconnect"
 ```
 
 **Removal**
