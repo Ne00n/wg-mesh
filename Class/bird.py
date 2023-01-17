@@ -135,4 +135,4 @@ class Bird(Base):
                 else:
                     results[target] = False
             print("saving state.json")
-            with open(f"{self.path}/configs/state.json", 'w') as f: json.dump(targets, f ,indent=4)
+            with open(f"{self.path}/configs/state.json", 'w') as f: json.dump(results, f ,indent=4)
