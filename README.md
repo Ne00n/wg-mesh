@@ -10,16 +10,17 @@
 
 **Software**<br />
 - python3
-- wireguard (vpn)
-- bird2 (routing)
+- wireguard (VPN)
+- bird2 (Routing, OSPF)
 
 **Planned**<br />
 - automatic mesh buildup when node has joined
-- dualstack and/or singlestack (v4/v6)
+- dual-stack and/or single-stack (v4/v6)
 
 **Features**<br />
 - join nodes via cli
 - disconnect nodes via cli
+- single-stack v4
 
 This has been build for Debian and Ubuntu.<br>
 Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
