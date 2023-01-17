@@ -114,7 +114,7 @@ class Wireguard(Base):
     def saveFile(self,data,path):
         with open(path, 'w') as file: file.write(data)
 
-    def connect(self,dest,token):
+    def connect(self,dest,token=""):
         print(f"Connecting to {dest}")
         privateKeyServer, publicKeyServer = self.genKeys()
         configs = self.getConfigs(False)
