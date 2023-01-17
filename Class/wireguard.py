@@ -192,3 +192,6 @@ class Wireguard(Base):
             #clean dummy
             self.setInterface("dummy","down")
             self.cleanInterface("dummy",False)
+        #clear state.json
+        if os.path.isfile(f"{self.path}/configs/state.json"):
+             os.remove(f"{self.path}/configs/state.json")
