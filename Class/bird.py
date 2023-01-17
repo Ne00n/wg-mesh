@@ -122,7 +122,7 @@ class Bird(Base):
             print("state.json already exist, skipping")
         else:
             #wireguard
-            wg = Wireguard(path)
+            wg = Wireguard(self.path)
             config = wg.getConfig()
             print("meshing™")
             results = {}
