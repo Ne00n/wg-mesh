@@ -63,7 +63,7 @@ class Wireguard(Base):
         for key,ip in config['connectivity'].items():
             if ip is not None: return ip
 
-    def init(self,name,id):
+    def init(self,id,name):
         if os.path.isfile(f"{self.path}/config.json"): exit("Config already exists")
         print("Getting external IPv4 and IPv6")
         ipv4 = self.fetch("https://checkip.amazonaws.com")
