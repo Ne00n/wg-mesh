@@ -22,7 +22,7 @@
 - disconnect nodes via cli
 - single-stack v4
 
-This has been build for Debian and Ubuntu.<br>
+Tested on Debian 11 with systemd.<br>
 Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
 
 **Example 2 nodes**<br>
