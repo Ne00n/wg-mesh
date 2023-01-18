@@ -102,7 +102,7 @@ class Wireguard(Base):
 
     def getInterfaceRemote(self,interface):
         if "Serv" in interface:
-            return f"{self.prefix}1"
+            return f"{self.prefix}{self.config['id']}"
         else:
             return f"{self.prefix}{self.config['id']}Serv"
 
