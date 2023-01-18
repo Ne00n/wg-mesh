@@ -26,7 +26,6 @@ Tested on Debian 11 with systemd.<br>
 Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
 
 **Example 2 nodes**<br>
-- The ID and the Name needs to be unique, otherwise it will result in collisions<br>
 ```
 #Install wg-mesh and initialize the first node
 #Additionally you can add a name after the id
@@ -34,7 +33,8 @@ curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | ba
 #Install wg-mesh and initialize the second node
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
 ```
-Grab the Token from Node2 with
+The ID and the Name needs to be unique, otherwise it will result in collisions<br>
+Grab the Token from Node2<br>
 ```
 cat /opt/wg-mesh/token
 ```
