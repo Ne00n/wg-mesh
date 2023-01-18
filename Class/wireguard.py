@@ -117,33 +117,15 @@ class Wireguard(Base):
     def saveFile(self,data,path):
         with open(path, 'w') as file: file.write(data)
 
-    def error(self,run):
-        print(f"Retrying {run+1} of 4")
-        if run == 3:
-            print("Aborting, limit reached.")
-            return False
-        time.sleep(2)
-        return True
-
     def connect(self,dest,token="",external=""):
         print(f"Connecting to {dest}")
         privateKeyServer, publicKeyServer = self.genKeys()
         configs = self.getConfigs(False)
         lastbyte,port = self.minimal(configs)
         #call destination
-        for run in range(4):
-            try:
-                req = requests.post(f'http://{dest}:8080/connect', json={"publicKeyServer":publicKeyServer,"id":self.config['id'],"lastbyte":lastbyte,"port":port,"token":token,"external":external})
-                if req.status_code == 200: break
-                print(f"Got {req.text} as response")
-                resp = self.error(run)
-                if not resp: return False
-            except Exception as ex:
-                print(f"Error {ex}")
-                resp = self.error(run)
-                if not resp: return False
+        req = self.call(f'http://{dest}:8080/connect',{"publicKeyServer":publicKeyServer,"id":self.config['id'],"lastbyte":lastbyte,"port":port,"token":token,"external":external})
+        if req == False: return False
         if req.status_code == 200:
-            print("Got 200")
             resp = req.json()
             interface = self.getInterface(resp['id'],"Serv")
             serverConfig = self.Templator.genServer(interface,dest,self.config['id'],lastbyte,port,resp['clientPublicKey'])
@@ -178,16 +160,14 @@ class Wireguard(Base):
             publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)
             interfaceRemote = self.getInterfaceRemote(filename)
             #call destination
-            try:
-                req = requests.post(f'http://{destination[0]}:8080/disconnect', json={"publicKeyServer":publicKeyServer[0],"interface":interfaceRemote})
-                if req.status_code == 200:
-                    interface = self.filterInterface(filename)
-                    self.setInterface(interface,"down")
-                    self.cleanInterface(interface)
-                else:
-                    print(f"Got {req.status_code} with {req.text} aborting")
-            except Exception as ex:
-                exit(ex)
+            req = self.call(f'http://{destination[0]}:8080/disconnect',{"publicKeyServer":publicKeyServer[0],"interface":interfaceRemote})
+            if req == False: return False
+            if req.status_code == 200:
+                interface = self.filterInterface(filename)
+                self.setInterface(interface,"down")
+                self.cleanInterface(interface)
+            else:
+                print(f"Got {req.status_code} with {req.text} aborting")
         #load configs
         configs = self.getConfigs()
         #check for dummy
