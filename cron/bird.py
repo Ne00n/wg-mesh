@@ -8,7 +8,6 @@ path = path.replace("/cron","")
 
 bird = Bird(path)
 bird.bird()
-time.sleep(10)
 bird.mesh()
 
 path = f'{path}/links/'

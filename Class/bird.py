@@ -96,6 +96,7 @@ class Bird(Base):
         if proc == "": 
             print("bird not running")
             return False
+        time.sleep(10)
         routes = self.cmd("birdc show route")
         targets = re.findall(f"(10\.0\.[0-9]+\.0)\/30",routes, re.MULTILINE)
         if not targets: 
