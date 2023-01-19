@@ -5,7 +5,7 @@ from Class.templator import Templator
 from pathlib import Path
 
 tokens = []
-sem = threading.Semaphore()
+mutex = threading.Lock()
 folder = os.path.dirname(os.path.realpath(__file__))
 #wireguard
 wg = Wireguard(folder)
@@ -37,7 +37,7 @@ def index():
         result = validateToken(payload)
         if not result: return HTTPResponse(status=401, body="Invalid Token")
     #block any other requests to prevent issues regarding port and ip assignment
-    sem.acquire()
+    mutex.acquire()
     #generate new key pair
     privateKeyServer, publicKeyServer = wg.genKeys()
     #load configs
@@ -56,7 +56,7 @@ def index():
         dummyConfig = templator.genDummy(config['id'])
         wg.saveFile(dummyConfig,f"{folder}/links/dummy.sh")
         wg.setInterface("dummy","up")
-    sem.release()
+    mutex.release()
     return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'id':config['id'],'lastbyte':lastbyte,'port':port,'connectivity':config['connectivity']})
 
 @route('/disconnect', method='POST')
