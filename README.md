@@ -28,12 +28,12 @@ Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues wit
 **Example 2 nodes**<br>
 ```
 #Install wg-mesh and initialize the first node
-#Additionally you can add a name after the id
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1
 #Install wg-mesh and initialize the second node
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
 ```
-The ID and the Name needs to be unique, otherwise it will result in collisions<br>
+The ID and the Name needs to be unique, otherwise it will result in collisions.<br>
+Additionally you can add a name after the id.<br>
 Grab the Token from Node2<br>
 ```
 cat /opt/wg-mesh/token
@@ -44,6 +44,7 @@ su wg-mesh -c "/opt/wg-mesh/cli.py connect <node2IP> <token>"
 ```
 After connecting successfully, a dummy.sh will be created, which assigns a 10.0.nodeID.1/30 to lo.<br>
 This will be picked up by bird, so on booth nodes on 10.0.1.1 and 10.0.2.1 should be reachable after bird ran.<br>
+Regarding NAT or in general behind Firewalls, the "connector" is always a Client, the endpoint the Server.<br>
 
 **Example 2+ nodes**<br>
 ```
