@@ -57,29 +57,26 @@ class MyHandler(SimpleHTTPRequestHandler):
             #validate token
             if not isInternal:
                 result = self.validateToken(payload)
-                serverIP = self.client_address[0]
                 if not result: return
-            else:
-                serverIP = payload['external']
             #generate new key pair
-            clientPrivateKey, ClientPublicKey = self.wg.genKeys()
-            #generate interface name
-            interface = self.wg.getInterface(payload['id'])
-            #generate wireguard config
-            clientConfig = self.templator.genClient(interface,payload['id'],payload['lastbyte'],serverIP,payload['port'],payload['publicKeyServer'])
-            #save
-            self.wg.saveFile(clientPrivateKey,f"{self.folder}/links/{interface}.key")
-            self.wg.saveFile(clientConfig,f"{self.folder}/links/{interface}.sh")
-            self.wg.setInterface(interface,"up")
+            privateKeyServer, publicKeyServer = self.wg.genKeys()
             #load configs
-            configs = self.wg.getConfigs()
+            configs = self.wg.getConfigs(False)
+            lastbyte,port = self.wg.minimal(configs)
+            #generate interface name
+            interface = self.wg.getInterface(payload['id'],"Serv")
+            #generate wireguard config
+            serverConfig = self.templator.genServer(interface,self.config['id'],lastbyte,port,payload['clientPublicKey'])
+            #save
+            self.wg.saveFile(privateKeyServer,f"{self.folder}/links/{interface}.key")
+            self.wg.saveFile(serverConfig,f"{self.folder}/links/{interface}.sh")
+            self.wg.setInterface(interface,"up")
             #check for dummy
             if not self.wg.hasDummy(configs):
                 dummyConfig = self.templator.genDummy(self.config['id'])
                 self.wg.saveFile(dummyConfig,f"{self.folder}/links/dummy.sh")
                 self.wg.setInterface("dummy","up")
-            self.wg.pingIP(f"10.0.{payload['id']}.{payload['lastbyte']}")
-            self.response(200,{"clientPublicKey":ClientPublicKey,'id':self.config['id']})
+            self.response(200,{"publicKeyServer":publicKeyServer,'id':self.config['id'],'lastbyte':lastbyte,'port':port,'connectivity':self.config['connectivity']})
             return
         elif parts[1] == "disconnect":
             #validate interface name

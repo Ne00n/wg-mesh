@@ -119,19 +119,18 @@ class Wireguard(Base):
 
     def connect(self,dest,token="",external=""):
         print(f"Connecting to {dest}")
-        privateKeyServer, publicKeyServer = self.genKeys()
-        configs = self.getConfigs(False)
-        lastbyte,port = self.minimal(configs)
+        #generate new key pair
+        clientPrivateKey, clientPublicKey = self.genKeys()
         #call destination
-        req = self.call(f'http://{dest}:8080/connect',{"publicKeyServer":publicKeyServer,"id":self.config['id'],"lastbyte":lastbyte,"port":port,"token":token,"external":external})
+        req = self.call(f'http://{dest}:8080/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token})
         if req == False: return False
         if req.status_code == 200:
             resp = req.json()
-            interface = self.getInterface(resp['id'],"Serv")
-            serverConfig = self.Templator.genServer(interface,dest,self.config['id'],lastbyte,port,resp['clientPublicKey'])
+            interface = self.getInterface(resp['id'])
+            clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],resp['connectivity']['ipv4'],resp['port'],resp['publicKeyServer'])
             print(f"Creating & Starting {interface}")
-            self.saveFile(privateKeyServer,f"{self.path}/links/{interface}.key")
-            self.saveFile(serverConfig,f"{self.path}/links/{interface}.sh")
+            self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
+            self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
             self.setInterface(interface,"up")
             #load configs
             configs = self.getConfigs()
