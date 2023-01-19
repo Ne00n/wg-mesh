@@ -28,14 +28,20 @@ def validateToken(payload):
     if payload['token'] not in tokens: return False
     return True
 
+def validateID(id):
+    result = re.findall(r"^[0-9]{1,4}$",id,re.MULTILINE | re.DOTALL)
+    if not result: return False
+    return True
+
 @route('/connect', method='POST')
 def index():
     isInternal =  ipaddress.ip_address(request.environ.get('REMOTE_ADDR')) in ipaddress.ip_network('10.0.0.0/8')
     payload = json.load(request.body)
     #validate token
     if not isInternal:
-        result = validateToken(payload)
-        if not result: return HTTPResponse(status=401, body="Invalid Token")
+        if not validateToken(payload): return HTTPResponse(status=401, body="Invalid Token")
+    #validate id
+    if not validateID(payload['id']): return HTTPResponse(status=404, body="Invalid ID")
     #block any other requests to prevent issues regarding port and ip assignment
     mutex.acquire()
     #generate new key pair
