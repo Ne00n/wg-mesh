@@ -50,7 +50,8 @@ def index():
     configs = wg.getConfigs(False)
     lastbyte,port = wg.minimal(configs)
     #generate interface name
-    interface = wg.getInterface(payload['id'],"Serv")
+    servName = "v6Serv" if payload['ipv6'] else "Serv"
+    interface = wg.getInterface(payload['id'],servName)
     #generate wireguard config
     serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'])
     #save

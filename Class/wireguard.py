@@ -121,28 +121,38 @@ class Wireguard(Base):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
-        #call destination
-        req = self.call(f'http://{dest}:8080/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token})
-        if req == False: return False
-        if req.status_code == 200:
-            resp = req.json()
-            interface = self.getInterface(resp['id'])
-            clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],resp['connectivity']['ipv4'],resp['port'],resp['publicKeyServer'])
-            print(f"Creating & Starting {interface}")
-            self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
-            self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
-            self.setInterface(interface,"up")
-            #load configs
-            configs = self.getConfigs()
-            #check for dummy
-            if not self.hasDummy(configs):
-                dummyConfig = self.Templator.genDummy(self.config['id'])
-                self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
-                self.setInterface("dummy","up")
-            return True
-        else:
-            print(f"Failed to connect to {dest}")
-            print(f"Got {req.text} as response")
+        for run in range(2):
+            #call destination
+            isv6 = True if run == 1 else False
+            req = self.call(f'http://{dest}:8080/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6})
+            if req == False: return False
+            if req.status_code == 200:
+                resp = req.json()
+                #check if v6 or v4
+                interfaceID = f"{resp['id']}v6" if isv6 else resp['id']
+                connectivity = resp['connectivity']['ipv6'] if isv6 else resp['connectivity']['ipv4']
+                #interface
+                interface = self.getInterface(interfaceID)
+                #generate config
+                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'])
+                print(f"Creating & Starting {interface}")
+                self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
+                self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
+                self.setInterface(interface,"up")
+                #load configs
+                configs = self.getConfigs()
+                #check for dummy
+                if not self.hasDummy(configs):
+                    dummyConfig = self.Templator.genDummy(self.config['id'])
+                    self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
+                    self.setInterface("dummy","up")
+                #before we try to setup a v4 in v6 wg, we check if booth hosts have IPv6 connectivity
+                if not self.config['connectivity']['ipv6'] or not resp['connectivity']['ipv6']: break
+            else:
+                print(f"Failed to connect to {dest}")
+                print(f"Got {req.text} as response")
+                return False
+        return True
 
     def disconnect(self):
         print("Disconnecting")
