@@ -26,6 +26,7 @@
 - join nodes via cli
 - disconnect nodes via cli
 - single-stack v4
+- tunnel v4 traffic in v6 links
 
 Tested on Debian 11 with systemd.<br>
 Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
