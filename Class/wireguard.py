@@ -122,7 +122,7 @@ class Wireguard(Base):
         clientPrivateKey, clientPublicKey = self.genKeys()
         for run in range(2):
             #call destination
-            isv6 = True if run == 1 else False
+            isv6 = True if run == 0 and ":" in dest or run == 1 and not ":" in dest else False
             req = self.call(f'http://{dest}:8080/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6})
             if req == False: return False
             if req.status_code == 200:
@@ -147,6 +147,7 @@ class Wireguard(Base):
                     self.setInterface("dummy","up")
                 #before we try to setup a v4 in v6 wg, we check if booth hosts have IPv6 connectivity
                 if not self.config['connectivity']['ipv6'] or not resp['connectivity']['ipv6']: break
+                if not self.config['connectivity']['ipv4'] or not resp['connectivity']['ipv4']: break
             else:
                 print(f"Failed to connect to {dest}")
                 print(f"Got {req.text} as response")
