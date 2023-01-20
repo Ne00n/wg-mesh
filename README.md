@@ -8,14 +8,15 @@
 - Simple Token auth
 - Decentralized
 
-By default 10.0.x.x/16 is used.<br>
-10.0.id.1 Node /30<br>
-10.0.id.4-255 peers /31<br>
-
 **Software**<br />
 - python3
 - wireguard (VPN)
 - bird2 (Routing, OSPF)
+
+**Network**<br />
+By default 10.0.x.x/16 is used.<br>
+10.0.id.1 Node /30<br>
+10.0.id.4-255 peers /31<br>
 
 **Planned**<br />
 - dual-stack and/or single-stack (v4/v6)
