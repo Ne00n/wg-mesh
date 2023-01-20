@@ -89,4 +89,4 @@ def index():
     else:
         return HTTPResponse(status=400, body="invalid link")
 
-run(host='0.0.0.0', port=8080)
+run(host='::', port=8080)
