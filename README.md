@@ -25,6 +25,7 @@
 - [ ] VXLAN
 - [x] Dualstack or Singlestack (Transport)
 - [ ] Dualstack (within the VPN Network)
+- [ ] Support for TLS (without additional Proxy)
 
 Tested on Debian 11 with systemd.<br>
 Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
