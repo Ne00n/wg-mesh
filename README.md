@@ -18,15 +18,12 @@
 - 10.0.id.1 Node /30<br>
 - 10.0.id.4-255 peers /31<br>
 
-**Planned**<br />
-- dual-stack and/or single-stack (v4/v6)
-
-**Features**<br />
-- automatic mesh buildup when node has joined
-- join nodes via cli
-- disconnect nodes via cli
-- single-stack v4
-- tunnel v4 traffic in v6 links
+**Roadmap**<br>
+- [x] automatic mesh buildup when node has joined
+- [x] join nodes via cli
+- [x] disconnect nodes via cli
+- [ ] VXLAN
+- [x] Dualstack or Singlestack (Transport)
 
 Tested on Debian 11 with systemd.<br>
 Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
