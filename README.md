@@ -18,12 +18,13 @@
 - 10.0.id.1 Node /30<br>
 - 10.0.id.4-255 peers /31<br>
 
-**Roadmap**<br>
+**Features**<br>
 - [x] automatic mesh buildup when node has joined
 - [x] join nodes via cli
 - [x] disconnect nodes via cli
 - [ ] VXLAN
 - [x] Dualstack or Singlestack (Transport)
+- [ ] Dualstack (within the VPN Network)
 
 Tested on Debian 11 with systemd.<br>
 Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
