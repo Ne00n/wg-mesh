@@ -101,10 +101,9 @@ class Wireguard(Base):
         return interface.replace(".sh","")
 
     def getInterfaceRemote(self,interface):
-        if "Serv" in interface:
-            return f"{self.prefix}{self.config['id']}"
-        else:
-            return f"{self.prefix}{self.config['id']}Serv"
+        serv = "" if "Serv" in interface else "Serv"
+        v6 = "v6" if "v6" in interface else ""
+        return f"{self.prefix}{self.config['id']}{v6}{serv}"
 
     def setInterface(self,file,state):
         self.cmd(f'bash {self.path}/links/{file}.sh {state}')
@@ -162,14 +161,17 @@ class Wireguard(Base):
             if not filename.endswith(".sh"): continue
             print(f"Reading Link {filename}")
             with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
+            #grab wg server ip from client wg config
             if "endpoint" in config:
-                destination = re.findall(f"endpoint\s([0-9.]+)",config, re.MULTILINE)
+                destination = re.findall(f"endpoint\s([0-9a-z:.]+):",config, re.MULTILINE)[0]
             elif "listen-port" in config:
-                destination = re.findall(f"client\s([0-9.]+)",config, re.MULTILINE)
+                destination = re.findall(f"client\s([0-9.]+)",config, re.MULTILINE)[0]
+            #check if we got v6 here
+            if ":" in destination: destination = f"[{destination}]"
             publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)
             interfaceRemote = self.getInterfaceRemote(filename)
             #call destination
-            req = self.call(f'http://{destination[0]}:8080/disconnect',{"publicKeyServer":publicKeyServer[0],"interface":interfaceRemote})
+            req = self.call(f'http://{destination}:8080/disconnect',{"publicKeyServer":publicKeyServer[0],"interface":interfaceRemote})
             if req == False: return False
             if req.status_code == 200:
                 interface = self.filterInterface(filename)
