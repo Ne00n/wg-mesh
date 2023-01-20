@@ -165,7 +165,7 @@ class Wireguard(Base):
             if "endpoint" in config:
                 destination = re.findall(f"endpoint\s([0-9a-z:.]+):",config, re.MULTILINE)[0]
             elif "listen-port" in config:
-                destination = re.findall(f"client\s([0-9.]+)",config, re.MULTILINE)[0]
+                destination = re.findall(f"client\s([0-9a-z:.]+)",config, re.MULTILINE)[0]
             #check if we got v6 here
             if ":" in destination: destination = f"[{destination}]"
             publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)
