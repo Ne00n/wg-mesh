@@ -23,7 +23,7 @@
 - [x] join nodes via cli
 - [x] disconnect nodes via cli
 - [ ] VXLAN
-- [x] Dualstack or Singlestack (Transport)
+- [x] Dualstack and/or Singlestack (Transport)
 - [ ] Dualstack (within the VPN Network)
 - [ ] Support for TLS (without additional Proxy)
 
