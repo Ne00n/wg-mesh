@@ -5,8 +5,8 @@ After=network-online.target
 [Service]
 User=wg-mesh
 Group=wg-mesh
-WorkingDirectory=/opt/wg-mesh/links
-ExecStart=/usr/bin/python3 lever.py up
+WorkingDirectory=/opt/wg-mesh/
+ExecStart=/usr/bin/python3 cli.py up
 RemainAfterExit=true
 Type=oneshot
 [Install]

@@ -1,6 +1,7 @@
 from Class.wireguard import Wireguard
 from Class.templator import Templator
 from Class.bird import Bird
+import subprocess, sys, os
 
 class CLI:
 
@@ -20,3 +21,10 @@ class CLI:
     def disconnect(self):
         self.wg = Wireguard(self.path)
         self.wg.disconnect()
+
+    def links(self,state):
+        files = os.listdir(f'{self.path}/links/')
+        for file in list(files):
+            if not file.endswith(".sh"): files.remove(file)
+        for file in files:
+            subprocess.run(f"bash {self.path}/links/{file} {state}",shell=True)
