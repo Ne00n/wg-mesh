@@ -183,7 +183,7 @@ class Wireguard(Base):
         #load configs
         configs = self.getConfigs()
         #check for dummy
-        if not self.hasDummy(configs):
+        if self.hasDummy(configs):
             #clean dummy
             self.setInterface("dummy","down")
             self.cleanInterface("dummy",False)
