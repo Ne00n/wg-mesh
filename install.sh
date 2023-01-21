@@ -7,9 +7,8 @@ cd /opt/
 git clone https://github.com/Ne00n/wg-mesh.git
 cd wg-mesh
 useradd wg-mesh -r -d /opt/wg-mesh -s /bin/bash
-if [ "$1" == "init" ];  then
+#run init
 ./cli.py $@
-fi
 chown -R wg-mesh:wg-mesh /opt/wg-mesh/
 chmod -R 700 /opt/wg-mesh/
 #sudo permissions
@@ -31,30 +30,8 @@ echo "net.core.default_qdisc=fq " >> /etc/sysctl.d/wg-mesh.conf
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.d/wg-mesh.conf
 sysctl --system
 #systemd wg-mesh service
-echo -e "[Unit]
-Description=wgmesh service
-Wants=network-online.target
-After=network-online.target
-[Service]
-User=wg-mesh
-Group=wg-mesh
-Type=simple
-WorkingDirectory=/opt/wg-mesh
-ExecStart=/usr/bin/python3 api.py
-[Install]
-WantedBy=multi-user.target" > /etc/systemd/system/wgmesh.service
+cp /opt/wg-mesh/configs/wgmesh.service /etc/systemd/system/wgmesh.service
 systemctl enable wgmesh && systemctl start wgmesh
 #systemd bird service
-echo -e "[Unit]
-Description=wgmesh-bird service
-Wants=network-online.target
-After=network-online.target
-[Service]
-User=wg-mesh
-Group=wg-mesh
-Type=simple
-WorkingDirectory=/opt/wg-mesh/cron
-ExecStart=/usr/bin/python3 bird.py
-[Install]
-WantedBy=multi-user.target" > /etc/systemd/system/wgmesh-bird.service
+cp /opt/wg-mesh/configs/wgmesh-bird.service /etc/systemd/system/wgmesh-bird.service
 systemctl enable wgmesh-bird && systemctl start wgmesh-bird
