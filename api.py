@@ -59,7 +59,7 @@ def index():
     wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
     wg.setInterface(interface,"up")
     #check for dummy
-    if not wg.hasDummy(configs):
+    if not "dummy" in configs:
         dummyConfig = templator.genDummy(config['id'])
         wg.saveFile(dummyConfig,f"{folder}/links/dummy.sh")
         wg.setInterface("dummy","up")
