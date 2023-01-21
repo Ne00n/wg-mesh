@@ -110,13 +110,15 @@ class Bird(Base):
         for ip in list(targets):
             for link in links:
                 if self.resolve(link[1],ip,24):
-                    targets.remove(ip)
+                    #multiple links in the same subnet
+                    if ip in targets: targets.remove(ip)
         #run against local link names
         for ip in list(targets):
             for link in links:
                 splitted = ip.split(".")
                 if f"pipe{splitted[2]}" in link[0]:
-                    targets.remove(ip)
+                    #multiple links in the same subnet
+                    if ip in targets: targets.remove(ip)
         print("Possible targets",targets)
         #To prevent creating connections to new nodes joined afterwards, save state
         if os.path.isfile(f"{self.path}/configs/state.json"):
