@@ -35,11 +35,6 @@ class Wireguard(Base):
             if not file.endswith(".sh"): files.remove(file)
         if not files and abort: exit(f"No {self.prefix} configs found")
         return files
-
-    def hasDummy(self,configs):
-        for file in configs:
-            if "dummy.sh" == file: return True
-        return False
         
     def getEndpoints(self,configs):
         ips = []
@@ -141,7 +136,7 @@ class Wireguard(Base):
                 #load configs
                 configs = self.getConfigs()
                 #check for dummy
-                if not self.hasDummy(configs):
+                if not "dummy" in configs:
                     dummyConfig = self.Templator.genDummy(self.config['id'])
                     self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
                     self.setInterface("dummy","up")
@@ -183,7 +178,7 @@ class Wireguard(Base):
         #load configs
         configs = self.getConfigs()
         #check for dummy
-        if self.hasDummy(configs):
+        if "dummy" in configs:
             #clean dummy
             self.setInterface("dummy","down")
             self.cleanInterface("dummy",False)
