@@ -16,7 +16,7 @@ echo "wg-mesh ALL=(ALL) NOPASSWD: /sbin/ip*" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/ip*" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /sbin/bridge fdb append *" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/bridge fdb append *" >> /etc/sudoers.d/wg-mesh
-echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/wg*" >> /etc/sudoers.d/wg-mesh
+echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/wg set*" >> /etc/sudoers.d/wg-mesh
 #bird permissions
 echo "wg-mesh ALL=(ALL) NOPASSWD: /bin/systemctl reload bird" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload bird" >> /etc/sudoers.d/wg-mesh
