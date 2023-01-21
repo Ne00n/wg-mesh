@@ -98,24 +98,29 @@ class Bird(Base):
             return False
         time.sleep(10)
         routes = self.cmd("birdc show route")
-        targets = re.findall(f"(10\.0\.[0-9]+\.0)\/30",routes, re.MULTILINE)
+        targets = re.findall(f"((10\.0\.[0-9]+\.0)\/30)",routes, re.MULTILINE)
         if not targets: 
             print("bird returned no routes, did you setup bird?")
             return False
+        #vxlan fuckn magic
+        vxlan = self.cmd("bridge fdb show dev vxlan1 | grep dst")
+        for target in targets:
+            ip = target[0].replace("0/30","1")
+            if not ip in vxlan: self.cmd(f"bridge fdb append 00:00:00:00:00:00 dev vxlan1 dst {ip}")
         #remove local machine from list
         for ip in list(targets):
-            if self.resolve(local[0],ip,30):
+            if self.resolve(local[0],ip[1],30):
                 targets.remove(ip)
         #run against existing links
         for ip in list(targets):
             for link in links:
-                if self.resolve(link[1],ip,24):
+                if self.resolve(link[1],ip[1],24):
                     #multiple links in the same subnet
                     if ip in targets: targets.remove(ip)
         #run against local link names
         for ip in list(targets):
             for link in links:
-                splitted = ip.split(".")
+                splitted = ip[1].split(".")
                 if f"pipe{splitted[2]}" in link[0]:
                     #multiple links in the same subnet
                     if ip in targets: targets.remove(ip)
