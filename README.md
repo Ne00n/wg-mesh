@@ -17,12 +17,13 @@
 - By default 10.0.x.x/16 is used.<br>
 - 10.0.id.1 Node /30<br>
 - 10.0.id.4-255 peers /31<br>
+- 10.0.251.1-255 vxlan /32<br>
 
 **Features**<br>
 - [x] automatic mesh buildup when node has joined
 - [x] join nodes via cli
 - [x] disconnect nodes via cli
-- [ ] VXLAN
+- [x] VXLAN
 - [x] Dualstack and/or Singlestack (Transport)
 - [ ] Dualstack (within the VPN Network)
 - [ ] Support for TLS (without additional Proxy)
