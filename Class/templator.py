@@ -29,8 +29,12 @@ fi'''
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
     sudo ip addr add 10.0.{serverID}.1/30 dev lo;
+    sudo ip link add vxlan1 type vxlan id 1 dstport 1789 local 10.0.{serverID}.1;
+    sudo ip link set vxlan1 up;
+    sudo ip addr add 10.0.251.{serverID}/24 dev vxlan1;
 else
     sudo ip addr del 10.0.{serverID}.1/30 dev lo;
+    sudo ip link delete vxlan1;
 fi'''
         return template
 
