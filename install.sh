@@ -35,3 +35,6 @@ systemctl enable wgmesh && systemctl start wgmesh
 #systemd bird service
 cp /opt/wg-mesh/configs/wgmesh-bird.service /etc/systemd/system/wgmesh-bird.service
 systemctl enable wgmesh-bird && systemctl start wgmesh-bird
+#systemd pipe service
+cp /opt/wg-mesh/configs/wgmesh-pipe.service /etc/systemd/system/wgmesh-pipe.service
+systemctl enable wgmesh-pipe

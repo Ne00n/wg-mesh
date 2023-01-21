@@ -1,0 +1,13 @@
+[Unit]
+Description=wgmesh-pipe service
+Wants=network-online.target
+After=network-online.target
+[Service]
+User=wg-mesh
+Group=wg-mesh
+WorkingDirectory=/opt/wg-mesh/links
+ExecStart=/usr/bin/python3 lever.py up
+RemainAfterExit=true
+Type=oneshot
+[Install]
+WantedBy=multi-user.target
