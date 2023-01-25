@@ -4,11 +4,13 @@ from datetime import datetime
 from random import randint
 
 class Latency:
-    def __init__(self):
-        if os.path.isfile("network.json"):
+    def __init__(self,path):
+        self.path = path
+        file = f"{path}/configs/network.json"
+        if os.path.isfile(file):
             print("Loading","network.json")
             try:
-                with open("network.json") as handle:
+                with open(file) as handle:
                     self.network = json.loads(handle.read())
             except:
                 self.network = {"created":int(datetime.now().timestamp()),"updated":0}
@@ -17,7 +19,7 @@ class Latency:
 
     def save(self):
         print(f"Saving network.json")
-        with open("network.json", 'w') as f:
+        with open(f"{self.path}/configs/network.json", 'w') as f:
             json.dump(self.network, f, indent=4)
 
     def cmd(self,cmd):

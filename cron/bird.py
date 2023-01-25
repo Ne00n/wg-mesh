@@ -7,7 +7,7 @@ from Class.bird import Bird
 path = os.path.dirname(os.path.realpath(__file__))
 path = path.replace("/cron","")
 
-latency = Latency()
+latency = Latency(path)
 bird = Bird(path)
 bird.bird()
 bird.mesh()
