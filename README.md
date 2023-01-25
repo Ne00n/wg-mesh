@@ -89,6 +89,10 @@ Currently the webservice / API is exposed at ::8080, without TLS yet<br>
 Internal requests from 10.0.0.0/8 don't need a token.
 - /disconnect needs a valid wg public key and link name, otherwise will refuse to disconnect a specific link<br>
 
+**TLS**<br>
+By default the server does listen on ::8080 without TLS.<br>
+To enable TLS simply put your certificates into /certs (privkey.pem and fullchain.pem).<br>
+
 **Disconnect**<br>
 To disconnect all links on a Node
 ```
