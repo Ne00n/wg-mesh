@@ -42,7 +42,9 @@ class Bird(Base):
             fping += f" {data['target']}"
         result = self.cmd(fping)
         parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]).*?([0-9])% loss",result, re.MULTILINE)
-        if not parsed: exit("No pingable link found")
+        if not parsed: 
+            print("No pingable links found.")
+            return False
         latency =  {}
         for ip,ms,loss in parsed:
             if ip not in latency:
@@ -75,6 +77,7 @@ class Bird(Base):
         nodes = self.genTargets(links)
         print("Latency messurement")
         latencyData = self.getLatency(nodes)
+        if not latencyData: return False
         print("Generating config")
         bird = self.Templator.genBird(latencyData,local,int(time.time()))
         if bird == "": 
