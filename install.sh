@@ -1,7 +1,7 @@
 #!/bin/bash
 if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
 apt-get install wireguard bird2 sudo python3 python3-pip fping git -y
-pip3 install netaddr requests bottle
+pip3 install netaddr requests bottle gunicorn
 cd /opt/
 #git
 git clone https://github.com/Ne00n/wg-mesh.git
