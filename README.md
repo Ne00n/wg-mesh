@@ -29,7 +29,8 @@
 - [x] Support for TLS (without additional Proxy)
 - [x] Autostart Wireguard links on boot
 - [ ] Active Latency optimisation
-- [ ] Packet loss Avoidance
+- [ ] Packet loss detection & rerouting
+- [ ] High Jitter detection & rerouting
  
 Tested on Debian 11 with systemd.<br>
 Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
