@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 import subprocess, requests, json, time, sys, re, os
 from ipaddress import ip_network
 from datetime import datetime
