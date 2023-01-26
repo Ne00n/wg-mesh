@@ -101,7 +101,7 @@ class Latency:
                         self.network[entry]['jitter'][int(datetime.now().timestamp()) + 300] = peakJitter
                         print(entry,"High Jitter dectected")
 
-                    threshold,eventCount,eventScore = 5,0,0
+                    threshold,eventCount,eventScore = 2,0,0
                     for event,peak in list(self.network[entry]['jitter'].items()):
                         if int(event) > int(datetime.now().timestamp()): 
                             eventCount += 1
