@@ -9,11 +9,8 @@ path = path.replace("/cron","")
 
 latency = Latency(path)
 bird = Bird(path)
-bird.bird()
-bird.mesh()
 
-path = f'{path}/links/'
-links = os.listdir(path)
+path,links = f'{path}/links/',[]
 
 runs = 0
 while True:
