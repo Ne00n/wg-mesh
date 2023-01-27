@@ -138,6 +138,9 @@ class Bird(Base):
             print("meshing™")
             results = {}
             for target in targets:
+                targetSplit = target[0].split(".")
+                #reserve 10.0.240+ for clients, don't mesh
+                if int(targetSplit[2]) >= 240: continue
                 dest = target[0].replace(".0/30",".1")
                 #no token needed but external IP for the client
                 resp = wg.connect(dest,"",config['connectivity']['ipv4'])
