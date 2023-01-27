@@ -9,7 +9,6 @@ path = path.replace("/cron","")
 
 latency = Latency(path)
 bird = Bird(path)
-bird.mesh()
 bird.bird()
 
 path = f'{path}/links/'
