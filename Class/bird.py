@@ -109,7 +109,7 @@ class Bird(Base):
                 counter = 0
             else:
                 counter += 1
-                if counter == 10: break
+                if counter == 15: break
             time.sleep(2)
         #when targets empty, abort
         if not targets: 
