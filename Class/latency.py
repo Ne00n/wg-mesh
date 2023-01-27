@@ -143,6 +143,7 @@ class Latency:
         result = self.getLatency(config,11)
         #update
         local = re.findall("inet (10\.0[0-9.]+\.1)\/(32|30) scope global lo",configs[0], re.MULTILINE | re.DOTALL)
+        if not local: return False
         configRaw = re.sub(local[0][0]+"; #updated [0-9]+", local[0][0]+"; #updated "+str(int(time.time())), configRaw, 0, re.MULTILINE)
         for entry in result:
             if "latency" not in entry: continue
