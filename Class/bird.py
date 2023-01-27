@@ -89,12 +89,6 @@ class Bird(Base):
         self.cmd("sudo systemctl reload bird")
 
     def mesh(self):
-        configs = self.cmd('ip addr show')
-        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
-        local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/30 scope global lo",configs, re.MULTILINE | re.DOTALL)
-        if not links or not local: 
-            print("No wireguard interfaces found") 
-            return False
         proc = self.cmd("pgrep bird")
         if proc == "": 
             print("bird not running")
@@ -111,6 +105,13 @@ class Bird(Base):
                 counter += 1
                 if counter == 15: break
             time.sleep(2)
+        #fetch network interfaces and parse
+        configs = self.cmd('ip addr show')
+        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/30 scope global lo",configs, re.MULTILINE | re.DOTALL)
+        if not links or not local: 
+            print("No wireguard interfaces found") 
+            return False
         #when targets empty, abort
         if not targets: 
             print("bird returned no routes, did you setup bird?")
