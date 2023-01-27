@@ -118,7 +118,7 @@ class Bird(Base):
         #vxlan fuckn magic
         vxlan = self.cmd("bridge fdb show dev vxlan1 | grep dst")
         for target in targets:
-            ip = target[0].replace("0/30","1")
+            ip = target.replace("0/30","1")
             if not ip in vxlan: self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1 dst {ip}")
         #remove local machine from list
         for ip in list(targets):
