@@ -101,7 +101,7 @@ class Bird(Base):
             return False
         time.sleep(10)
         routes = self.cmd("birdc show route")
-        targets = re.findall(f"((10\.0\.[0-9]+\.0)\/30)",routes, re.MULTILINE)
+        targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
         #when targets empty, abort
         if not targets: 
             print("bird returned no routes, did you setup bird?")
@@ -113,18 +113,18 @@ class Bird(Base):
             if not ip in vxlan: self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1 dst {ip}")
         #remove local machine from list
         for ip in list(targets):
-            if self.resolve(local[0],ip[1],30):
+            if self.resolve(local[0],ip.replace("/30",""),30):
                 targets.remove(ip)
         #run against existing links
         for ip in list(targets):
             for link in links:
-                if self.resolve(link[1],ip[1],24):
+                if self.resolve(link[1],ip.replace("/30",""),24):
                     #multiple links in the same subnet
                     if ip in targets: targets.remove(ip)
         #run against local link names
         for ip in list(targets):
             for link in links:
-                splitted = ip[1].split(".")
+                splitted = ip.split(".")
                 if f"pipe{splitted[2]}" in link[0]:
                     #multiple links in the same subnet
                     if ip in targets: targets.remove(ip)
@@ -139,10 +139,10 @@ class Bird(Base):
             print("meshing™")
             results = {}
             for target in targets:
-                targetSplit = target[0].split(".")
+                targetSplit = target.split(".")
                 #reserve 10.0.240+ for clients, don't mesh
                 if int(targetSplit[2]) >= 240: continue
-                dest = target[0].replace(".0/30",".1")
+                dest = target.replace(".0/30",".1")
                 #no token needed but external IP for the client
                 resp = wg.connect(dest,"",config['connectivity']['ipv4'])
                 if resp:
