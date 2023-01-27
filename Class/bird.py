@@ -153,7 +153,7 @@ class Bird(Base):
                 if int(targetSplit[2]) >= 240: continue
                 dest = target.replace(".0/30",".1")
                 #no token needed but external IP for the client
-                resp = wg.connect(dest,"",config['connectivity']['ipv4'])
+                resp = wg.connect(dest,"")
                 if resp:
                     results[target] = True
                 else:
