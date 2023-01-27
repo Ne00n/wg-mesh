@@ -9,8 +9,8 @@ path = path.replace("/cron","")
 
 latency = Latency(path)
 bird = Bird(path)
-bird.bird()
 bird.mesh()
+bird.bird()
 
 path = f'{path}/links/'
 links = os.listdir(path)
@@ -19,8 +19,8 @@ runs = 0
 while True:
     currentLinks = os.listdir(path)
     if links != currentLinks:
-        bird.bird()
         bird.mesh()
+        bird.bird()
         links = currentLinks
     #every 5 minutes / 10 runs we do run latency
     if runs == 10:
