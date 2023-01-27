@@ -19,6 +19,7 @@ runs = 0
 while True:
     currentLinks = os.listdir(path)
     if links != currentLinks:
+        bird.bird()
         bird.mesh()
         bird.bird()
         links = currentLinks
