@@ -99,9 +99,18 @@ class Bird(Base):
         if proc == "": 
             print("bird not running")
             return False
-        time.sleep(10)
-        routes = self.cmd("birdc show route")
-        targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+        #wait for bird to fully bootstrap
+        oldTargets,counter = [],0
+        for run in range(30):
+            routes = self.cmd("birdc show route")
+            targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+            if oldTargets != targets:
+                oldTargets = targets
+                counter = 0
+            else:
+                counter += 1
+                if counter == 10: break
+            time.sleep(2)
         #when targets empty, abort
         if not targets: 
             print("bird returned no routes, did you setup bird?")
