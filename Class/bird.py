@@ -102,6 +102,7 @@ class Bird(Base):
         time.sleep(10)
         routes = self.cmd("birdc show route")
         targets = re.findall(f"((10\.0\.[0-9]+\.0)\/30)",routes, re.MULTILINE)
+        #when targets empty, abort
         if not targets: 
             print("bird returned no routes, did you setup bird?")
             return False
@@ -128,8 +129,6 @@ class Bird(Base):
                     #multiple links in the same subnet
                     if ip in targets: targets.remove(ip)
         print("Possible targets",targets)
-        #keep waiting for targets if empty
-        if not targets: return False
         #To prevent creating connections to new nodes joined afterwards, save state
         if os.path.isfile(f"{self.path}/configs/state.json"):
             print("state.json already exist, skipping")
