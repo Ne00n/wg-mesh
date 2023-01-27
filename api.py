@@ -35,7 +35,8 @@ def validateID(id):
 
 @route('/connect', method='POST')
 def index():
-    isInternal =  ipaddress.ip_address(request.environ.get('REMOTE_ADDR')) in ipaddress.ip_network('10.0.0.0/8')
+    ipAddress = str(ipaddress.IPv6Address(request.environ.get('REMOTE_ADDR')).ipv4_mapped)
+    isInternal =  ipaddress.ip_address(ipAddress) in ipaddress.ip_network('10.0.0.0/8')
     payload = json.load(request.body)
     #validate token
     if not isInternal:
