@@ -151,7 +151,7 @@ class Wireguard(Base):
                 return False
         return True
 
-    def disconnect(self,link=""):
+    def disconnect(self,force=False,link=""):
         print("Disconnecting")
         files = os.listdir(f"{self.path}/links/")
         for findex, filename in enumerate(files):
@@ -172,8 +172,8 @@ class Wireguard(Base):
             interfaceRemote = self.getInterfaceRemote(filename)
             #call destination
             req = self.call(f'http://{destination}:8080/disconnect',{"publicKeyServer":publicKeyServer[0],"interface":interfaceRemote})
-            if req == False: continue
-            if req.status_code == 200:
+            if req == False and force == False: continue
+            if req.status_code == 200 or force:
                 interface = self.filterInterface(filename)
                 self.setInterface(interface,"down")
                 self.cleanInterface(interface)
