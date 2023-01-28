@@ -86,10 +86,10 @@ All 3 nodes should be reachable under 10.0.nodeID.1<br>
 
 **Limitations**<br>
 Connecting multiple nodes at once, without waiting for the other node to finish, will result in double links.<br>
-Because by default, when a new node joins, it checks which connections it don't has, which with a new node would be everything.<br>
+By default, when a new node joins, it checks which connections it don't has, which with a new node would be everything.<br>
 
-Plus bird2, by default, takes 30s to distribute the routes, there will be also a delay.<br>
-In total roughtly 60s, depending on the network size, to be safe.<br>
+Additional, bird2, by default, takes 30s to distribute the routes, there will be also a delay.<br>
+In total roughtly 60s, depending on the network size, to avoid this issue.<br>
 
 **API**<br>
 Currently the webservice / API is exposed at ::8080, without TLS yet<br>
