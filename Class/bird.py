@@ -96,9 +96,11 @@ class Bird(Base):
             return False
         #wait for bird to fully bootstrap
         oldTargets,counter = [],0
+        print("Waiting for bird routes")
         for run in range(30):
             routes = self.cmd("birdc show route")
             targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+            print(f"Run {run}, Counter {counter}, Got {targets} as targets")
             if oldTargets != targets:
                 oldTargets = targets
                 counter = 0
