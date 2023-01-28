@@ -112,6 +112,8 @@ class Wireguard(Base):
         with open(path, 'w') as file: file.write(data)
 
     def connect(self,dest,token=""):
+        #check if we got v6 here
+        if ":" in dest and not "[" in dest: dest = f"[{dest}]"
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
