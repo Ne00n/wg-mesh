@@ -15,7 +15,10 @@ elif sys.argv[1] == "init":
 elif sys.argv[1] == "connect":
     cli.connect(sys.argv[2],sys.argv[3])
 elif sys.argv[1] == "disconnect":
-    cli.disconnect()
+    if len(sys.argv) == 3:
+        cli.disconnect(sys.argv[2])
+    else:
+        cli.disconnect()
 elif sys.argv[1] == "up":
     cli.links("up")
 elif sys.argv[1] == "down":

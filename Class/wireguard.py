@@ -151,12 +151,14 @@ class Wireguard(Base):
                 return False
         return True
 
-    def disconnect(self):
+    def disconnect(self,link=""):
         print("Disconnecting")
         files = os.listdir(f"{self.path}/links/")
         for findex, filename in enumerate(files):
             if filename == "dummy.sh": continue
             if not filename.endswith(".sh"): continue
+            #if a specific link is given filter out
+            if link and link not in filename: continue
             print(f"Reading Link {filename}")
             with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
             #grab wg server ip from client wg config

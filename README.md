@@ -105,6 +105,7 @@ To enable TLS simply put your certificates into /certs (privkey.pem and fullchai
 To disconnect all links on a Node
 ```
 su wg-mesh -c "/opt/wg-mesh/cli.py disconnect"
+su wg-mesh -c "/opt/wg-mesh/cli.py disconnect pipe250"
 ```
 
 **Removal**
