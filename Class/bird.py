@@ -100,14 +100,14 @@ class Bird(Base):
         for run in range(30):
             routes = self.cmd("birdc show route")
             targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
-            print(f"Run {run}, Counter {counter}, Got {targets} as targets")
+            print(f"Run {run}/30, Counter {counter}, Got {targets} as targets")
             if oldTargets != targets:
                 oldTargets = targets
                 counter = 0
             else:
                 counter += 1
-                if counter == 15: break
-            time.sleep(2)
+                if counter == 10: break
+            time.sleep(5)
         #fetch network interfaces and parse
         configs = self.cmd('ip addr show')
         links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
