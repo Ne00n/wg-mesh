@@ -9,7 +9,7 @@ class Base:
     def call(self,url,payload):
         for run in range(1,5):
             try:
-                req = requests.post(url, json=payload, timeout=10)
+                req = requests.post(url, json=payload, timeout=(10,10))
                 if req.status_code == 200: return req
                 print(f"Got {req.text} as response")
             except Exception as ex:
