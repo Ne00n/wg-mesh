@@ -106,7 +106,7 @@ class Bird(Base):
                 counter = 0
             else:
                 counter += 1
-                if counter == 10: break
+                if counter == 8: break
             time.sleep(5)
         #fetch network interfaces and parse
         configs = self.cmd('ip addr show')
