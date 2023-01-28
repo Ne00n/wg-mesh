@@ -173,7 +173,7 @@ class Wireguard(Base):
             #call destination
             req = self.call(f'http://{destination}:8080/disconnect',{"publicKeyServer":publicKeyServer[0],"interface":interfaceRemote})
             if req == False and force == False: continue
-            if req.status_code == 200 or force:
+            if force or req.status_code == 200:
                 interface = self.filterInterface(filename)
                 self.setInterface(interface,"down")
                 self.cleanInterface(interface)
