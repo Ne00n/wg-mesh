@@ -19,6 +19,7 @@ while True:
         #hold until bird reports success
         if bird.bird():
             bird.mesh()
+            currentLinks = os.listdir(path)
             bird.bird()
             links = currentLinks
     #every 5 minutes / 30 runs we do run latency
