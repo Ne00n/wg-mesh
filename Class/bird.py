@@ -87,6 +87,7 @@ class Bird(Base):
         self.cmd(f"echo '{bird}' > /etc/bird/bird.conf")
         print("Reloading bird")
         self.cmd("sudo systemctl reload bird")
+        return True
 
     def mesh(self):
         proc = self.cmd("pgrep bird")

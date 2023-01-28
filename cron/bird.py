@@ -16,9 +16,10 @@ runs = 0
 while True:
     currentLinks = os.listdir(path)
     if links != currentLinks:
-        bird.bird()
-        bird.mesh()
-        bird.bird()
+        #hold until bird reports success
+        if bird.bird():
+            bird.mesh()
+            bird.bird()
         links = currentLinks
     #every 5 minutes / 30 runs we do run latency
     if runs == 30:
