@@ -58,7 +58,7 @@ Regarding NAT or in general behind Firewalls, the "connector" is always a Client
 **Example 2+ nodes**<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1 public
 #Install wg-mesh and initialize the second node
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
 #Install wg-mesh and initialize the third node
