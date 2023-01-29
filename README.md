@@ -116,3 +116,7 @@ su wg-mesh -c "/opt/wg-mesh/cli.py disconnect pipe250 force"
 ```
 bash /opt/wg-mesh/deinstall.sh
 ```
+
+**Troubleshooting**
+- wg-mesh is not meshing
+bird2 needs to be running / hidepid can block said access to check if bird is running
