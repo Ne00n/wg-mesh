@@ -1,6 +1,5 @@
 import ipaddress, threading, socket, random, string, json, time, os, re
 from bottle import HTTPResponse, route, run, request, template
-import gevent.monkey; gevent.monkey.patch_all()
 from Class.wireguard import Wireguard
 from Class.templator import Templator
 from pathlib import Path
