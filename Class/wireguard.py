@@ -58,7 +58,7 @@ class Wireguard(Base):
         for key,ip in config['connectivity'].items():
             if ip is not None: return ip
 
-    def init(self,id,name):
+    def init(self,id,listen):
         if os.path.isfile(f"{self.path}/config.json"): exit("Config already exists")
         print("Getting external IPv4 and IPv6")
         ipv4 = self.fetch("https://checkip.amazonaws.com")
@@ -66,7 +66,7 @@ class Wireguard(Base):
         print(f"Got {ipv4} and {ipv6}")
 
         print("Generating config.json")
-        config = {"name":name,"prefix":"pipe","id":id,"connectivity":{"ipv4":ipv4,"ipv6":ipv6}}
+        config = {"listen":listen,"prefix":"pipe","id":id,"connectivity":{"ipv4":ipv4,"ipv6":ipv6}}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
 
     def findLowest(self,min,list):

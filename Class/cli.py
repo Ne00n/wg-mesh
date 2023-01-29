@@ -11,8 +11,8 @@ class CLI:
         self.wg = Wireguard(path,True)
         self.bird = Bird(path)
 
-    def init(self,name,id):
-        self.wg.init(name,id)
+    def init(self,id,listen):
+        self.wg.init(id,listen)
 
     def connect(self,dest,token):
         self.wg = Wireguard(self.path)

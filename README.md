@@ -39,7 +39,7 @@ The ID needs to be unique, otherwise it will result in collisions.<br>
 Keep in mind, ID's 240 and higher are reserved for clients, they won't get meshed.<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1 public
 #Install wg-mesh and initialize the second node
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
 ```
@@ -95,9 +95,6 @@ Currently the webservice / API is exposed at ::8080, without TLS yet<br>
 - /connect needs a valid token, otherwise the service will refuse to setup a wg link<br>
 Internal requests from 10.0.0.0/8 don't need a token.
 - /disconnect needs a valid wg public key and link name, otherwise will refuse to disconnect a specific link<br>
-
-**TLS**<br>
-TLS is not supported, if you need TLS, setup a reverse proxy.<br>
 
 **Disconnect**<br>
 To disconnect all links on a Node
