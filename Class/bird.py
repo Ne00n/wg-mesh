@@ -66,6 +66,11 @@ class Bird(Base):
         return targets
 
     def bird(self):
+        #check if bird is running
+        proc = self.cmd("pgrep bird")
+        if proc == "": 
+            print("bird not running")
+            return False
         print("Collecting Network data")
         configs = self.cmd('ip addr show')
         links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
@@ -90,6 +95,7 @@ class Bird(Base):
         return True
 
     def mesh(self):
+        #check if bird is running
         proc = self.cmd("pgrep bird")
         if proc == "": 
             print("bird not running")
