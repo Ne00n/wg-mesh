@@ -127,7 +127,7 @@ class Latency:
 
     def run(self):
         #Check if bird is running
-        print("Checking bird/fping status")
+        print("Checking bird status")
         bird = self.cmd("pgrep bird")
         if bird[0] == "":
             print("bird not running")
