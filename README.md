@@ -26,7 +26,6 @@
 - [x] VXLAN
 - [x] Dualstack and/or Singlestack (Transport)
 - [ ] Dualstack (within the VPN Network)
-- [x] Support for TLS (without additional Proxy)
 - [x] Autostart Wireguard links on boot
 - [x] Active Latency optimisation
 - [x] Packet loss detection & rerouting

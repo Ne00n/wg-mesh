@@ -90,7 +90,4 @@ def index():
     else:
         return HTTPResponse(status=400, body="invalid link")
 
-if os.path.isfile(f"{folder}/certs/privkey.pem") and os.path.isfile(f"{folder}/certs/fullchain.pem"):
-    run(host='[::]', port=8080, workers=2, server='gunicorn', keyfile='certs/privkey.pem', certfile='certs/fullchain.pem')
-else:
-    run(host='::', port=8080, server='paste')
+run(host='::', port=8080, server='paste')
