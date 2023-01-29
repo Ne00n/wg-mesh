@@ -118,5 +118,5 @@ bash /opt/wg-mesh/deinstall.sh
 ```
 
 **Troubleshooting**
-- wg-mesh is not meshing
+- wg-mesh is not meshing<br>
 bird2 needs to be running / hidepid can block said access to check if bird is running
