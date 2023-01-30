@@ -69,7 +69,7 @@ def index():
     servName = "v6Serv" if payload['ipv6'] else "Serv"
     interface = wg.getInterface(payload['id'],servName)
     #generate wireguard config
-    serverConfig = templator.genServer(interface,requestIP,config['id'],lastbyte,port,payload['clientPublicKey'])
+    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'])
     #save
     wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
     wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
