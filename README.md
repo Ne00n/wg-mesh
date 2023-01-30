@@ -117,7 +117,7 @@ su wg-mesh -c "/opt/wg-mesh/cli.py disconnect pipe250 force"
 
 **Removal**
 ```
-bash /opt/wg-mesh/deinstall.sh
+su wg-mesh -c "/opt/wg-mesh/cli.py down" && bash /opt/wg-mesh/deinstall.sh
 ```
 
 **Updating**
