@@ -1,7 +1,7 @@
 [Unit]
 Description=wgmesh service
-Wants=network-online.target
-After=network-online.target
+Wants=network-online.target wgmesh-pipe.service
+After=network-online.target wgmesh-pipe.service
 [Service]
 User=wg-mesh
 Group=wg-mesh
