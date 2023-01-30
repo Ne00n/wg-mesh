@@ -186,6 +186,8 @@ class Wireguard(Base):
             #clean dummy
             self.setInterface("dummy","down")
             self.cleanInterface("dummy",False)
-        #clear state.json
-        if os.path.isfile(f"{self.path}/configs/state.json"):
+        #get all links
+        files = os.listdir(f"{self.path}/links/")
+        #clear state.json if no links left
+        if os.path.isfile(f"{self.path}/configs/state.json") and not files:
              os.remove(f"{self.path}/configs/state.json")
