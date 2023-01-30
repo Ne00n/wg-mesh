@@ -183,10 +183,7 @@ class Wireguard(Base):
         #load configs
         configs = self.getConfigs(False)
         #check for dummy
-        if "dummy.sh" in configs:
-            #clean dummy
-            self.setInterface("dummy","down")
-            self.cleanInterface("dummy",False)
+        if "dummy.sh" in configs: configs.remove("dummy.sh")
         #get all links
         files = os.listdir(f"{self.path}/links/")
         #clear state.json if no links left
