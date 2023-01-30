@@ -72,7 +72,7 @@ class Wireguard(Base):
         self.prefix = "pipe"
         configs = self.getConfigs(False)
         #dummy
-        if not "dummy" in configs:
+        if not "dummy.sh" in configs:
             dummyConfig = self.Templator.genDummy(id)
             self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
             self.setInterface("dummy","up")
@@ -183,7 +183,7 @@ class Wireguard(Base):
         #load configs
         configs = self.getConfigs(False)
         #check for dummy
-        if "dummy" in configs:
+        if "dummy.sh" in configs:
             #clean dummy
             self.setInterface("dummy","down")
             self.cleanInterface("dummy",False)
