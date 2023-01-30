@@ -164,7 +164,8 @@ class Wireguard(Base):
             with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
             #grab wg server ip from client wg config
             if "endpoint" in config:
-                destination = re.findall(f"endpoint\s([0-9a-z:.]+):",config, re.MULTILINE)[0]
+                destination = re.findall(f'(10\.0\.[0-9]+\.)',config, re.MULTILINE)[0]
+                destination = f"{destination}1"
             elif "listen-port" in config:
                 destination = re.findall(f"client\s([0-9a-z:.]+)",config, re.MULTILINE)[0]
             #check if we got v6 here
