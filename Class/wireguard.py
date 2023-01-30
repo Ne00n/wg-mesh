@@ -128,7 +128,7 @@ class Wireguard(Base):
         for run in range(2):
             #call destination
             isv6 = True if run == 0 and ":" in dest or run == 1 and not ":" in dest else False
-            req = self.call(f'http://{dest}:8080/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6})
+            req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6})
             if req == False: return False
             if req.status_code == 200:
                 resp = req.json()

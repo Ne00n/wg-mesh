@@ -44,13 +44,13 @@ curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | ba
 #Install wg-mesh and initialize the second node
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
 ```
-Grab the Token from Node2<br>
+Grab the Token from Node1<br>
 ```
 cat /opt/wg-mesh/token
 ```
-Connect Node1 to Node2
+Connect Node2 to Node1
 ```
-su wg-mesh -c "/opt/wg-mesh/cli.py connect <node2IP> <token>"
+su wg-mesh -c "/opt/wg-mesh/cli.py connect <node2IP>:8080 <token>"
 ```
 After connecting successfully, a dummy.sh will be created, which assigns a 10.0.nodeID.1/30 to lo.<br>
 This will be picked up by bird, so on booth nodes on 10.0.1.1 and 10.0.2.1 should be reachable after bird ran.<br>
@@ -71,11 +71,11 @@ cat /opt/wg-mesh/token
 ```
 Connect Node2 to Node1
 ```
-su wg-mesh -c "/opt/wg-mesh/cli.py connect <node1IP> <token>"
+su wg-mesh -c "/opt/wg-mesh/cli.py connect <node1IP>:8080 <token>"
 ```
 Connect Node3 to Node1
 ```
-su wg-mesh -c "/opt/wg-mesh/cli.py connect <node1IP> <token>"
+su wg-mesh -c "/opt/wg-mesh/cli.py connect <node1IP>:8080 <token>"
 ```
 Wait for bird to pickup all routes + mesh buildup.<br>
 You can check it with<br>
