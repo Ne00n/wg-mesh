@@ -97,6 +97,12 @@ Currently the webservice / API is exposed at ::8080, without TLS yet<br>
 Internal requests from 10.0.0.0/8 don't need a token.
 - /disconnect needs a valid wg public key and link name, otherwise will refuse to disconnect a specific link<br>
 
+**Shutdown/Startup**
+```
+su wg-mesh -c "/opt/wg-mesh/cli.py down"
+su wg-mesh -c "/opt/wg-mesh/cli.py up"
+```
+
 **Disconnect**<br>
 To disconnect all links on a Node
 ```
@@ -105,12 +111,18 @@ su wg-mesh -c "/opt/wg-mesh/cli.py disconnect"
 su wg-mesh -c "/opt/wg-mesh/cli.py disconnect force"
 #disconnect a specific link
 su wg-mesh -c "/opt/wg-mesh/cli.py disconnect pipe250"
+#disconnect a specific link with force
 su wg-mesh -c "/opt/wg-mesh/cli.py disconnect pipe250 force"
 ```
 
 **Removal**
 ```
 bash /opt/wg-mesh/deinstall.sh
+```
+
+**Updating**
+```
+su wg-mesh -c "git pull" && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
 
 **Troubleshooting**
