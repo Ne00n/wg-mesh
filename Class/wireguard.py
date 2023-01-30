@@ -70,7 +70,7 @@ class Wireguard(Base):
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
         #load configs
         self.prefix = "pipe"
-        configs = self.getConfigs()
+        configs = self.getConfigs(False)
         #dummy
         if not "dummy" in configs:
             dummyConfig = self.Templator.genDummy(id)
