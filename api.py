@@ -35,11 +35,12 @@ def validateID(id):
 
 @route('/connect', method='POST')
 def index():
-    ip = ipaddress.ip_address(request.environ.get('REMOTE_ADDR'))
+    reqIP = request.environ.get('REMOTE_ADDR')
+    ip = ipaddress.ip_address(reqIP)
     if ip.version == 4:
-        requestIP = request.environ.get('REMOTE_ADDR')
+        requestIP = reqIP
     else:
-        requestIP = str(ipaddress.IPv6Address(request.environ.get('REMOTE_ADDR')).ipv4_mapped)
+        requestIP = ipaddress.IPv6Address(reqIP).ipv4_mapped if ipaddress.IPv6Address(reqIP).ipv4_mapped else reqIP
     isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network('10.0.0.0/8')
     payload = json.load(request.body)
     #validate token
