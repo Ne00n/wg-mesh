@@ -122,7 +122,7 @@ su wg-mesh -c "/opt/wg-mesh/cli.py down" && bash /opt/wg-mesh/deinstall.sh
 
 **Updating**
 ```
-su wg-mesh -c "git pull" && systemctl restart wgmesh && systemctl restart wgmesh-bird
+su wg-mesh -c "cd /opt/wg-mesh/; git pull" && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
 
 **Troubleshooting**
