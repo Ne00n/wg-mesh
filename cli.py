@@ -10,7 +10,7 @@ cli = CLI(path)
 if len(sys.argv) == 1:
     print("init <id>, connect <IP> <token>, disconnect, up, down")
 elif sys.argv[1] == "init":
-    state = sys.argv[3] if len(sys.argv) > 3 else "private"
+    state = sys.argv[3] if len(sys.argv) > 3 else "local"
     cli.init(sys.argv[2],state)
 elif sys.argv[1] == "connect":
     cli.connect(sys.argv[2],sys.argv[3])
