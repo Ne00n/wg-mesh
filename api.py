@@ -35,12 +35,12 @@ def validateID(id):
 
 @route('/connect', method='POST')
 def index():
-    ipAddress = ipaddress.ip_address(request.environ.get('REMOTE_ADDR'))
-    if ip_address.version == 4:
-        ipaddress = request.environ.get('REMOTE_ADDR')
+    ip = ipaddress.ip_address(request.environ.get('REMOTE_ADDR'))
+    if ip.version == 4:
+        requestIP = request.environ.get('REMOTE_ADDR')
     else:
-        ipAddress = str(ipaddress.IPv6Address(request.environ.get('REMOTE_ADDR')).ipv4_mapped)
-    isInternal =  ipaddress.ip_address(ipAddress) in ipaddress.ip_network('10.0.0.0/8')
+        requestIP = str(ipaddress.IPv6Address(request.environ.get('REMOTE_ADDR')).ipv4_mapped)
+    isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network('10.0.0.0/8')
     payload = json.load(request.body)
     #validate token
     if not isInternal:
@@ -58,7 +58,7 @@ def index():
     servName = "v6Serv" if payload['ipv6'] else "Serv"
     interface = wg.getInterface(payload['id'],servName)
     #generate wireguard config
-    serverConfig = templator.genServer(interface,ipAddress,config['id'],lastbyte,port,payload['clientPublicKey'])
+    serverConfig = templator.genServer(interface,requestIP,config['id'],lastbyte,port,payload['clientPublicKey'])
     #save
     wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
     wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
