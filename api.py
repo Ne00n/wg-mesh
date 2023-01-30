@@ -39,8 +39,10 @@ def index():
     ip = ipaddress.ip_address(reqIP)
     if ip.version == 4:
         requestIP = reqIP
+    elif ip.version == 6 and ipaddress.IPv6Address(reqIP).ipv4_mapped:
+        requestIP = ipaddress.IPv6Address(reqIP).ipv4_mapped
     else:
-        requestIP = ipaddress.IPv6Address(reqIP).ipv4_mapped if ipaddress.IPv6Address(reqIP).ipv4_mapped else reqIP
+        requestIP = reqIP
     isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network('10.0.0.0/8')
     payload = json.load(request.body)
     #validate token
