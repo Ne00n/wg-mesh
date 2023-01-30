@@ -37,6 +37,7 @@ Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues wit
 **Example 2 nodes**<br>
 The ID needs to be unique, otherwise it will result in collisions.<br>
 Keep in mind, ID's 240 and higher are reserved for clients, they won't get meshed.<br>
+Public is used to expose the API to all interfaces, by default it listens only on locally on 10.0.id.1.<br>
 ```
 #Install wg-mesh and initialize the first node
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1 public
