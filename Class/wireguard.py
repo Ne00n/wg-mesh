@@ -181,7 +181,7 @@ class Wireguard(Base):
             else:
                 print(f"Got {req.status_code} with {req.text} aborting")
         #load configs
-        configs = self.getConfigs()
+        configs = self.getConfigs(False)
         #check for dummy
         if "dummy" in configs:
             #clean dummy
