@@ -163,8 +163,13 @@ class Wireguard(Base):
             print(f"Reading Link {filename}")
             with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
             #grab wg server ip from client wg config
-            destination = re.findall(f'(10\.0\.[0-9]+\.)',config, re.MULTILINE)[0]
-            destination = f"{destination}1"
+            if "endpoint" in config:
+                destination = re.findall(f'(10\.0\.[0-9]+\.)',config, re.MULTILINE)[0]
+                destination = f"{destination}1"
+            elif "listen-port" in config:
+                #grab ID from link
+                linkID = re.findall(f"pipe([0-9]+)",filename, re.MULTILINE)[0]
+                destination = f"10.0.{linkID}.1"
             #check if we got v6 here
             if ":" in destination: destination = f"[{destination}]"
             publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)
