@@ -182,10 +182,10 @@ class Wireguard(Base):
                 print(f"Got {req.status_code} with {req.text} aborting")
         #load configs
         configs = self.getConfigs(False)
-        #check for dummy
-        if "dummy.sh" in configs: configs.remove("dummy.sh")
         #get all links
         files = os.listdir(f"{self.path}/links/")
+        #check for dummy
+        if "dummy.sh" in files: files.remove("dummy.sh")
         #clear state.json if no links left
         if os.path.isfile(f"{self.path}/configs/state.json") and not files:
              os.remove(f"{self.path}/configs/state.json")
