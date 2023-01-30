@@ -64,10 +64,17 @@ class Wireguard(Base):
         ipv4 = self.fetch("https://checkip.amazonaws.com")
         ipv6 = self.fetch("https://api6.ipify.org/")
         print(f"Got {ipv4} and {ipv6}")
-
+        #config
         print("Generating config.json")
         config = {"listen":listen,"prefix":"pipe","id":id,"connectivity":{"ipv4":ipv4,"ipv6":ipv6}}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
+        #load configs
+        configs = self.getConfigs()
+        #dummy
+        if not "dummy" in configs:
+            dummyConfig = self.Templator.genDummy(id)
+            self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
+            self.setInterface("dummy","up")
 
     def findLowest(self,min,list):
         for i in range(min,min + 200):
@@ -135,13 +142,6 @@ class Wireguard(Base):
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
                 self.setInterface(interface,"up")
-                #load configs
-                configs = self.getConfigs()
-                #check for dummy
-                if not "dummy" in configs:
-                    dummyConfig = self.Templator.genDummy(self.config['id'])
-                    self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
-                    self.setInterface("dummy","up")
                 #before we try to setup a v4 in v6 wg, we check if booth hosts have IPv6 connectivity
                 if not self.config['connectivity']['ipv6'] or not resp['connectivity']['ipv6']: break
                 if not self.config['connectivity']['ipv4'] or not resp['connectivity']['ipv4']: break
