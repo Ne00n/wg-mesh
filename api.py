@@ -2,6 +2,7 @@ import ipaddress, threading, socket, random, string, json, time, os, re
 from bottle import HTTPResponse, route, run, request, template
 from Class.wireguard import Wireguard
 from Class.templator import Templator
+from threading import Thread
 from pathlib import Path
 
 tokens = []
@@ -32,6 +33,13 @@ def validateID(id):
     result = re.findall(r"^[0-9]{1,4}$",id,re.MULTILINE | re.DOTALL)
     if not result: return False
     return True
+
+def terminateLink(folder,interface):
+    wg = Wireguard(folder)
+    time.sleep(2)
+    wg.setInterface(interface,"down")
+    wg.cleanInterface(interface)
+    return
 
 @route('/connect', method='POST')
 def index():
@@ -89,8 +97,8 @@ def index():
         #check if they match
         if payload['publicKeyServer'] == publicKeyServer:
             #terminate the link
-            wg.setInterface(payload['interface'],"down")
-            wg.cleanInterface(payload['interface'])
+            termination = Thread(target=terminateLink, args=([folder,payload['interface']]))
+            termination.start()
             return HTTPResponse(status=200, body="link terminated")
         else:
             return HTTPResponse(status=400, body="invalid public key")
