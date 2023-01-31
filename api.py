@@ -44,10 +44,7 @@ def terminateLink(folder,interface):
 @route('/connect', method='POST')
 def index():
     reqIP = request.environ.get('HTTP_X_REAL_IP') or request.environ.get('REMOTE_ADDR')
-    ip = ipaddress.ip_address(reqIP)
-    if ip.version == 4:
-        requestIP = reqIP
-    elif ip.version == 6 and ipaddress.IPv6Address(reqIP).ipv4_mapped:
+    if ipaddress.ip_address(reqIP).version == 6 and ipaddress.IPv6Address(reqIP).ipv4_mapped:
         requestIP = ipaddress.IPv6Address(reqIP).ipv4_mapped
     else:
         requestIP = reqIP
