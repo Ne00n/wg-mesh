@@ -163,7 +163,7 @@ class Bird(Base):
                 if int(targetSplit[2]) >= 240: continue
                 dest = target.replace(".0/30",".1")
                 #no token needed but external IP for the client
-                resp = wg.connect(dest,"")
+                resp = wg.connect(f"http://{dest}:8080")
                 if resp:
                     results[target] = True
                 else:
