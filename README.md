@@ -84,13 +84,6 @@ birdc show route
 ```
 All 3 nodes should be reachable under 10.0.nodeID.1<br>
 
-**Limitations**<br>
-Connecting multiple nodes at once, without waiting for the other node to finish, will result in double links.<br>
-By default, when a new node joins, it checks which connections it don't has, which with a new node would be everything.<br>
-
-Additional, bird2, by default, takes 30s to distribute the routes, there will be also a delay.<br>
-In total roughtly 60s, depending on the network size, to avoid this issue.<br>
-
 **API**<br>
 Currently the webservice / API is exposed at ::8080, without TLS yet<br>
 - /connect needs a valid token, otherwise the service will refuse to setup a wg link<br>
@@ -100,7 +93,7 @@ Internal requests from 10.0.0.0/8 don't need a token.
 **Shutdown/Startup**
 ```
 su wg-mesh -c "/opt/wg-mesh/cli.py down"
-su wg-mesh -c "/opt/wg-mesh/cli.py up"
+su wg-mesh -c "/opt/wg-mesh/cli.py up" && systemctl restart wgmesh
 ```
 
 **Disconnect**<br>
@@ -124,6 +117,15 @@ su wg-mesh -c "/opt/wg-mesh/cli.py down" && bash /opt/wg-mesh/deinstall.sh
 ```
 su wg-mesh -c "cd /opt/wg-mesh/; git pull" && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
+**Limitations**<br>
+Connecting multiple nodes at once, without waiting for the other node to finish, will result in double links.<br>
+By default, when a new node joins, it checks which connections it don't has, which with a new node would be everything.<br>
+
+Additional, bird2, by default, takes 30s to distribute the routes, there will be also a delay.<br>
+In total roughtly 60s, depending on the network size, to avoid this issue.<br>
+
+**Known Issues**<br>
+- Remvoing wg-mesh without prior disconnecting active links, will result in broken links until restarted.<br>
 
 **Troubleshooting**
 - wg-mesh is not meshing<br>
