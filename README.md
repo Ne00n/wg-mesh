@@ -81,6 +81,8 @@ Wait for bird to pickup all routes + mesh buildup.<br>
 You can check it with<br>
 ```
 birdc show route
+#and/or
+cat /opt/wg-mesh/configs/state.json
 ```
 All 3 nodes should be reachable under 10.0.nodeID.1<br>
 
