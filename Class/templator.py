@@ -1,11 +1,10 @@
 class Templator:
 
-    def genServer(self,interface,destination,serverID,serverIP,serverPort,ClientPublicKey):
+    def genServer(self,interface,serverID,serverIP,serverPort,ClientPublicKey):
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
     sudo ip link add dev {interface} type wireguard
     sudo ip address add dev {interface} 10.0.{serverID}.{serverIP}/31
-    #client {destination}
     sudo wg set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {ClientPublicKey} allowed-ips 0.0.0.0/0
     sudo ip link set up dev {interface}
 else

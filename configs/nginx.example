@@ -1,0 +1,35 @@
+server {
+  listen 80;
+  listen [::]:80;
+  server_name wg.domain.com;
+  server_tokens off;
+
+   location '/.well-known/acme-challenge' {
+     default_type "text/plain";
+     root         /var/www/html/acme-challange;
+     autoindex    on;
+  }
+
+  location / {
+   return 301 https://wg.domain.com$request_uri;
+  }
+
+}
+
+server {
+  listen [::]:443 ssl http2;
+  server_tokens off;
+
+  ssl_certificate /etc/letsencrypt/live/wg.domain.com/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/wg.domain.com/privkey.pem;
+
+  server_name wg.domain.com;
+
+  location / {
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-Host $host;    
+    proxy_set_header X-Forwarded-Server $host;
+    proxy_pass http://10.0.1.1:8080;
+  }
+
+}

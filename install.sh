@@ -6,11 +6,11 @@ cd /opt/
 #git
 git clone https://github.com/Ne00n/wg-mesh.git
 cd wg-mesh
+#git checkout experimental
 useradd wg-mesh -r -d /opt/wg-mesh -s /bin/bash
 #run init
 ./cli.py $@
 chown -R wg-mesh:wg-mesh /opt/wg-mesh/
-chmod -R 700 /opt/wg-mesh/
 #sudo permissions
 echo "wg-mesh ALL=(ALL) NOPASSWD: /sbin/ip*" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/ip*" >> /etc/sudoers.d/wg-mesh

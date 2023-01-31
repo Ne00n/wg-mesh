@@ -2,6 +2,7 @@ import ipaddress, threading, socket, random, string, json, time, os, re
 from bottle import HTTPResponse, route, run, request, template
 from Class.wireguard import Wireguard
 from Class.templator import Templator
+from threading import Thread
 from pathlib import Path
 
 tokens = []
@@ -33,10 +34,21 @@ def validateID(id):
     if not result: return False
     return True
 
+def terminateLink(folder,interface):
+    wg = Wireguard(folder)
+    time.sleep(2)
+    wg.setInterface(interface,"down")
+    wg.cleanInterface(interface)
+    return
+
 @route('/connect', method='POST')
 def index():
-    ipAddress = str(ipaddress.IPv6Address(request.environ.get('REMOTE_ADDR')).ipv4_mapped)
-    isInternal =  ipaddress.ip_address(ipAddress) in ipaddress.ip_network('10.0.0.0/8')
+    reqIP = request.environ.get('HTTP_X_REAL_IP') or request.environ.get('REMOTE_ADDR')
+    if ipaddress.ip_address(reqIP).version == 6 and ipaddress.IPv6Address(reqIP).ipv4_mapped:
+        requestIP = ipaddress.IPv6Address(reqIP).ipv4_mapped
+    else:
+        requestIP = reqIP
+    isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network('10.0.0.0/8')
     payload = json.load(request.body)
     #validate token
     if not isInternal:
@@ -54,7 +66,7 @@ def index():
     servName = "v6Serv" if payload['ipv6'] else "Serv"
     interface = wg.getInterface(payload['id'],servName)
     #generate wireguard config
-    serverConfig = templator.genServer(interface,request.environ.get('REMOTE_ADDR'),config['id'],lastbyte,port,payload['clientPublicKey'])
+    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'])
     #save
     wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
     wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
@@ -82,12 +94,13 @@ def index():
         #check if they match
         if payload['publicKeyServer'] == publicKeyServer:
             #terminate the link
-            wg.setInterface(payload['interface'],"down")
-            wg.cleanInterface(payload['interface'])
+            termination = Thread(target=terminateLink, args=([folder,payload['interface']]))
+            termination.start()
             return HTTPResponse(status=200, body="link terminated")
         else:
             return HTTPResponse(status=400, body="invalid public key")
     else:
         return HTTPResponse(status=400, body="invalid link")
 
-run(host='::', port=8080, server='paste')
+listen = '::' if config['listen'] == "public" else f"10.0.{config['id']}.1"
+run(host=listen, port=8080, server='paste')

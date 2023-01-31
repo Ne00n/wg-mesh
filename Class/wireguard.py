@@ -58,16 +58,24 @@ class Wireguard(Base):
         for key,ip in config['connectivity'].items():
             if ip is not None: return ip
 
-    def init(self,id,name):
+    def init(self,id,listen):
         if os.path.isfile(f"{self.path}/config.json"): exit("Config already exists")
         print("Getting external IPv4 and IPv6")
         ipv4 = self.fetch("https://checkip.amazonaws.com")
         ipv6 = self.fetch("https://api6.ipify.org/")
         print(f"Got {ipv4} and {ipv6}")
-
+        #config
         print("Generating config.json")
-        config = {"name":name,"prefix":"pipe","id":id,"connectivity":{"ipv4":ipv4,"ipv6":ipv6}}
+        config = {"listen":listen,"prefix":"pipe","id":id,"connectivity":{"ipv4":ipv4,"ipv6":ipv6}}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
+        #load configs
+        self.prefix = "pipe"
+        configs = self.getConfigs(False)
+        #dummy
+        if not "dummy.sh" in configs:
+            dummyConfig = self.Templator.genDummy(id)
+            self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
+            self.setInterface("dummy","up")
 
     def findLowest(self,min,list):
         for i in range(min,min + 200):
@@ -112,15 +120,13 @@ class Wireguard(Base):
         with open(path, 'w') as file: file.write(data)
 
     def connect(self,dest,token=""):
-        #check if we got v6 here
-        if ":" in dest and not "[" in dest: dest = f"[{dest}]"
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
         for run in range(2):
             #call destination
             isv6 = True if run == 0 and ":" in dest or run == 1 and not ":" in dest else False
-            req = self.call(f'http://{dest}:8080/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6})
+            req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6})
             if req == False: return False
             if req.status_code == 200:
                 resp = req.json()
@@ -135,13 +141,6 @@ class Wireguard(Base):
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
                 self.setInterface(interface,"up")
-                #load configs
-                configs = self.getConfigs()
-                #check for dummy
-                if not "dummy" in configs:
-                    dummyConfig = self.Templator.genDummy(self.config['id'])
-                    self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
-                    self.setInterface("dummy","up")
                 #before we try to setup a v4 in v6 wg, we check if booth hosts have IPv6 connectivity
                 if not self.config['connectivity']['ipv6'] or not resp['connectivity']['ipv6']: break
                 if not self.config['connectivity']['ipv4'] or not resp['connectivity']['ipv4']: break
@@ -163,9 +162,12 @@ class Wireguard(Base):
             with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
             #grab wg server ip from client wg config
             if "endpoint" in config:
-                destination = re.findall(f"endpoint\s([0-9a-z:.]+):",config, re.MULTILINE)[0]
+                destination = re.findall(f'(10\.0\.[0-9]+\.)',config, re.MULTILINE)[0]
+                destination = f"{destination}1"
             elif "listen-port" in config:
-                destination = re.findall(f"client\s([0-9a-z:.]+)",config, re.MULTILINE)[0]
+                #grab ID from link
+                linkID = re.findall(f"pipe([0-9]+)",filename, re.MULTILINE)[0]
+                destination = f"10.0.{linkID}.1"
             #check if we got v6 here
             if ":" in destination: destination = f"[{destination}]"
             publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)
@@ -180,12 +182,12 @@ class Wireguard(Base):
             else:
                 print(f"Got {req.status_code} with {req.text} aborting")
         #load configs
-        configs = self.getConfigs()
-        #check for dummy
-        if "dummy" in configs:
-            #clean dummy
-            self.setInterface("dummy","down")
-            self.cleanInterface("dummy",False)
-        #clear state.json
-        if os.path.isfile(f"{self.path}/configs/state.json"):
+        configs = self.getConfigs(False)
+        #get all links
+        files = os.listdir(f"{self.path}/links/")
+        #check for dummy and .gitignore
+        if "dummy.sh" in files: files.remove("dummy.sh")
+        if ".gitignore" in files: files.remove(".gitignore")
+        #clear state.json if no links left
+        if os.path.isfile(f"{self.path}/configs/state.json") and not files:
              os.remove(f"{self.path}/configs/state.json")
