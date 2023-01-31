@@ -128,3 +128,5 @@ su wg-mesh -c "cd /opt/wg-mesh/; git pull" && systemctl restart wgmesh && system
 **Troubleshooting**
 - wg-mesh is not meshing<br>
 bird2 needs to be running / hidepid can block said access to check if bird is running
+- RTNETLINK answers: Address already in use
+Can also mean the Port wg tries to listen, is already in use. Check your existing wg links.
