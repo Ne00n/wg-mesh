@@ -125,7 +125,7 @@ class Wireguard(Base):
         clientPrivateKey, clientPublicKey = self.genKeys()
         for run in range(2):
             #call destination
-            isv6 = True if run == 0 and ":" in dest or run == 1 and not ":" in dest else False
+            isv6 = True if run == 0 and dest.count(':') > 2 or run == 1 and not dest.count(':') > 2 else False
             req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6})
             if req == False: return False
             if req.status_code == 200:
@@ -169,7 +169,7 @@ class Wireguard(Base):
                 linkID = re.findall(f"pipe([0-9]+)",filename, re.MULTILINE)[0]
                 destination = f"10.0.{linkID}.1"
             #check if we got v6 here
-            if ":" in destination: destination = f"[{destination}]"
+            if destination.count(':') > 2 : destination = f"[{destination}]"
             publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)
             interfaceRemote = self.getInterfaceRemote(filename)
             #call destination
