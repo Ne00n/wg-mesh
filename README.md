@@ -131,6 +131,8 @@ In total roughtly 60s, depending on the network size, to avoid this issue.<br>
 
 **Troubleshooting**
 - wg-mesh is not meshing<br>
-bird2 needs to be running / hidepid can block said access to check if bird is running
+bird2 needs to be running / hidepid can block said access to check if bird is running.<br>
 - RTNETLINK answers: Address already in use<br>
-Can also mean the Port wg tries to listen, is already in use. Check your existing wg links.
+Can also mean the Port wg tries to listen, is already in use. Check your existing wg links.<b>
+- duplicate vxlan mac address / vxlan mac flapping
+If you are using a virtual machine, check your machine-id if they are the same, this could cause these issues.<br>
