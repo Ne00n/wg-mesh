@@ -128,6 +128,7 @@ In total roughtly 60s, depending on the network size, to avoid this issue.<br>
 
 **Known Issues**<br>
 - Remvoing wg-mesh without prior disconnecting active links, will result in broken links until restarted.<br>
+- A client that does not have a direct connection to a newly added server, is stuck with a old outdated vxlan configuration.<br> 
 
 **Troubleshooting**
 - wg-mesh is not meshing<br>
