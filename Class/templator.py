@@ -27,7 +27,7 @@ fi'''
     def genDummy(self,serverID):
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
-    sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {print $5}' | tail -1) -j MASQUERADE;
+    sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;
     sudo ip addr add 10.0.{serverID}.1/30 dev lo;
     sudo ip link add vxlan1 type vxlan id 1 dstport 1789 local 10.0.{serverID}.1;
     sudo ip link set vxlan1 up;
