@@ -1,10 +1,16 @@
 import subprocess, requests, time
+from ipaddress import ip_network
 
 class Base:
     
-    def cmd(self,command):
-        p = subprocess.run(f"{command}", stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        return p.stdout.decode('utf-8')
+    def cmd(self,cmd):
+        p = subprocess.run(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        return [p.stdout.decode('utf-8'),p.stderr.decode('utf-8')]
+
+    def sameNetwork(self,origin,target):
+        o = ip_network(origin, strict = False).network_address
+        t = ip_network(target, strict = False).network_address
+        return o == t
 
     def call(self,url,payload):
         for run in range(1,5):
