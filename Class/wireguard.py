@@ -119,6 +119,27 @@ class Wireguard(Base):
     def saveFile(self,data,path):
         with open(path, 'w') as file: file.write(data)
 
+    def filesToLinks(self,files):
+        links = {}
+        for findex, filename in enumerate(files):
+            if not filename.endswith(".sh") or filename == "dummy.sh": continue
+            with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
+            #grab wg server ip from client wg config
+            if "endpoint" in config:
+                destination = re.findall(f'(10\.0\.[0-9]+\.)',config, re.MULTILINE)[0]
+                destination = f"{destination}1"
+            elif "listen-port" in config:
+                #grab ID from filename
+                linkID = re.findall(f"pipe([0-9]+)",filename, re.MULTILINE)[0]
+                destination = f"10.0.{linkID}.1"
+            #get remote endpoint
+            local = re.findall(f'((10\.0\.[0-9]+\.)([0-9]+)\/31)',config, re.MULTILINE)[0]
+            remote = f"{local[1]}{int(local[2])-1}" if self.sameNetwork(f"{local[1]}{int(local[2])-1}",local[0]) else f"{local[1]}{int(local[2])+1}"
+            #grab publickey
+            publicKey = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)
+            links[filename] = {"filename":filename,"vxlan":destination,"local":local[0],"remote":remote,'publicKey':publicKey}
+        return links
+
     def connect(self,dest,token=""):
         print(f"Connecting to {dest}")
         #generate new key pair
