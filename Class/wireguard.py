@@ -172,29 +172,31 @@ class Wireguard(Base):
         return True
 
     def disconnect(self,force=False,link=""):
-        print("Disconnecting")
+        print("Getting Links")
         files = os.listdir(f"{self.path}/links/")
-        for findex, filename in enumerate(files):
-            if filename == "dummy.sh": continue
-            if not filename.endswith(".sh"): continue
+        links = self.filesToLinks(files)
+        print("Checking Links")
+        #fping
+        fping = "fping -c1"
+        for filename,row in links.items(): fping += f" {row['remote']}"
+        results = self.cmd(fping)
+        #parsing results
+        parsed = re.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|NaN).*?([0-9]+)% loss",results, re.MULTILINE)
+        online,offline = [],[]
+        #categorizing results
+        for ip,ms,loss in parsed:
+            filename = self.getFilename(links,ip)
+            offline.append(filename) if ms == "Nan" else online.append(filename)
+        #shutdown the links that are offline first
+        targets = offline + online
+        print("Disconnecting")
+        for filename in targets:
             #if a specific link is given filter out
             if link and link not in filename: continue
-            print(f"Reading Link {filename}")
-            with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
-            #grab wg server ip from client wg config
-            if "endpoint" in config:
-                destination = re.findall(f'(10\.0\.[0-9]+\.)',config, re.MULTILINE)[0]
-                destination = f"{destination}1"
-            elif "listen-port" in config:
-                #grab ID from link
-                linkID = re.findall(f"pipe([0-9]+)",filename, re.MULTILINE)[0]
-                destination = f"10.0.{linkID}.1"
-            #check if we got v6 here
-            if destination.count(':') > 2 : destination = f"[{destination}]"
-            publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)
             interfaceRemote = self.getInterfaceRemote(filename)
             #call destination
-            req = self.call(f'http://{destination}:8080/disconnect',{"publicKeyServer":publicKeyServer[0],"interface":interfaceRemote})
+            data = links[filename]
+            req = self.call(f'http://{data["vxlan"]}:8080/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
             if req == False and force == False: continue
             if force or req.status_code == 200:
                 interface = self.filterInterface(filename)
