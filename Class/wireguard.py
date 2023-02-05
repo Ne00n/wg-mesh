@@ -179,7 +179,7 @@ class Wireguard(Base):
         #fping
         fping = "fping -c1"
         for filename,row in links.items(): fping += f" {row['remote']}"
-        results = self.cmd(fping)
+        results = self.cmd(fping)[0]
         #parsing results
         parsed = re.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|NaN).*?([0-9]+)% loss",results, re.MULTILINE)
         online,offline = [],[]
