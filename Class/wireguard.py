@@ -192,6 +192,7 @@ class Wireguard(Base):
             filename = self.getFilename(links,ip)
             offline.append(filename) if ms == "Nan" else online.append(filename)
         #shutdown the links that are offline first
+        if offline: print(f"Found offline links, disconnecting them first. {offline}")
         targets = offline + online
         print("Disconnecting")
         for filename in targets:
