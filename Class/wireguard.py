@@ -119,6 +119,10 @@ class Wireguard(Base):
     def saveFile(self,data,path):
         with open(path, 'w') as file: file.write(data)
 
+    def getFilename(self,links,remote):
+        for filename, row in links.items():
+            if row['remote'] == remote: return filename
+
     def filesToLinks(self,files):
         links = {}
         for findex, filename in enumerate(files):
