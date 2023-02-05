@@ -40,7 +40,7 @@ class Bird(Base):
         fping = "fping -c 7"
         for nic,data in targets.items():
             fping += f" {data['target']}"
-        result = self.cmd(fping)
+        result = self.cmd(fping)[0]
         parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]).*?([0-9])% loss",result, re.MULTILINE)
         if not parsed: 
             print("No pingable links found.")
@@ -67,12 +67,12 @@ class Bird(Base):
 
     def bird(self):
         #check if bird is running
-        proc = self.cmd("pgrep bird")
+        proc = self.cmd("pgrep bird")[0]
         if proc == "": 
             print("bird not running")
             return False
         print("Collecting Network data")
-        configs = self.cmd('ip addr show')
+        configs = self.cmd('ip addr show')[0]
         links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
         local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/(32|30) scope global lo",configs, re.MULTILINE | re.DOTALL)
         if not links: 
@@ -96,7 +96,7 @@ class Bird(Base):
 
     def mesh(self):
         #check if bird is running
-        proc = self.cmd("pgrep bird")
+        proc = self.cmd("pgrep bird")[0]
         if proc == "": 
             print("bird not running")
             return False
@@ -104,7 +104,7 @@ class Bird(Base):
         oldTargets,counter = [],0
         print("Waiting for bird routes")
         for run in range(30):
-            routes = self.cmd("birdc show route")
+            routes = self.cmd("birdc show route")[0]
             targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
             print(f"Run {run}/30, Counter {counter}, Got {targets} as targets")
             if oldTargets != targets:
@@ -115,7 +115,7 @@ class Bird(Base):
                 if counter == 8: break
             time.sleep(5)
         #fetch network interfaces and parse
-        configs = self.cmd('ip addr show')
+        configs = self.cmd('ip addr show')[0]
         links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
         local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/30 scope global lo",configs, re.MULTILINE | re.DOTALL)
         if not links or not local: 
@@ -126,7 +126,7 @@ class Bird(Base):
             print("bird returned no routes, did you setup bird?")
             return False
         #vxlan fuckn magic
-        vxlan = self.cmd("bridge fdb show dev vxlan1 | grep dst")
+        vxlan = self.cmd("bridge fdb show dev vxlan1 | grep dst")[0]
         for target in targets:
             ip = target.replace("0/30","1")
             if not ip in vxlan: self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1 dst {ip}")
