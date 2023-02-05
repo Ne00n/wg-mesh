@@ -201,6 +201,7 @@ class Wireguard(Base):
             interfaceRemote = self.getInterfaceRemote(filename)
             #call destination
             data = links[filename]
+            print(f'Calling http://{data["vxlan"]}:8080/disconnect')
             req = self.call(f'http://{data["vxlan"]}:8080/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
             if req == False and force == False: continue
             if force or req.status_code == 200:
