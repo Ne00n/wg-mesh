@@ -1,10 +1,9 @@
 import subprocess, requests, json, time, sys, re, os
-from ipaddress import ip_network
 from datetime import datetime
 from Class.base import Base
 from random import randint
 
-class Latency:
+class Latency(Base):
     def __init__(self,path):
         self.path = path
         file = f"{path}/configs/network.json"
@@ -22,15 +21,6 @@ class Latency:
         print(f"Saving network.json")
         with open(f"{self.path}/configs/network.json", 'w') as f:
             json.dump(self.network, f, indent=4)
-
-    def cmd(self,cmd):
-        p = subprocess.run(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        return [p.stdout.decode('utf-8'),p.stderr.decode('utf-8')]
-
-    def sameNetwork(self,origin,target):
-        o = ip_network(origin, strict = False).network_address
-        t = ip_network(target, strict = False).network_address
-        return o == t
 
     def parse(self,configRaw):
         parsed = re.findall('interface "([a-zA-Z0-9]{3,}?)".{50,170}?cost ([0-9.]+);\s#([0-9.]+)',configRaw, re.DOTALL)
