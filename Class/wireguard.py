@@ -179,6 +179,7 @@ class Wireguard(Base):
         print("Getting Links")
         files = os.listdir(f"{self.path}/links/")
         links = self.filesToLinks(files)
+        if not links: exit("No links found.")
         print("Checking Links")
         #fping
         fping = "fping -c1"
