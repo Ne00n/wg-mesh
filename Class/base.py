@@ -1,4 +1,4 @@
-import subprocess, requests, time, re
+import subprocess, requests, time
 
 class Base:
     
@@ -19,10 +19,3 @@ class Base:
                 print("Aborting, limit reached.")
                 return False
             time.sleep(2)
-
-    def parse(self,configRaw):
-        parsed = re.findall('interface "([a-zA-Z0-9]{3,}?)".{50,170}?cost ([0-9.]+);\s#([0-9.]+)',configRaw, re.DOTALL)
-        data = []
-        for nic,weight,target in parsed:
-            data.append({'nic':nic,'target':target,'weight':weight})
-        return data

@@ -4,7 +4,7 @@ from datetime import datetime
 from Class.base import Base
 from random import randint
 
-class Latency(Base):
+class Latency:
     def __init__(self,path):
         self.path = path
         file = f"{path}/configs/network.json"
@@ -31,6 +31,13 @@ class Latency(Base):
         o = ip_network(origin, strict = False).network_address
         t = ip_network(target, strict = False).network_address
         return o == t
+
+    def parse(self,configRaw):
+        parsed = re.findall('interface "([a-zA-Z0-9]{3,}?)".{50,170}?cost ([0-9.]+);\s#([0-9.]+)',configRaw, re.DOTALL)
+        data = []
+        for nic,weight,target in parsed:
+            data.append({'nic':nic,'target':target,'weight':weight})
+        return data
 
     def getAvrg(self,row,weight=False):
         result = 0
