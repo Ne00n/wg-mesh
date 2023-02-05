@@ -13,7 +13,7 @@ class Wireguard(Base):
         self.prefix = self.config['prefix']
 
     def genKeys(self):
-        keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')
+        keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')[0]
         privateKeyServer, publicKeyServer = keys.splitlines()
         return privateKeyServer, publicKeyServer
 
@@ -21,7 +21,7 @@ class Wireguard(Base):
         return self.config
 
     def getPublic(self,private):
-        return self.cmd(f'echo {private} | wg pubkey').rstrip()
+        return self.cmd(f'echo {private} | wg pubkey')[0].rstrip()
 
     def loadConfigs(self,files):
         configs = []
