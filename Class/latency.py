@@ -67,7 +67,8 @@ class Latency(Base):
                     #Packetloss
                     hasLoss,peakLoss = len(row) < pings -1,(pings -1) - len(row)
                     if hasLoss:
-                        self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 300] = peakLoss
+                        #keep for 20 minutes / 4 runs
+                        self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 1200] = peakLoss
                         print(entry,"Packetloss detected","got",len(row),f"of {pings -1}")
 
                     threshold,eventCount,eventScore = 1,0,0
@@ -75,8 +76,8 @@ class Latency(Base):
                         if int(event) > int(datetime.now().timestamp()): 
                             eventCount += 1
                             eventScore += lost
-                        #delete events after 30 minutes
-                        elif (int(datetime.now().timestamp()) - 1800) > int(event):
+                        #delete events after 60 minutes
+                        elif (int(datetime.now().timestamp()) - 3600) > int(event):
                             del self.network[entry]['packetloss'][event]
                     
                     if eventCount > 0: eventScore = eventScore / eventCount
@@ -89,7 +90,8 @@ class Latency(Base):
                     #Jitter
                     hasJitter,peakJitter = self.hasJitter(row,self.getAvrg(row,True))
                     if hasJitter:
-                        self.network[entry]['jitter'][int(datetime.now().timestamp()) + 300] = peakJitter
+                        #keep for 20 minutes / 4 runs
+                        self.network[entry]['jitter'][int(datetime.now().timestamp()) + 1200] = peakJitter
                         print(entry,"High Jitter dectected")
 
                     threshold,eventCount,eventScore = 2,0,0
@@ -97,8 +99,8 @@ class Latency(Base):
                         if int(event) > int(datetime.now().timestamp()): 
                             eventCount += 1
                             eventScore += peak
-                        #delete events after 30 minutes
-                        elif (int(datetime.now().timestamp()) - 1800) > int(event):
+                        #delete events after 60 minutes
+                        elif (int(datetime.now().timestamp()) - 3600) > int(event):
                             del self.network[entry]['jitter'][event]
                     
                     if eventCount > 0: eventScore = eventScore / eventCount
