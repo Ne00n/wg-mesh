@@ -144,10 +144,15 @@ class Latency(Base):
         if not result:
             print("Nothing to do")
         else:
-            #write
-            print("Writing config")
-            self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
-            #reload
-            print("Reloading bird")
-            self.cmd('sudo systemctl reload bird')
+            #reload bird with updates only every 5 minutes
+            if datetime.now().minute % 5 != 0
+                #write
+                print("Writing config")
+                self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
+                #reload
+                print("Reloading bird")
+                self.cmd('sudo systemctl reload bird')
+            else:
+                print(f"{datetime.now().minute} not in window.")
+        #however save any packetloss or jitter detected
         self.save()
