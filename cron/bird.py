@@ -26,5 +26,6 @@ while True:
     if runs == 6:
         if links: latency.run()
         runs = 0
-    time.sleep(10)
+    else:
+        time.sleep(10)
     runs += 1
