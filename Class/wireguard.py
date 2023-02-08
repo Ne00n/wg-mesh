@@ -191,7 +191,7 @@ class Wireguard(Base):
         #categorizing results
         for ip,ms,loss in parsed:
             filename = self.getFilename(links,ip)
-            offline.append(filename) if ms == "Nan" else online.append(filename)
+            offline.append(filename) if ms == "NaN" else online.append(filename)
         #shutdown the links that are offline first
         if offline: print(f"Found offline links, disconnecting them first. {offline}")
         targets = offline + online
