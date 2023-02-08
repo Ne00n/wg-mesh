@@ -57,7 +57,7 @@ class Latency(Base):
             row.sort()
             #del row[len(row) -1] #drop the highest ping result
         current = int(datetime.now().timestamp())
-        self.total,self.loss,self.jittar = 0,0,0
+        self.total,self.loss,self.hasLoss,self.jittar = 0,0,0,0
         for node in list(config):
             for entry,row in latency.items():
                 if entry == node['target']:
@@ -70,6 +70,7 @@ class Latency(Base):
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = peakLoss
                         print(entry,"Packetloss detected","got",len(row),f"of {pings -1}")
+                        self.hasLoss =+ 1
 
                     threshold,eventCount,eventScore = 1,0,0
                     for event,lost in list(self.network[entry]['packetloss'].items()):
@@ -145,7 +146,7 @@ class Latency(Base):
             print("Nothing to do")
         else:
             #reload bird with updates only every 5 minutes or if packetloss is detected
-            if datetime.now().minute % 5 == 0 or self.loss > 0:
+            if datetime.now().minute % 5 == 0 or self.hasLoss > 0:
                 #write
                 print("Writing config")
                 self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
