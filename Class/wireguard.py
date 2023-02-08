@@ -182,16 +182,16 @@ class Wireguard(Base):
         if not links: exit("No links found.")
         print("Checking Links")
         #fping
-        fping = "fping -c1"
+        fping = "fping -c2"
         for filename,row in links.items(): fping += f" {row['remote']}"
-        results = self.cmd(fping)[0]
-        #parsing results
-        parsed = re.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|NaN).*?([0-9]+)% loss",results, re.MULTILINE)
+        results = self.cmd(fping)[1].splitlines()
         online,offline = [],[]
         #categorizing results
-        for ip,ms,loss in parsed:
-            filename = self.getFilename(links,ip)
-            offline.append(filename) if ms == "NaN" else online.append(filename)
+        for row in results:
+            if "xmt/rcv/%loss" in row:
+                ip = re.findall(f'([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)',row, re.MULTILINE)[0]
+                filename = self.getFilename(links,ip)
+                offline.append(filename) if "100%" in row else online.append(filename)
         #shutdown the links that are offline first
         if offline: print(f"Found offline links, disconnecting them first. {offline}")
         targets = offline + online
