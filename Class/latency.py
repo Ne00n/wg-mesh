@@ -31,6 +31,7 @@ class Latency(Base):
 
     def getAvrg(self,row,weight=False):
         result = 0
+        if not row: return 65000
         for entry in row:
             result += float(entry[0])
         if weight: return int(float(result / len(row)))
