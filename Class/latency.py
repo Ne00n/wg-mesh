@@ -144,8 +144,8 @@ class Latency(Base):
         if not result:
             print("Nothing to do")
         else:
-            #reload bird with updates only every 5 minutes
-            if datetime.now().minute % 5 == 0:
+            #reload bird with updates only every 5 minutes or if packetloss is detected
+            if datetime.now().minute % 5 == 0 or self.packetloss > 0:
                 #write
                 print("Writing config")
                 self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
