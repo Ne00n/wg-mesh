@@ -1,11 +1,13 @@
 class Templator:
 
     def genServer(self,interface,serverID,serverIP,serverPort,ClientPublicKey):
+        mtu = 1412 if "v6" in interface else 1420
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
     sudo ip link add dev {interface} type wireguard
     sudo ip address add dev {interface} 10.0.{serverID}.{serverIP}/31
     sudo wg set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {ClientPublicKey} allowed-ips 0.0.0.0/0
+    sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
 else
     sudo ip link delete dev {interface}
@@ -13,11 +15,13 @@ fi'''
         return template
 
     def genClient(self,interface,serverID,serverIP,serverIPExternal,serverPort,serverPublicKey):
+        mtu = 1412 if "v6" in interface else 1420
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
     sudo ip link add dev {interface} type wireguard
     sudo ip address add dev {interface} 10.0.{serverID}.{int(serverIP)+1}/31
     sudo wg set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} allowed-ips 0.0.0.0/0 endpoint {serverIPExternal}:{serverPort}
+    sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
 else
     sudo ip link delete dev {interface}
