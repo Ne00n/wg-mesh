@@ -57,7 +57,7 @@ class Latency(Base):
             row.sort()
             #del row[len(row) -1] #drop the highest ping result
         current = int(datetime.now().timestamp())
-        self.total,self.loss,self.hasLoss,self.jittar = 0,0,0,0
+        self.total,self.hadLoss,self.hasLoss,self.hadJitter = 0,0,0,0
         for node in list(config):
             for entry,row in latency.items():
                 if entry == node['target']:
@@ -86,7 +86,7 @@ class Latency(Base):
                     if hadLoss:
                         node['latency'] = node['latency'] + (500 * eventScore) #+ 50ms / weight
                         print(entry,"Ongoing Packetloss")
-                        self.loss += 1
+                        self.hadLoss += 1
 
                     #Jitter
                     hasJitter,peakJitter = self.hasJitter(row,self.getAvrg(row,True))
@@ -109,13 +109,13 @@ class Latency(Base):
                     if hadJitter:
                         node['latency'] = node['latency'] + (eventScore * 10) #+ packetloss /weight
                         print(entry,"Ongoing Jitter")
-                        self.jittar += 1
+                        self.hadJitter += 1
 
                     self.total += 1
                     #make sure its always int
                     node['latency'] = int(node['latency'])
 
-        print (f"Total {self.total}, Jitter {self.jittar}, Packetloss {self.loss}")
+        print (f"Total {self.total}, Jitter {self.hadJitter}, Packetloss {self.hadLoss}")
         self.network['updated'] = int(datetime.now().timestamp())
         return config
 
