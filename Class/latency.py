@@ -1,9 +1,9 @@
 import subprocess, requests, json, time, sys, re, os
-from ipaddress import ip_network
 from datetime import datetime
+from Class.base import Base
 from random import randint
 
-class Latency:
+class Latency(Base):
     def __init__(self,path):
         self.path = path
         file = f"{path}/configs/network.json"
@@ -22,15 +22,6 @@ class Latency:
         with open(f"{self.path}/configs/network.json", 'w') as f:
             json.dump(self.network, f, indent=4)
 
-    def cmd(self,cmd):
-        p = subprocess.run(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        return [p.stdout.decode('utf-8'),p.stderr.decode('utf-8')]
-
-    def sameNetwork(self,origin,target):
-        o = ip_network(origin, strict = False).network_address
-        t = ip_network(target, strict = False).network_address
-        return o == t
-
     def parse(self,configRaw):
         parsed = re.findall('interface "([a-zA-Z0-9]{3,}?)".{50,170}?cost ([0-9.]+);\s#([0-9.]+)',configRaw, re.DOTALL)
         data = []
@@ -40,6 +31,7 @@ class Latency:
 
     def getAvrg(self,row,weight=False):
         result = 0
+        if not row: return 65000
         for entry in row:
             result += float(entry[0])
         if weight: return int(float(result / len(row)))
@@ -66,7 +58,7 @@ class Latency:
             row.sort()
             #del row[len(row) -1] #drop the highest ping result
         current = int(datetime.now().timestamp())
-        total,loss,jittar = 0,0,0
+        self.total,self.hadLoss,self.hasLoss,self.hadJitter = 0,0,0,0
         for node in list(config):
             for entry,row in latency.items():
                 if entry == node['target']:
@@ -76,16 +68,18 @@ class Latency:
                     #Packetloss
                     hasLoss,peakLoss = len(row) < pings -1,(pings -1) - len(row)
                     if hasLoss:
-                        self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 300] = peakLoss
+                        #keep for 15 minutes / 3 runs
+                        self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = peakLoss
                         print(entry,"Packetloss detected","got",len(row),f"of {pings -1}")
+                        self.hasLoss =+ 1
 
                     threshold,eventCount,eventScore = 1,0,0
                     for event,lost in list(self.network[entry]['packetloss'].items()):
                         if int(event) > int(datetime.now().timestamp()): 
                             eventCount += 1
                             eventScore += lost
-                        #delete events after 30 minutes
-                        elif (int(datetime.now().timestamp()) - 1800) > int(event):
+                        #delete events after 60 minutes
+                        elif (int(datetime.now().timestamp()) - 3600) > int(event):
                             del self.network[entry]['packetloss'][event]
                     
                     if eventCount > 0: eventScore = eventScore / eventCount
@@ -93,12 +87,13 @@ class Latency:
                     if hadLoss:
                         node['latency'] = node['latency'] + (500 * eventScore) #+ 50ms / weight
                         print(entry,"Ongoing Packetloss")
-                        loss = loss +1
+                        self.hadLoss += 1
 
                     #Jitter
                     hasJitter,peakJitter = self.hasJitter(row,self.getAvrg(row,True))
                     if hasJitter:
-                        self.network[entry]['jitter'][int(datetime.now().timestamp()) + 300] = peakJitter
+                        #keep for 15 minutes / 3 runs
+                        self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = peakJitter
                         print(entry,"High Jitter dectected")
 
                     threshold,eventCount,eventScore = 2,0,0
@@ -106,8 +101,8 @@ class Latency:
                         if int(event) > int(datetime.now().timestamp()): 
                             eventCount += 1
                             eventScore += peak
-                        #delete events after 30 minutes
-                        elif (int(datetime.now().timestamp()) - 1800) > int(event):
+                        #delete events after 60 minutes
+                        elif (int(datetime.now().timestamp()) - 3600) > int(event):
                             del self.network[entry]['jitter'][event]
                     
                     if eventCount > 0: eventScore = eventScore / eventCount
@@ -115,13 +110,13 @@ class Latency:
                     if hadJitter:
                         node['latency'] = node['latency'] + (eventScore * 10) #+ packetloss /weight
                         print(entry,"Ongoing Jitter")
-                        jittar += 1
+                        self.hadJitter += 1
 
-                    total += 1
+                    self.total += 1
                     #make sure its always int
                     node['latency'] = int(node['latency'])
 
-        print (f"Total {total}, Jitter {jittar}, Packetloss {loss}")
+        print (f"Total {self.total}, Jitter {self.hadJitter}, Packetloss {self.hadLoss}")
         self.network['updated'] = int(datetime.now().timestamp())
         return config
 
@@ -151,10 +146,15 @@ class Latency:
         if not result:
             print("Nothing to do")
         else:
-            #write
-            print("Writing config")
-            self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
-            #reload
-            print("Reloading bird")
-            self.cmd('sudo systemctl reload bird')
+            #reload bird with updates only every 5 minutes or if packetloss is detected
+            if datetime.now().minute % 5 == 0 or self.hasLoss > 0:
+                #write
+                print("Writing config")
+                self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
+                #reload
+                print("Reloading bird")
+                self.cmd('sudo systemctl reload bird')
+            else:
+                print(f"{datetime.now().minute} not in window.")
+        #however save any packetloss or jitter detected
         self.save()

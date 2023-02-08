@@ -13,7 +13,7 @@ class Wireguard(Base):
         self.prefix = self.config['prefix']
 
     def genKeys(self):
-        keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')
+        keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')[0]
         privateKeyServer, publicKeyServer = keys.splitlines()
         return privateKeyServer, publicKeyServer
 
@@ -21,7 +21,7 @@ class Wireguard(Base):
         return self.config
 
     def getPublic(self,private):
-        return self.cmd(f'echo {private} | wg pubkey').rstrip()
+        return self.cmd(f'echo {private} | wg pubkey')[0].rstrip()
 
     def loadConfigs(self,files):
         configs = []
@@ -119,6 +119,31 @@ class Wireguard(Base):
     def saveFile(self,data,path):
         with open(path, 'w') as file: file.write(data)
 
+    def getFilename(self,links,remote):
+        for filename, row in links.items():
+            if row['remote'] == remote: return filename
+
+    def filesToLinks(self,files):
+        links = {}
+        for findex, filename in enumerate(files):
+            if not filename.endswith(".sh") or filename == "dummy.sh": continue
+            with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
+            #grab wg server ip from client wg config
+            if "endpoint" in config:
+                destination = re.findall(f'(10\.0\.[0-9]+\.)',config, re.MULTILINE)[0]
+                destination = f"{destination}1"
+            elif "listen-port" in config:
+                #grab ID from filename
+                linkID = re.findall(f"pipe([0-9]+)",filename, re.MULTILINE)[0]
+                destination = f"10.0.{linkID}.1"
+            #get remote endpoint
+            local = re.findall(f'((10\.0\.[0-9]+\.)([0-9]+)\/31)',config, re.MULTILINE)[0]
+            remote = f"{local[1]}{int(local[2])-1}" if self.sameNetwork(f"{local[1]}{int(local[2])-1}",local[0]) else f"{local[1]}{int(local[2])+1}"
+            #grab publickey
+            publicKey = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)[0]
+            links[filename] = {"filename":filename,"vxlan":destination,"local":local[0],"remote":remote,'publicKey':publicKey}
+        return links
+
     def connect(self,dest,token=""):
         print(f"Connecting to {dest}")
         #generate new key pair
@@ -132,7 +157,7 @@ class Wireguard(Base):
                 resp = req.json()
                 #check if v6 or v4
                 interfaceID = f"{resp['id']}v6" if isv6 else resp['id']
-                connectivity = resp['connectivity']['ipv6'] if isv6 else resp['connectivity']['ipv4']
+                connectivity =  f"[{resp['connectivity']['ipv6']}]"  if isv6 else resp['connectivity']['ipv4']
                 #interface
                 interface = self.getInterface(interfaceID)
                 #generate config
@@ -151,29 +176,34 @@ class Wireguard(Base):
         return True
 
     def disconnect(self,force=False,link=""):
-        print("Disconnecting")
+        print("Getting Links")
         files = os.listdir(f"{self.path}/links/")
-        for findex, filename in enumerate(files):
-            if filename == "dummy.sh": continue
-            if not filename.endswith(".sh"): continue
+        links = self.filesToLinks(files)
+        if not links: exit("No links found.")
+        print("Checking Links")
+        #fping
+        fping = "fping -c2"
+        for filename,row in links.items(): fping += f" {row['remote']}"
+        results = self.cmd(fping)[1].splitlines()
+        online,offline = [],[]
+        #categorizing results
+        for row in results:
+            if "xmt/rcv/%loss" in row:
+                ip = re.findall(f'([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)',row, re.MULTILINE)[0]
+                filename = self.getFilename(links,ip)
+                offline.append(filename) if "100%" in row else online.append(filename)
+        #shutdown the links that are offline first
+        if offline: print(f"Found offline links, disconnecting them first. {offline}")
+        targets = offline + online
+        print("Disconnecting")
+        for filename in targets:
             #if a specific link is given filter out
             if link and link not in filename: continue
-            print(f"Reading Link {filename}")
-            with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
-            #grab wg server ip from client wg config
-            if "endpoint" in config:
-                destination = re.findall(f'(10\.0\.[0-9]+\.)',config, re.MULTILINE)[0]
-                destination = f"{destination}1"
-            elif "listen-port" in config:
-                #grab ID from link
-                linkID = re.findall(f"pipe([0-9]+)",filename, re.MULTILINE)[0]
-                destination = f"10.0.{linkID}.1"
-            #check if we got v6 here
-            if destination.count(':') > 2 : destination = f"[{destination}]"
-            publicKeyServer = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)
             interfaceRemote = self.getInterfaceRemote(filename)
             #call destination
-            req = self.call(f'http://{destination}:8080/disconnect',{"publicKeyServer":publicKeyServer[0],"interface":interfaceRemote})
+            data = links[filename]
+            print(f'Calling http://{data["vxlan"]}:8080/disconnect')
+            req = self.call(f'http://{data["vxlan"]}:8080/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
             if req == False and force == False: continue
             if force or req.status_code == 200:
                 interface = self.filterInterface(filename)
