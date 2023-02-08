@@ -157,7 +157,7 @@ class Wireguard(Base):
                 resp = req.json()
                 #check if v6 or v4
                 interfaceID = f"{resp['id']}v6" if isv6 else resp['id']
-                connectivity = resp['connectivity']['ipv6'] if isv6 else resp['connectivity']['ipv4']
+                connectivity =  f"[{resp['connectivity']['ipv6']}]"  if isv6 else resp['connectivity']['ipv4']
                 #interface
                 interface = self.getInterface(interfaceID)
                 #generate config
