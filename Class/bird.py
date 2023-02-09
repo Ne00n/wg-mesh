@@ -155,7 +155,7 @@ class Bird(Base):
             #wireguard
             wg = Wireguard(self.path)
             config = wg.getConfig()
-            print("meshing™")
+            print("meshing")
             results = {}
             for target in targets:
                 targetSplit = target.split(".")
