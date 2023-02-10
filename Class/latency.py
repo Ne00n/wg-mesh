@@ -73,7 +73,7 @@ class Latency(Base):
                         print(entry,"Packetloss detected","got",len(row),f"of {pings -1}")
                         self.hasLoss =+ 1
 
-                    threshold,eventCount,eventScore = 1,0,0
+                    threshold,eventCount,eventScore = 2,0,0
                     for event,lost in list(self.network[entry]['packetloss'].items()):
                         if int(event) > int(datetime.now().timestamp()): 
                             eventCount += 1
@@ -85,8 +85,9 @@ class Latency(Base):
                     if eventCount > 0: eventScore = eventScore / eventCount
                     hadLoss = True if eventCount >= threshold else False
                     if hadLoss:
-                        node['latency'] = node['latency'] + (500 * eventScore) #+ 50ms / weight
-                        print(entry,"Ongoing Packetloss")
+                        tmpLatency = node['latency']
+                        node['latency'] = node['latency'] + (50 * eventScore) #+ 50ms / weight
+                        print(entry,"Ongoing Packetloss",tmpLatency,node['latency'],eventScore)
                         self.hadLoss += 1
 
                     #Jitter
@@ -96,7 +97,7 @@ class Latency(Base):
                         self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = peakJitter
                         print(entry,"High Jitter dectected")
 
-                    threshold,eventCount,eventScore = 2,0,0
+                    threshold,eventCount,eventScore = 4,0,0
                     for event,peak in list(self.network[entry]['jitter'].items()):
                         if int(event) > int(datetime.now().timestamp()): 
                             eventCount += 1
@@ -108,7 +109,7 @@ class Latency(Base):
                     if eventCount > 0: eventScore = eventScore / eventCount
                     hadJitter = True if eventCount > threshold else False
                     if hadJitter:
-                        node['latency'] = node['latency'] + (eventScore * 10) #+ packetloss /weight
+                        node['latency'] = node['latency'] + (10 * eventScore) #+ packetloss /weight
                         print(entry,"Ongoing Jitter")
                         self.hadJitter += 1
 

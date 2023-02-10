@@ -6,7 +6,8 @@ After=network-online.target wgmesh-pipe.service
 User=wg-mesh
 Group=wg-mesh
 Type=simple
+Environment=PYTHONUNBUFFERED=1
 WorkingDirectory=/opt/wg-mesh/cron
-ExecStart=/usr/bin/python3 bird.py
+ExecStart=/usr/bin/python3 bird.py -u
 [Install]
 WantedBy=multi-user.target
