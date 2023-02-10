@@ -86,7 +86,7 @@ class Latency(Base):
                     hadLoss = True if eventCount >= threshold else False
                     if hadLoss:
                         tmpLatency = node['latency']
-                        node['latency'] = node['latency'] + (500 * eventScore) #+ 50ms / weight
+                        node['latency'] = node['latency'] + (50 * eventScore) #+ 50ms / weight
                         print(entry,"Ongoing Packetloss",tmpLatency,node['latency'],eventScore)
                         self.hadLoss += 1
 
