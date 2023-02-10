@@ -109,7 +109,7 @@ class Latency(Base):
                     if eventCount > 0: eventScore = eventScore / eventCount
                     hadJitter = True if eventCount > threshold else False
                     if hadJitter:
-                        node['latency'] = node['latency'] + (eventScore * 10) #+ packetloss /weight
+                        node['latency'] = node['latency'] + (10 * eventScore) #+ packetloss /weight
                         print(entry,"Ongoing Jitter")
                         self.hadJitter += 1
 
