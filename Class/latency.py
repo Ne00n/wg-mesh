@@ -73,7 +73,7 @@ class Latency(Base):
                         print(entry,"Packetloss detected","got",len(row),f"of {pings -1}")
                         self.hasLoss =+ 1
 
-                    threshold,eventCount,eventScore = 1,0,0
+                    threshold,eventCount,eventScore = 2,0,0
                     for event,lost in list(self.network[entry]['packetloss'].items()):
                         if int(event) > int(datetime.now().timestamp()): 
                             eventCount += 1
@@ -97,7 +97,7 @@ class Latency(Base):
                         self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = peakJitter
                         print(entry,"High Jitter dectected")
 
-                    threshold,eventCount,eventScore = 2,0,0
+                    threshold,eventCount,eventScore = 4,0,0
                     for event,peak in list(self.network[entry]['jitter'].items()):
                         if int(event) > int(datetime.now().timestamp()): 
                             eventCount += 1
