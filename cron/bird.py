@@ -24,6 +24,6 @@ while True:
                 links = currentLinks
         #every 30s
         if runs == 0 or runs == 3:
-            if links: latency.run()
+            if links: latency.run(runs)
         else:
             time.sleep(10)

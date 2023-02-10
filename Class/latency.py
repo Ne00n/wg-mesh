@@ -121,7 +121,7 @@ class Latency(Base):
         self.network['updated'] = int(datetime.now().timestamp())
         return config
 
-    def run(self):
+    def run(self,runs):
         #Check if bird is running
         print("Checking bird status")
         bird = self.cmd("pgrep bird")
@@ -148,7 +148,7 @@ class Latency(Base):
             print("Nothing to do")
         else:
             #reload bird with updates only every 5 minutes or if packetloss is detected
-            if datetime.now().minute % 5 == 0 or self.hasLoss > 0:
+            if (datetime.now().minute % 5 == 0 and runs == 0) or self.hasLoss > 0:
                 #write
                 print("Writing config")
                 self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
