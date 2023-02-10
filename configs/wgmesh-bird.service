@@ -7,6 +7,6 @@ User=wg-mesh
 Group=wg-mesh
 Type=simple
 WorkingDirectory=/opt/wg-mesh/cron
-ExecStart=/usr/bin/python3 bird.py
+ExecStart=/usr/bin/python3 bird.py -u
 [Install]
 WantedBy=multi-user.target
