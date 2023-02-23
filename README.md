@@ -137,3 +137,11 @@ bird2 needs to be running / hidepid can block said access to check if bird is ru
 Can also mean the Port wg tries to listen, is already in use. Check your existing wg links.<br>
 - duplicate vxlan mac address / vxlan mac flapping<br>
 If you are using a virtual machine, check your machine-id if they are the same, this could cause these issues.<br>
+You can fix it by running.<br>
+```
+rm -f /etc/machine-id
+rm -f /var/lib/dbus/machine-id
+dbus-uuidgen --ensure
+systemd-machine-id-setup
+reboot
+```
