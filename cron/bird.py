@@ -12,20 +12,18 @@ bird = Bird(path)
 
 path,links = f'{path}/links/',[]
 
-runs = 0
 while True:
-    currentLinks = os.listdir(path)
-    if links != currentLinks:
-        #hold until bird reports success
-        if bird.bird():
-            currentLinks = os.listdir(path)
-            bird.mesh()
-            bird.bird()
-            links = currentLinks
-    #every minute / 6 runs we do run latency
-    if runs == 6:
-        if links: latency.run()
-        runs = 0
-    else:
-        time.sleep(10)
-    runs += 1
+    for runs in range(6):
+        currentLinks = os.listdir(path)
+        if links != currentLinks:
+            #hold until bird reports success
+            if bird.bird():
+                currentLinks = os.listdir(path)
+                bird.mesh()
+                bird.bird()
+                links = currentLinks
+        #every 30s
+        if runs == 0 or runs == 3:
+            if links: latency.run(runs)
+        else:
+            time.sleep(10)
