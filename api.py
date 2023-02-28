@@ -61,7 +61,7 @@ def index():
     privateKeyServer, publicKeyServer = wg.genKeys()
     #load configs
     configs = wg.getConfigs(False)
-    lastbyte,port = wg.minimal(configs)
+    lastbyte,port = wg.minimal(configs,4,config['basePort'])
     #generate interface name
     servName = "v6Serv" if payload['ipv6'] else "Serv"
     interface = wg.getInterface(payload['id'],servName)
