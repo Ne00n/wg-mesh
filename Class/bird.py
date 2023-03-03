@@ -107,6 +107,14 @@ class Bird(Base):
             routes = self.cmd("birdc show route")[0]
             targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
             print(f"Run {run}/30, Counter {counter}, Got {targets} as targets")
+            #simple initial collision detection
+            with open('/etc/bird/bird.conf') as f: birdConfig = f.readlines()
+            #make sure it only runs before the bird config is generated
+            if "example" in birdConfig:
+                config = wg.getConfig()
+                #we should not find any existing routes with our ID otherwise collision
+                matches = re.findall(f"10\.0\.{config['id']}\.[0-9]+",routes, re.MULTILINE)
+                if matches: exit("Collision detected, aborting.")
             if oldTargets != targets:
                 oldTargets = targets
                 counter = 0
@@ -154,7 +162,6 @@ class Bird(Base):
         else:
             #wireguard
             wg = Wireguard(self.path)
-            config = wg.getConfig()
             print("meshing")
             results = {}
             for target in targets:
