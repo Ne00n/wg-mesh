@@ -154,7 +154,6 @@ class Bird(Base):
         else:
             #wireguard
             wg = Wireguard(self.path)
-            config = wg.getConfig()
             print("meshing")
             results = {}
             for target in targets:

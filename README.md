@@ -131,9 +131,23 @@ In total roughtly 60s, depending on the network size, to avoid this issue.<br>
 - A client that does not have a direct connection to a newly added server, is stuck with a old outdated vxlan configuration.<br> 
 
 **Troubleshooting**
+- wg-mesh is very slow
+sudo requires a resolvable hostname
 - wg-mesh is not meshing<br>
 bird2 needs to be running / hidepid can block said access to check if bird is running.<br>
 - RTNETLINK answers: Address already in use<br>
 Can also mean the Port wg tries to listen, is already in use. Check your existing wg links.<br>
 - duplicate vxlan mac address / vxlan mac flapping<br>
-If you are using a virtual machine, check your machine-id if they are the same, this could cause these issues.<br>
+If you are using a virtual machine, check your machine-id if they are the same.<br>
+You can check it with.<br>
+```
+cat /etc/machine-id
+```
+Which can be easily fixed by running.<br>
+```
+rm -f /etc/machine-id
+rm -f /var/lib/dbus/machine-id
+dbus-uuidgen --ensure
+systemd-machine-id-setup
+reboot
+```

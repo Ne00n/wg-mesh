@@ -55,13 +55,18 @@ def index():
         if not validateToken(payload): return HTTPResponse(status=401, body="Invalid Token")
     #validate id
     if not validateID(payload['id']): return HTTPResponse(status=404, body="Invalid ID")
+    #initial
+    if payload['initial']:
+        routes = wg.cmd("birdc show route")[0]
+        targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+        if f"10.0.{payload['id']}.0/30" in targets: return HTTPResponse(status=416, body="Collision")
     #block any other requests to prevent issues regarding port and ip assignment
     mutex.acquire()
     #generate new key pair
     privateKeyServer, publicKeyServer = wg.genKeys()
     #load configs
     configs = wg.getConfigs(False)
-    lastbyte,port = wg.minimal(configs)
+    lastbyte,port = wg.minimal(configs,4,config['basePort'])
     #generate interface name
     servName = "v6Serv" if payload['ipv6'] else "Serv"
     interface = wg.getInterface(payload['id'],servName)
