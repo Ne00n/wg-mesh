@@ -55,13 +55,13 @@ def index():
         if not validateToken(payload): return HTTPResponse(status=401, body="Invalid Token")
     #validate id
     if not validateID(payload['id']): return HTTPResponse(status=404, body="Invalid ID")
-    #block any other requests to prevent issues regarding port and ip assignment
-    mutex.acquire()
     #initial
     if payload['initial']:
         routes = wg.cmd("birdc show route")[0]
         targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
         if f"10.0.{payload['id']}.0/30" in targets: return HTTPResponse(status=416, body="Collision")
+    #block any other requests to prevent issues regarding port and ip assignment
+    mutex.acquire()
     #generate new key pair
     privateKeyServer, publicKeyServer = wg.genKeys()
     #load configs
