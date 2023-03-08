@@ -148,10 +148,15 @@ class Wireguard(Base):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
+        #initial check
+        configs = self.cmd('ip addr show')[0]
+        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
         for run in range(2):
-            #call destination
+            #prepare
+            isInitial = False if links else True
             isv6 = True if run == 0 and dest.count(':') > 2 or run == 1 and not dest.count(':') > 2 else False
-            req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6})
+            #call destination
+            req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6,"initial":isInitial})
             if req == False: return False
             if req.status_code == 200:
                 resp = req.json()
