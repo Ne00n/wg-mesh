@@ -145,9 +145,7 @@ cat /etc/machine-id
 ```
 Which can be easily fixed by running.<br>
 ```
-rm -f /etc/machine-id
-rm -f /var/lib/dbus/machine-id
-dbus-uuidgen --ensure
-systemd-machine-id-setup
+rm -f /etc/machine-id && rm -f /var/lib/dbus/machine-id
+dbus-uuidgen --ensure && systemd-machine-id-setup
 reboot
 ```
