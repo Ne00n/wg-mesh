@@ -4,21 +4,34 @@ from Class.base import Base
 from random import randint
 
 class Latency(Base):
-    def __init__(self,path):
+    def __init__(self,path,level="info"):
+        #logging
+        levels = {
+            'critical': logging.CRITICAL,
+            'error': logging.ERROR,
+            'warning': logging.WARNING,
+            'info': logging.INFO,
+            'debug': logging.DEBUG
+        }
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(levels[level])
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%H:%M:%S',level=levels[level],handlers=[RotatingFileHandler(maxBytes=10000000,backupCount=5,filename=f"{path}/logs/latency.log"),stream_handler])
         self.path = path
         file = f"{path}/configs/network.json"
         if os.path.isfile(file):
-            print("Loading","network.json")
+            logging.info(f"Loading network.json")
             try:
                 with open(file) as handle:
                     self.network = json.loads(handle.read())
             except:
+                logging.debug(f"Unable to read network.json")
                 self.network = {"created":int(datetime.now().timestamp()),"updated":0}
         else:
+            logging.debug(f"Creating network.json")
             self.network = {"created":int(datetime.now().timestamp()),"updated":0}
 
     def save(self):
-        print(f"Saving network.json")
+        logging.info(f"Saving network.json")
         with open(f"{self.path}/configs/network.json", 'w') as f:
             json.dump(self.network, f, indent=4)
 
@@ -70,7 +83,7 @@ class Latency(Base):
                     if hasLoss:
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = peakLoss
-                        print(entry,"Packetloss detected","got",len(row),f"of {pings -1}")
+                        logging.info(f"{entry} Packetloss detected got {len(row)} of {pings -1}")
                         self.hasLoss =+ 1
 
                     threshold,eventCount,eventScore = 2,0,0
@@ -87,7 +100,7 @@ class Latency(Base):
                     if hadLoss:
                         tmpLatency = node['latency']
                         node['latency'] = node['latency'] + (50 * eventScore) #+ 50ms / weight
-                        print(entry,"Ongoing Packetloss",tmpLatency,node['latency'],eventScore)
+                        logging.info(f"{entry} Ongoing Packetloss {tmpLatency,node['latency']} {eventScore}")
                         self.hadLoss += 1
 
                     #Jitter
@@ -95,7 +108,7 @@ class Latency(Base):
                     if hasJitter:
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = peakJitter
-                        print(entry,"High Jitter dectected")
+                        logging.info(f"{entry} High Jitter dectected")
 
                     threshold,eventCount,eventScore = 4,0,0
                     for event,peak in list(self.network[entry]['jitter'].items()):
@@ -110,32 +123,32 @@ class Latency(Base):
                     hadJitter = True if eventCount > threshold else False
                     if hadJitter:
                         node['latency'] = node['latency'] + (10 * eventScore) #+ packetloss /weight
-                        print(entry,"Ongoing Jitter")
+                        logging.info(f"{entry} Ongoing Jitter")
                         self.hadJitter += 1
 
                     self.total += 1
                     #make sure its always int
                     node['latency'] = int(node['latency'])
 
-        print (f"Total {self.total}, Jitter {self.hadJitter}, Packetloss {self.hadLoss}")
+        logging.info(f"Total {self.total}, Jitter {self.hadJitter}, Packetloss {self.hadLoss}")
         self.network['updated'] = int(datetime.now().timestamp())
         return config
 
     def run(self,runs):
         #Check if bird is running
-        print("Checking bird status")
+        logging.info("Checking bird status")
         bird = self.cmd("pgrep bird")
         if bird[0] == "":
-            print("bird not running")
+            logging.warning("bird not running")
             return False
         #Getting config
-        print("Reading bird config")
+        logging.info("Reading bird config")
         configRaw = self.cmd("cat /etc/bird/bird.conf")[0].rstrip()
         #Parsing
         config = self.parse(configRaw)
         configs = self.cmd('ip addr show')
         #fping
-        print("Running fping")
+        logging.info("Running fping")
         result = self.getLatency(config,11)
         #update
         local = re.findall("inet (10\.0[0-9.]+\.1)\/(32|30) scope global lo",configs[0], re.MULTILINE | re.DOTALL)
@@ -145,17 +158,17 @@ class Latency(Base):
             if "latency" not in entry: continue
             configRaw = re.sub("cost "+str(entry['weight'])+"; #"+entry['target'], "cost "+str(entry['latency'])+"; #"+entry['target'], configRaw, 0, re.MULTILINE)
         if not result:
-            print("Nothing to do")
+            logging.info("Nothing todo")
         else:
             #reload bird with updates only every 5 minutes or if packetloss is detected
             if (datetime.now().minute % 5 == 0 and runs == 0) or self.hasLoss > 0:
                 #write
-                print("Writing config")
+                logging.info("Writing config")
                 self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
                 #reload
-                print("Reloading bird")
+                logging.info("Reloading bird")
                 self.cmd('sudo systemctl reload bird')
             else:
-                print(f"{datetime.now().minute} not in window.")
+                logging.debug(f"{datetime.now().minute} not in window.")
         #however save any packetloss or jitter detected
         self.save()
