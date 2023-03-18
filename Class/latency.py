@@ -7,13 +7,7 @@ from random import randint
 class Latency(Base):
     def __init__(self,path,level="info"):
         #logging
-        levels = {
-            'critical': logging.CRITICAL,
-            'error': logging.ERROR,
-            'warning': logging.WARNING,
-            'info': logging.INFO,
-            'debug': logging.DEBUG
-        }
+        levels = {'critical': logging.CRITICAL,'error': logging.ERROR,'warning': logging.WARNING,'info': logging.INFO,'debug': logging.DEBUG}
         stream_handler = logging.StreamHandler()
         stream_handler.setLevel(levels[level])
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%H:%M:%S',level=levels[level],handlers=[RotatingFileHandler(maxBytes=10000000,backupCount=5,filename=f"{path}/logs/latency.log"),stream_handler])
