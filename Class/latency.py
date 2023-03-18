@@ -32,7 +32,7 @@ class Latency(Base):
             self.network = {"created":int(datetime.now().timestamp()),"updated":0}
 
     def save(self):
-        logging.info(f"Saving network.json")
+        logging.debug(f"Saving network.json")
         with open(f"{self.path}/configs/network.json", 'w') as f:
             json.dump(self.network, f, indent=4)
 
@@ -137,19 +137,19 @@ class Latency(Base):
 
     def run(self,runs):
         #Check if bird is running
-        logging.info("Checking bird status")
+        logging.debug("Checking bird status")
         bird = self.cmd("pgrep bird")
         if bird[0] == "":
             logging.warning("bird not running")
             return False
         #Getting config
-        logging.info("Reading bird config")
+        logging.debug"Reading bird config")
         configRaw = self.cmd("cat /etc/bird/bird.conf")[0].rstrip()
         #Parsing
         config = self.parse(configRaw)
         configs = self.cmd('ip addr show')
         #fping
-        logging.info("Running fping")
+        logging.debug("Running fping")
         result = self.getLatency(config,11)
         #update
         local = re.findall("inet (10\.0[0-9.]+\.1)\/(32|30) scope global lo",configs[0], re.MULTILINE | re.DOTALL)
@@ -159,7 +159,7 @@ class Latency(Base):
             if "latency" not in entry: continue
             configRaw = re.sub("cost "+str(entry['weight'])+"; #"+entry['target'], "cost "+str(entry['latency'])+"; #"+entry['target'], configRaw, 0, re.MULTILINE)
         if not result:
-            logging.info("Nothing todo")
+            logging.warning("Nothing todo")
         else:
             #reload bird with updates only every 5 minutes or if packetloss is detected
             if (datetime.now().minute % 5 == 0 and runs == 0) or self.hasLoss > 0:
