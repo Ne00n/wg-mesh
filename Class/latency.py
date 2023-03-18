@@ -1,4 +1,5 @@
 import subprocess, requests, logging, json, time, sys, re, os
+from logging.handlers import RotatingFileHandler
 from datetime import datetime
 from Class.base import Base
 from random import randint
