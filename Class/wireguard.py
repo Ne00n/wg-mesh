@@ -89,9 +89,6 @@ class Wireguard(Base):
     def getInterface(self,id,type=""):
         return f"{self.prefix}{id}{type}"
 
-    def pingIP(self,ip):
-        self.cmd(f"fping -c3 {ip}")
-
     def filterInterface(self,interface):
         return interface.replace(".sh","")
 
