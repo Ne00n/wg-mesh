@@ -100,8 +100,9 @@ class Latency(Base):
                     hadLoss = True if eventCount >= threshold else False
                     if hadLoss:
                         tmpLatency = node['latency']
+                        logging.debug(f"{entry} Ongoing Packetloss")
                         node['latency'] = node['latency'] + (50 * eventScore) #+ 50ms / weight
-                        logging.info(f"{entry} Ongoing Packetloss {tmpLatency,node['latency']} {eventScore}")
+                        logging.debug(f"{entry} Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
                         self.hadLoss += 1
 
                     #Jitter
@@ -123,8 +124,10 @@ class Latency(Base):
                     if eventCount > 0: eventScore = eventScore / eventCount
                     hadJitter = True if eventCount > threshold else False
                     if hadJitter:
+                        tmpLatency = node['latency']
+                        logging.debug(f"{entry} Ongoing Jitter")
                         node['latency'] = node['latency'] + (10 * eventScore) #+ packetloss /weight
-                        logging.info(f"{entry} Ongoing Jitter")
+                        logging.debug(f"{entry} Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
                         self.hadJitter += 1
 
                     self.total += 1
@@ -143,7 +146,7 @@ class Latency(Base):
             logging.warning("bird not running")
             return False
         #Getting config
-        logging.debug"Reading bird config")
+        logging.debug("Reading bird config")
         configRaw = self.cmd("cat /etc/bird/bird.conf")[0].rstrip()
         #Parsing
         config = self.parse(configRaw)
