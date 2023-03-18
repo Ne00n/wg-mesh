@@ -35,14 +35,6 @@ class Wireguard(Base):
             if not file.endswith(".sh"): files.remove(file)
         if not files and abort: exit(f"No {self.prefix} configs found")
         return files
-        
-    def getEndpoints(self,configs):
-        ips = []
-        for config in configs:
-            data = re.findall(f"(10\.0\.[0-9]+).",config, re.MULTILINE)
-            ips.append(f"{data[0]}.1")
-        ips = list(set(ips))
-        return ips
 
     def fetch(self,url):
         try:
