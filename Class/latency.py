@@ -73,7 +73,7 @@ class Latency(Base):
                     if hasLoss:
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = peakLoss
-                        self.logger.info(f"{entry} Packetloss detected got {len(row)} of {pings -1}")
+                        self.logger.info(f"{entry} / {node['nic']} Packetloss detected got {len(row)} of {pings -1}")
                         self.hasLoss =+ 1
 
                     threshold,eventCount,eventScore = 2,0,0
@@ -89,9 +89,9 @@ class Latency(Base):
                     hadLoss = True if eventCount >= threshold else False
                     if hadLoss:
                         tmpLatency = node['latency']
-                        self.logger.debug(f"{entry} Ongoing Packetloss")
+                        self.logger.debug(f"{entry} / {node['nic']} Ongoing Packetloss")
                         node['latency'] = node['latency'] + (50 * eventScore) #+ 50ms / weight
-                        self.logger.debug(f"{entry} Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
+                        self.logger.debug(f"{entry} / {node['nic']} Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
                         self.hadLoss += 1
 
                     #Jitter
@@ -99,7 +99,7 @@ class Latency(Base):
                     if hasJitter:
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = peakJitter
-                        self.logger.info(f"{entry} High Jitter dectected")
+                        self.logger.info(f"{entry} / {node['nic']} High Jitter dectected")
 
                     threshold,eventCount,eventScore = 4,0,0
                     for event,peak in list(self.network[entry]['jitter'].items()):
@@ -114,9 +114,9 @@ class Latency(Base):
                     hadJitter = True if eventCount > threshold else False
                     if hadJitter:
                         tmpLatency = node['latency']
-                        self.logger.debug(f"{entry} Ongoing Jitter")
+                        self.logger.debug(f"{entry} / {node['nic']} Ongoing Jitter")
                         node['latency'] = node['latency'] + (10 * eventScore) #+ packetloss /weight
-                        self.logger.debug(f"{entry} Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
+                        self.logger.debug(f"{entry} / {node['nic']} Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
                         self.hadJitter += 1
 
                     self.total += 1
