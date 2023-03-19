@@ -1,6 +1,5 @@
 from Class.wireguard import Wireguard
 from Class.templator import Templator
-from Class.bird import Bird
 import subprocess, sys, os
 
 class CLI:
@@ -9,7 +8,6 @@ class CLI:
         self.path = path
         self.templator = Templator()
         self.wg = Wireguard(path,True)
-        self.bird = Bird(path)
 
     def init(self,id,listen):
         self.wg.init(id,listen)
