@@ -1,6 +1,7 @@
 #!/usr/bin/python3
-import time, sys, os
+import logging, time, sys, os
 sys.path.append("..") # Adds higher directory to python modules path.
+from logging.handlers import RotatingFileHandler
 from Class.latency import Latency
 from Class.bird import Bird
 

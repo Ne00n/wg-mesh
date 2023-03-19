@@ -1,5 +1,4 @@
-import netaddr, random, logging, time, json, re, os
-from logging.handlers import RotatingFileHandler
+import netaddr, random, time, json, re, os
 from Class.templator import Templator
 from Class.wireguard import Wireguard
 from Class.base import Base
