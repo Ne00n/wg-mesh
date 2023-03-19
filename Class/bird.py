@@ -148,7 +148,7 @@ class Bird(Base):
                 if f"pipe{splitted[2]}" in link[0]:
                     #multiple links in the same subnet
                     if ip in targets: targets.remove(ip)
-        self.logger.info("Possible targets",targets)
+        self.logger.info(f"Possible targets {targets}")
         #To prevent creating connections to new nodes joined afterwards, save state
         if os.path.isfile(f"{self.path}/configs/state.json"):
             self.logger.debug("state.json already exist, skipping")
