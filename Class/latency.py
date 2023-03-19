@@ -90,7 +90,8 @@ class Latency(Base):
                     if hadLoss:
                         tmpLatency = node['latency']
                         self.logger.debug(f"{node['nic']} ({entry}) Ongoing Packetloss")
-                        node['latency'] = node['latency'] + (50 * eventScore) #+ 50ms / weight
+                        #500 = 50ms because we multiply by 100 since we can only use int to reflect smol changes
+                        node['latency'] = node['latency'] + (500 * eventScore) #+ 50ms / weight
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
                         self.hadLoss += 1
 
@@ -115,7 +116,8 @@ class Latency(Base):
                     if hadJitter:
                         tmpLatency = node['latency']
                         self.logger.debug(f"{node['nic']} ({entry}) Ongoing Jitter")
-                        node['latency'] = node['latency'] + (10 * eventScore) #+ packetloss /weight
+                        #100 = 10ms because we multiply by 100 since we can only use int to reflect smol changes
+                        node['latency'] = node['latency'] + (100 * eventScore) #+ packetloss /weight
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
                         self.hadJitter += 1
 
