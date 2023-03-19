@@ -65,7 +65,7 @@ class Bird(Base):
                     if len(row) < 5: logging.debug("Warning, expected 5 pings, got",len(row),"from",data['target'],"possible Packetloss")
                     data['latency'] = self.getAvrg(row)
                 elif data['target'] not in latency and nic in targets:
-                    logging.debug("Warning: cannot reach",data['target'],"skipping")
+                    logging.warning("Warning: cannot reach",data['target'],"skipping")
                     del targets[nic]
         if (len(targets) != len(latency)):
             logging.warning("Warning: Targets do not match expected responses.")
