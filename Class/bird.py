@@ -8,12 +8,8 @@ class Bird(Base):
     Templator = Templator()
     prefix = "pipe"
 
-    def __init__(self,path,level="info"):
-        #logging
-        levels = {'critical': logging.CRITICAL,'error': logging.ERROR,'warning': logging.WARNING,'info': logging.INFO,'debug': logging.DEBUG}
-        stream_handler = logging.StreamHandler()
-        stream_handler.setLevel(levels[level])
-        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%H:%M:%S',level=levels[level],handlers=[RotatingFileHandler(maxBytes=10000000,backupCount=5,filename=f"{path}/logs/bird.log"),stream_handler])
+    def __init__(self,path,logger):
+        self.logger = logger
         self.path = path
 
     def resolve(self,ip,range,netmask):
@@ -49,7 +45,7 @@ class Bird(Base):
         result = self.cmd(fping)[0]
         parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]).*?([0-9])% loss",result, re.MULTILINE)
         if not parsed: 
-            logging.warning("No pingable links found.")
+            self.logger.warning("No pingable links found.")
             return False
         latency =  {}
         for ip,ms,loss in parsed:
@@ -62,41 +58,41 @@ class Bird(Base):
         for nic,data in list(targets.items()):
             for entry,row in latency.items():
                 if entry == data['target']:
-                    if len(row) < 5: logging.debug("Warning, expected 5 pings, got",len(row),"from",data['target'],"possible Packetloss")
+                    if len(row) < 5: self.logger.debug("Warning, expected 5 pings, got",len(row),"from",data['target'],"possible Packetloss")
                     data['latency'] = self.getAvrg(row)
                 elif data['target'] not in latency and nic in targets:
-                    logging.warning("Warning: cannot reach",data['target'],"skipping")
+                    self.logger.warning("Warning: cannot reach",data['target'],"skipping")
                     del targets[nic]
         if (len(targets) != len(latency)):
-            logging.warning("Warning: Targets do not match expected responses.")
+            self.logger.warning("Warning: Targets do not match expected responses.")
         return targets
 
     def bird(self):
         #check if bird is running
         proc = self.cmd("pgrep bird")[0]
         if proc == "": 
-            logging.warning("bird not running")
+            self.logger.warning("bird not running")
             return False
-        logging.info("Collecting Network data")
+        self.logger.info("Collecting Network data")
         configs = self.cmd('ip addr show')[0]
         links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
         local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/(32|30) scope global lo",configs, re.MULTILINE | re.DOTALL)
         if not links: 
-            logging.warning("No wireguard interfaces found") 
+            self.logger.warning("No wireguard interfaces found") 
             return False
-        logging.info("Getting Network targets")
+        self.logger.info("Getting Network targets")
         nodes = self.genTargets(links)
-        logging.info("Latency messurement")
+        self.logger.info("Latency messurement")
         latencyData = self.getLatency(nodes)
         if not latencyData: return False
-        logging.info("Generating config")
+        self.logger.info("Generating config")
         bird = self.Templator.genBird(latencyData,local,int(time.time()))
         if bird == "": 
-            logging.warning("No bird config generated")
+            self.logger.warning("No bird config generated")
             return False
-        logging.info("Writing config")
+        self.logger.info("Writing config")
         self.cmd(f"echo '{bird}' > /etc/bird/bird.conf")
-        logging.info("Reloading bird")
+        self.logger.info("Reloading bird")
         self.cmd("sudo systemctl reload bird")
         return True
 
@@ -104,15 +100,15 @@ class Bird(Base):
         #check if bird is running
         proc = self.cmd("pgrep bird")[0]
         if proc == "": 
-            logging.warning("bird not running")
+            self.logger.warning("bird not running")
             return False
         #wait for bird to fully bootstrap
         oldTargets,counter = [],0
-        logging.info("Waiting for bird routes")
+        self.logger.info("Waiting for bird routes")
         for run in range(30):
             routes = self.cmd("birdc show route")[0]
             targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
-            logging.debug(f"Run {run}/30, Counter {counter}, Got {targets} as targets")
+            self.logger.debug(f"Run {run}/30, Counter {counter}, Got {targets} as targets")
             if oldTargets != targets:
                 oldTargets = targets
                 counter = 0
@@ -125,11 +121,11 @@ class Bird(Base):
         links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
         local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/30 scope global lo",configs, re.MULTILINE | re.DOTALL)
         if not links or not local: 
-            logging.warning("No wireguard interfaces found") 
+            self.logger.warning("No wireguard interfaces found") 
             return False
         #when targets empty, abort
         if not targets: 
-            logging.warning("bird returned no routes, did you setup bird?")
+            self.logger.warning("bird returned no routes, did you setup bird?")
             return False
         #vxlan fuckn magic
         vxlan = self.cmd("bridge fdb show dev vxlan1 | grep dst")[0]
@@ -153,14 +149,14 @@ class Bird(Base):
                 if f"pipe{splitted[2]}" in link[0]:
                     #multiple links in the same subnet
                     if ip in targets: targets.remove(ip)
-        logging.info("Possible targets",targets)
+        self.logger.info("Possible targets",targets)
         #To prevent creating connections to new nodes joined afterwards, save state
         if os.path.isfile(f"{self.path}/configs/state.json"):
-            logging.debug("state.json already exist, skipping")
+            self.logger.debug("state.json already exist, skipping")
         else:
             #wireguard
             wg = Wireguard(self.path)
-            logging.info("meshing")
+            self.logger.info("meshing")
             results = {}
             for target in targets:
                 targetSplit = target.split(".")
@@ -168,11 +164,11 @@ class Bird(Base):
                 if int(targetSplit[2]) >= 240: continue
                 dest = target.replace(".0/30",".1")
                 #no token needed but external IP for the client
-                logging.info(f"Setting up link to {dest}")
+                self.logger.info(f"Setting up link to {dest}")
                 resp = wg.connect(f"http://{dest}:8080")
                 if resp:
                     results[target] = True
                 else:
                     results[target] = False
-            logging.info("saving state.json")
+            self.logger.info("saving state.json")
             with open(f"{self.path}/configs/state.json", 'w') as f: json.dump(results, f ,indent=4)
