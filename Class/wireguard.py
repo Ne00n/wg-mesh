@@ -58,14 +58,15 @@ class Wireguard(Base):
         print(f"Got {ipv4} and {ipv6}")
         #config
         print("Generating config.json")
-        config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"connectivity":{"ipv4":ipv4,"ipv6":ipv6}}
+        connectivity = {"ipv4":ipv4,"ipv6":ipv6}
+        config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"connectivity":connectivity}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
         #load configs
         self.prefix = "pipe"
         configs = self.getConfigs(False)
         #dummy
         if not "dummy.sh" in configs:
-            dummyConfig = self.Templator.genDummy(id)
+            dummyConfig = self.Templator.genDummy(id,connectivity)
             self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
             self.setInterface("dummy","up")
 

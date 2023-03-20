@@ -30,10 +30,13 @@ else
 fi'''
         return template
 
-    def genDummy(self,serverID):
+    def genDummy(self,serverID,connectivity):
+        masquerade = ""
+        if connectivity['v4'] = masquerade .= "sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;"
+        if connectivity['v6'] = masquerade .= "sudo ip6tables -t nat -A POSTROUTING -o $(ip -6 route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;"
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
-    sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;
+    {masquerade}
     sudo ip addr add 10.0.{serverID}.1/30 dev lo;
     sudo ip -6 addr add fd10:0:{serverID}::1/48 dev lo;
     sudo ip link add vxlan1 type vxlan id 1 dstport 1789 local 10.0.{serverID}.1;
