@@ -135,11 +135,6 @@ ipv4 {
         };
 }
 
-protocol kernel {
-    ipv6 {
-        export all;
-    };
-}
 filter export_OSPFv3 {
     if (net.len > 48) then reject;
     if source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;
