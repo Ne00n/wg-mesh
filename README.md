@@ -131,7 +131,8 @@ In total roughtly 60s, depending on the network size, to avoid this issue.<br>
 - A client that does not have a direct connection to a newly added server, is stuck with a old outdated vxlan configuration.<br> 
 
 **Troubleshooting**
-- wg-mesh is very slow
+- You can check the logs/<br>
+- wg-mesh is very slow<br>
 sudo requires a resolvable hostname
 - wg-mesh is not meshing<br>
 bird2 needs to be running / hidepid can block said access to check if bird is running.<br>

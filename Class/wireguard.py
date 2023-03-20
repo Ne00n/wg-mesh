@@ -35,18 +35,10 @@ class Wireguard(Base):
             if not file.endswith(".sh"): files.remove(file)
         if not files and abort: exit(f"No {self.prefix} configs found")
         return files
-        
-    def getEndpoints(self,configs):
-        ips = []
-        for config in configs:
-            data = re.findall(f"(10\.0\.[0-9]+).",config, re.MULTILINE)
-            ips.append(f"{data[0]}.1")
-        ips = list(set(ips))
-        return ips
 
     def fetch(self,url):
         try:
-            request = urllib.request.urlopen(url, timeout=3)
+            request = urllib.request.urlopen(url, timeout=(3, 3))
             if (request.getcode() != 200): 
                 print(f"Failed to fetch {url}")
                 return
@@ -96,9 +88,6 @@ class Wireguard(Base):
 
     def getInterface(self,id,type=""):
         return f"{self.prefix}{id}{type}"
-
-    def pingIP(self,ip):
-        self.cmd(f"fping -c3 {ip}")
 
     def filterInterface(self,interface):
         return interface.replace(".sh","")

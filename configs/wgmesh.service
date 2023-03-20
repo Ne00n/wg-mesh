@@ -6,6 +6,7 @@ After=network-online.target wgmesh-pipe.service
 User=wg-mesh
 Group=wg-mesh
 Type=simple
+StandardOutput=null
 WorkingDirectory=/opt/wg-mesh
 ExecStart=/usr/bin/python3 api.py
 [Install]
