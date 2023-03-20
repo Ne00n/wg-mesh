@@ -83,6 +83,7 @@ return net ~ [ '''+localPTP+''' ];
 
 protocol direct {
     ipv4;
+    ipv6;
     interface "lo";
     interface "tunnel*";
 }
@@ -129,5 +130,32 @@ ipv4 {
             '''
         template += """
         };
+}
+
+protocol kernel {
+    ipv6 {
+        export all;
+    };
+}
+filter export_OSPFv3 {
+    if (net.len > 48) then reject;
+    if source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;
+    reject;
+}
+protocol ospf v3 {
+    ipv6 {
+        export filter export_OSPFv3;
+    };
+    area 0 {
+        """
+        for target,data in latency.items():
+            template += '''
+                interface "'''+target+'''" {
+                    type ptmp;
+                    cost '''+str(data['latency'])+'''; #'''+data['target']+'''
+                };
+            '''
+        template += """
+    };
 }"""
         return template
