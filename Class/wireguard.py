@@ -38,7 +38,7 @@ class Wireguard(Base):
 
     def fetch(self,url):
         try:
-            request = urllib.request.urlopen(url, timeout=(3, 3))
+            request = urllib.request.urlopen(url, timeout=3)
             if (request.getcode() != 200): 
                 print(f"Failed to fetch {url}")
                 return
