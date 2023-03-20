@@ -32,8 +32,8 @@ fi'''
 
     def genDummy(self,serverID,connectivity):
         masquerade = ""
-        if connectivity['v4'] = masquerade .= "sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;"
-        if connectivity['v6'] = masquerade .= "sudo ip6tables -t nat -A POSTROUTING -o $(ip -6 route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;"
+        if connectivity['v4'] = masquerade += "sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;"
+        if connectivity['v6'] = masquerade += "sudo ip6tables -t nat -A POSTROUTING -o $(ip -6 route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;"
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
     {masquerade}
