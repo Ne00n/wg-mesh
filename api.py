@@ -59,9 +59,9 @@ def index():
     isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network('10.0.0.0/8')
     payload = json.load(request.body)
     #validate token
-    if not isInternal:
+    if not isInternal and not validateToken(payload): 
         logging.info(f"Invalid Token from {requestIP}")
-        if not validateToken(payload): return HTTPResponse(status=401, body="Invalid Token")
+        return HTTPResponse(status=401, body="Invalid Token")
     #validate id
     if not validateID(payload['id']): 
         logging.info(f"Invalid ID from {requestIP}")
