@@ -6,7 +6,7 @@ cd /opt/
 #git
 git clone https://github.com/Ne00n/wg-mesh.git
 cd wg-mesh
-git checkout ipv6
+git checkout experimental
 useradd wg-mesh -r -d /opt/wg-mesh -s /bin/bash
 #run init
 ./cli.py $@

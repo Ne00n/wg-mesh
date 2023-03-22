@@ -40,9 +40,9 @@ Keep in mind, ID's 240 and higher are reserved for clients, they won't get meshe
 Public is used to expose the API to all interfaces, by default it listens only local on 10.0.id.1.<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/ipv6/install.sh | bash -s -- init 1 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 1 public
 #Install wg-mesh and initialize the second node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/ipv6/install.sh | bash -s -- init 2
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 2
 ```
 Grab the Token from Node1<br>
 ```
@@ -59,11 +59,11 @@ Regarding NAT or in general behind Firewalls, the "connector" is always a Client
 **Example 2+ nodes**<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/ipv6/install.sh | bash -s -- init 1 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 1 public
 #Install wg-mesh and initialize the second node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/ipv6/install.sh | bash -s -- init 2
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 2
 #Install wg-mesh and initialize the third node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/ipv6/install.sh | bash -s -- init 3
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 3
 ```
 Grab the Token from Node1 with
 ```
