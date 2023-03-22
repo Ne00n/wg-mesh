@@ -106,7 +106,7 @@ def index():
     #check for dummy
     if not "dummy" in configs:
         logging.debug(f"Creating dummy")
-        dummyConfig = templator.genDummy(config['id'])
+        dummyConfig = templator.genDummy(config['id'],config['connectivity'])
         wg.saveFile(dummyConfig,f"{folder}/links/dummy.sh")
         logging.debug(f"dummy up")
         wg.setInterface("dummy","up")

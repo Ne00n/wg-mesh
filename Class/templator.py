@@ -6,7 +6,8 @@ class Templator:
 if [ "$1" == "up" ];  then
     sudo ip link add dev {interface} type wireguard
     sudo ip address add dev {interface} 10.0.{serverID}.{serverIP}/31
-    sudo wg set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {ClientPublicKey} allowed-ips 0.0.0.0/0
+    sudo ip -6 address add dev {interface} fe82:{serverID}::{serverIP}/127
+    sudo wg set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {ClientPublicKey} allowed-ips 0.0.0.0/0,::0/0
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
 else
@@ -20,7 +21,8 @@ fi'''
 if [ "$1" == "up" ];  then
     sudo ip link add dev {interface} type wireguard
     sudo ip address add dev {interface} 10.0.{serverID}.{int(serverIP)+1}/31
-    sudo wg set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} allowed-ips 0.0.0.0/0 endpoint {serverIPExternal}:{serverPort}
+    sudo ip -6 address add dev {interface} fe82:{serverID}::{int(serverIP)+1}/127
+    sudo wg set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} allowed-ips 0.0.0.0/0,::0/0 endpoint {serverIPExternal}:{serverPort}
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
 else
@@ -28,17 +30,24 @@ else
 fi'''
         return template
 
-    def genDummy(self,serverID):
+    def genDummy(self,serverID,connectivity):
+        masquerade = ""
+        if connectivity['ipv4']: masquerade += "sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
+        if connectivity['ipv6']: masquerade += """    sudo ip6tables -t nat -A POSTROUTING -o $(ip -6 route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;"""
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
-    sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;
+    {masquerade}
     sudo ip addr add 10.0.{serverID}.1/30 dev lo;
+    sudo ip -6 addr add fd10:0:{serverID}::1/48 dev lo;
     sudo ip link add vxlan1 type vxlan id 1 dstport 1789 local 10.0.{serverID}.1;
-    sudo ip link set vxlan1 up;
+    sudo ip -6 link add vxlan1v6 type vxlan id 2 dstport 1790 local fd10:0:{serverID}::1;
+    sudo ip link set vxlan1 up; sudo ip -6 link set vxlan1v6 up;
     sudo ip addr add 10.0.251.{serverID}/24 dev vxlan1;
+    sudo ip -6 addr add fd10:251::{serverID}/64 dev vxlan1v6;
 else
     sudo ip addr del 10.0.{serverID}.1/30 dev lo;
-    sudo ip link delete vxlan1;
+    sudo ip -6 addr del fd10:0:{serverID}::1/48 dev lo;
+    sudo ip link delete vxlan1; sudo ip -6 link delete vxlan1v6;
 fi'''
         return template
 
@@ -77,6 +86,7 @@ return net ~ [ '''+localPTP+''' ];
 
 protocol direct {
     ipv4;
+    ipv6;
     interface "lo";
     interface "tunnel*";
 }
@@ -123,5 +133,27 @@ ipv4 {
             '''
         template += """
         };
+}
+
+filter export_OSPFv3 {
+    if (net.len > 48) then reject;
+    if source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;
+    reject;
+}
+protocol ospf v3 {
+    ipv6 {
+        export filter export_OSPFv3;
+    };
+    area 0 {
+        """
+        for target,data in latency.items():
+            template += '''
+                interface "'''+target+'''" {
+                    type ptmp;
+                    cost '''+str(data['latency'])+'''; #'''+data['target']+'''
+                };
+            '''
+        template += """
+    };
 }"""
         return template
