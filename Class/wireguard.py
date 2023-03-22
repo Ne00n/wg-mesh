@@ -141,7 +141,7 @@ class Wireguard(Base):
         configs = self.cmd('ip addr show')[0]
         links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
         #check if IPv4 is available before initial connection, otherwise setup IPv6 wg link
-        isv6 = True if not self.config['connectivity']['ipv4'] or False
+        isv6 = True if not self.config['connectivity']['ipv4'] else False
         for run in range(2):
             #prepare
             isInitial = False if links else True
