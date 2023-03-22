@@ -140,11 +140,18 @@ class Wireguard(Base):
         #initial check
         configs = self.cmd('ip addr show')[0]
         links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
-        #check if IPv4 is available before initial connection, otherwise setup IPv6 wg link
-        isv6 = True if not self.config['connectivity']['ipv4'] else False
+        isInitial = False if links else True
+        #ask remote about available protocols
+        req = self.call(f'{dest}/connectivity',{"token":token})
+        if req == False: return False
+        if req.status_code != 200:
+            print("Failed to request connectivity info, maybe wrong version?")
+            return False
+        data = req.json()
+        #start with the protocol which is available
+        if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']: isv6 = False
+        elif data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']: isv6 = True
         for run in range(2):
-            #prepare
-            isInitial = False if links else True
             #call destination
             req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6,"initial":isInitial})
             if req == False: return False
