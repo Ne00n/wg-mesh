@@ -151,6 +151,8 @@ class Wireguard(Base):
         #start with the protocol which is available
         if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']: isv6 = False
         elif data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']: isv6 = True
+        #if neither of these are available, leave it
+        else: return False
         for run in range(2):
             #call destination
             req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6,"initial":isInitial})
