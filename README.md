@@ -25,7 +25,7 @@
 - [x] disconnect nodes via cli
 - [x] VXLAN
 - [x] Dualstack and/or Singlestack (Transport)
-- [ ] Dualstack (within the VPN Network)
+- [x] Dualstack (within the VPN Network)
 - [x] Autostart Wireguard links on boot
 - [x] Active Latency optimisation
 - [x] Packet loss detection & rerouting
