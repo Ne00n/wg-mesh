@@ -27,6 +27,8 @@ class Latency(Base):
 
     def parse(self,configRaw):
         parsed = re.findall('interface "([a-zA-Z0-9]{3,}?)".{50,170}?cost ([0-9.]+);\s#([0-9.]+)',configRaw, re.DOTALL)
+        #filter double entries
+        parsed = list(set(parsed))
         data = []
         for nic,weight,target in parsed:
             data.append({'nic':nic,'target':target,'weight':weight})
