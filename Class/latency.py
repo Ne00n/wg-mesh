@@ -126,6 +126,8 @@ class Latency(Base):
                     self.total += 1
                     #make sure its always int
                     node['latency'] = int(node['latency'])
+                    #make sure we stay below max int
+                    if node['latency'] > 65535: node['latency'] = 65535
 
         self.logger.info(f"Total {self.total}, Jitter {self.hadJitter}, Packetloss {self.hadLoss}")
         self.network['updated'] = int(datetime.now().timestamp())
