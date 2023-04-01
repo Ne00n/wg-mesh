@@ -170,7 +170,7 @@ class Bird(Base):
                 resp = wg.connect(f"http://{dest}:8080")
                 if resp:
                     results[target] = True
-                    self.logger.debug(f"Link established to http://{dest}:8080")
+                    self.logger.info(f"Link established to http://{dest}:8080")
                 else:
                     results[target] = False
                     self.logger.warning(f"Failed to setup link to http://{dest}:8080")
