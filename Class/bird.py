@@ -22,7 +22,7 @@ class Bird(Base):
         result = 0
         for entry in row: 
             #ignore 100% loss
-            if entry[1] == 100: continue
+            if float(entry[1]) == 100: continue
             result += float(entry[0])
         return int(float(result / len(row)) * 100)
     
