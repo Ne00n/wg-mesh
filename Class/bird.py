@@ -20,7 +20,10 @@ class Bird(Base):
 
     def getAvrg(self,row):
         result = 0
-        for entry in row: result += float(entry[0])
+        for entry in row: 
+            #ignore 100% loss
+            if entry[1] == 100: continue
+            result += float(entry[0])
         return int(float(result / len(row)) * 100)
     
     def genTargets(self,links):
@@ -42,14 +45,13 @@ class Bird(Base):
         for nic,data in targets.items():
             fping += f" {data['target']}"
         result = self.cmd(fping)[0]
-        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]+).*?([0-9]+)% loss",result, re.MULTILINE)
+        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result, re.MULTILINE)
         if not parsed: 
             self.logger.warning("No pingable links found.")
             return False
         latency =  {}
         for ip,ms,loss in parsed:
-            if ip not in latency:
-                latency[ip] = []
+            if ip not in latency: latency[ip] = []
             latency[ip].append([ms,loss])
         for entry,row in latency.items():
             row = row[2:] #drop the first 2 pings
@@ -59,11 +61,8 @@ class Bird(Base):
                 if entry == data['target']:
                     if len(row) < 5: self.logger.debug("Warning, expected 5 pings, got",len(row),"from",data['target'],"possible Packetloss")
                     data['latency'] = self.getAvrg(row)
-                elif data['target'] not in latency and nic in targets:
-                    self.logger.warning(f"Cannot reach {nic} {data['target']} skipping")
-                    del targets[nic]
-        if (len(targets) != len(latency)):
-            self.logger.warning("Targets do not match expected responses.")
+                    if data['latency'] == 0: self.logger.warning(f"Cannot reach {nic} {data['target']}")
+        if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
         return targets
 
     def bird(self):
