@@ -21,8 +21,8 @@ class Bird(Base):
     def getAvrg(self,row):
         result = 0
         for entry in row: 
-            #ignore 100% loss
-            if float(entry[1]) == 100: continue
+            #ignore timed out
+            if entry[0] == "timed out": continue
             result += float(entry[0])
         return int(float(result / len(row)) * 100)
     
