@@ -53,7 +53,7 @@ class Latency(Base):
         for row in config:
             fping.append(row['target'])
         result = subprocess.run(fping, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]).*?([0-9])% loss",result.stdout.decode('utf-8'), re.MULTILINE)
+        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]+).*?([0-9]+)% loss",result.stdout.decode('utf-8'), re.MULTILINE)
         latency =  {}
         for ip,ms,loss in parsed:
             if ip not in latency: latency[ip] = []

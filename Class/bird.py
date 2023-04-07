@@ -42,7 +42,7 @@ class Bird(Base):
         for nic,data in targets.items():
             fping += f" {data['target']}"
         result = self.cmd(fping)[0]
-        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]).*?([0-9])% loss",result, re.MULTILINE)
+        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]+).*?([0-9]+)% loss",result, re.MULTILINE)
         if not parsed: 
             self.logger.warning("No pingable links found.")
             return False
