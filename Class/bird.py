@@ -65,6 +65,10 @@ class Bird(Base):
                     if len(row) < 5: self.logger.warning(f"Expected 5 pings, got {len(row)} from {data['target']}, possible Packetloss")
                     data['latency'] = self.getAvrg(row)
                     if data['latency'] == 65000: self.logger.warning(f"Cannot reach {nic} {data['target']}")
+                #apparently fping 4.2 and 5.0 result in different outputs, neat, so we keep this
+                elif data['target'] not in latency and nic in targets:
+                    self.logger.warning(f"Cannot reach {nic} {data['target']}")
+                    data['latency'] = 65000
         if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
         return targets
 
