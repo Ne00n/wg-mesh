@@ -24,7 +24,10 @@ class Bird(Base):
             #ignore timed out
             if entry[0] == "timed out": continue
             result += float(entry[0])
-        return int(float(result / len(row)) * 100)
+        total = int(float(result / len(row)) * 100)
+        #do not return 0
+        if total == 0: total = 65000
+        return total
     
     def genTargets(self,links):
         result = {}
