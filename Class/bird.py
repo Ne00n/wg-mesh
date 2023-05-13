@@ -173,12 +173,12 @@ class Bird(Base):
                 dest = target.replace(".0/30",".1")
                 #no token needed but external IP for the client
                 self.logger.info(f"Setting up link to {dest}")
-                resp = wg.connect(f"http://{dest}:8080")
+                resp = wg.connect(f"http://{dest}")
                 if resp:
                     results[target] = True
-                    self.logger.info(f"Link established to http://{dest}:8080")
+                    self.logger.info(f"Link established to http://{dest}")
                 else:
                     results[target] = False
-                    self.logger.warning(f"Failed to setup link to http://{dest}:8080")
+                    self.logger.warning(f"Failed to setup link to http://{dest}")
             self.logger.info("saving state.json")
             with open(f"{self.path}/configs/state.json", 'w') as f: json.dump(results, f ,indent=4)
