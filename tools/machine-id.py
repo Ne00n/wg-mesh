@@ -5,9 +5,9 @@ from Class.base import Base
 B = Base()
 
 ids = {}
-for i in range(1,50):
+for i in range(1,80):
     print(i,"Checking machine-ID")
-    resp = B.cmd(f"ssh root@10.0.{i}.1 cat /etc/machine-id")
+    resp = B.cmd(f"ssh root@10.0.{i}.1 cat /etc/machine-id",3)
     if resp[0] == "": continue
     ids[i] = resp[0]
 

@@ -3,9 +3,12 @@ from ipaddress import ip_network
 
 class Base:
     
-    def cmd(self,cmd):
-        p = subprocess.run(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        return [p.stdout.decode('utf-8'),p.stderr.decode('utf-8')]
+    def cmd(self,cmd,timeout=None):
+        try:
+            p = subprocess.run(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, timeout=timeout)
+            return [p.stdout.decode('utf-8'),p.stderr.decode('utf-8')]
+        except:
+            return [False,False]
 
     def sameNetwork(self,origin,target):
         o = ip_network(origin, strict = False).network_address
