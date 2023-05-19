@@ -14,9 +14,8 @@ for i in range(1,80):
 currentIDs = []
 for id,machineID in ids.items():
     if machineID in currentIDs:
-        print(f"Found collision")
         for id,collisionID in ids.items():
-            if collisionID == machineID:
-                print(id,collisionID)
+            if collisionID and collisionID == machineID:
+                print(id,collisionID.rstrip())
     currentIDs.append(machineID)
 print("END")
