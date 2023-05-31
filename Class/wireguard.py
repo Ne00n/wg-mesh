@@ -143,9 +143,9 @@ class Wireguard(Base):
         links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
         isInitial = False if links else True
         #check if port is already given
-        isPort = re.findall(f":[0-9]+",dest, re.MULTILINE)
+        port = re.findall(f":[0-9]+",dest, re.MULTILINE)
         #ask remote about available protocols & port
-        if isPort:
+        if port:
             req = self.call(f'{dest}/connectivity',{"token":token})
             port = 443
         else:
@@ -163,10 +163,7 @@ class Wireguard(Base):
         else: return False
         for run in range(2):
             #call destination
-            if isPort:
-                req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6,"initial":isInitial})
-            else:
-                req = self.call(f'{dest}:{port}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6,"initial":isInitial})
+            req = self.call(f'{dest}:{port}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6,"initial":isInitial})
             if req == False: return False
             if req.status_code == 200:
                 resp = req.json()
