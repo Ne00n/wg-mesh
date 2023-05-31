@@ -146,4 +146,4 @@ def index():
         return HTTPResponse(status=400, body="invalid link")
 
 listen = '::' if config['listen'] == "public" else f"10.0.{config['id']}.1"
-run(host=listen, port=config['listenPort'], server='paste')
+run(host=listen, port=8080, server='paste')
