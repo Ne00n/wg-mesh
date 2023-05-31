@@ -143,7 +143,7 @@ class Wireguard(Base):
         links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
         isInitial = False if links else True
         #check if port is already given
-        port = re.findall(f":[0-9]+\/",dest, re.MULTILINE)
+        port = re.findall(":[0-9]+\/",dest, re.MULTILINE)
         #ask remote about available protocols & port
         if port:
             req = self.call(f'{dest}/connectivity',{"token":token})
