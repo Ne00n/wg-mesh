@@ -142,11 +142,10 @@ class Wireguard(Base):
         configs = self.cmd('ip addr show')[0]
         links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
         isInitial = False if links else True
-        #ask remote about available protocols & port
-        for port in range(8080,8085,1):
-            req = self.call(f'{dest}:{port}/connectivity',{"token":token})
-            if req: break
-        if req == False: 
+        #ask remote about available protocols
+        req = self.call(f'{dest}/connectivity',{"token":token})
+        if req == False: return False
+        if req.status_code != 200:
             print("Failed to request connectivity info, maybe wrong version?")
             return False
         data = req.json()
@@ -210,10 +209,8 @@ class Wireguard(Base):
             interfaceRemote = self.getInterfaceRemote(filename)
             #call destination
             data = links[filename]
-            for port in range(8080,8085,1):
-                print(f'Calling http://{data["vxlan"]}:{port}/disconnect')
-                req = self.call(f'http://{data["vxlan"]}:{port}/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
-                if req: break
+            print(f'Calling http://{data["vxlan"]}:8080/disconnect')
+            req = self.call(f'http://{data["vxlan"]}:8080/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
             if req == False and force == False: continue
             if force or req.status_code == 200:
                 interface = self.filterInterface(filename)
