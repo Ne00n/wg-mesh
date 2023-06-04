@@ -48,20 +48,32 @@ def terminateLink(folder,interface):
     wg.cleanInterface(interface)
     return
 
-@route('/connect', method='POST')
-def index():
+def getReqIP():
     reqIP = request.environ.get('HTTP_X_REAL_IP') or request.environ.get('REMOTE_ADDR')
     logging.debug(f"{reqIP} connecting")
-    if ipaddress.ip_address(reqIP).version == 6 and ipaddress.IPv6Address(reqIP).ipv4_mapped:
-        requestIP = ipaddress.IPv6Address(reqIP).ipv4_mapped
-    else:
-        requestIP = reqIP
+    if ipaddress.ip_address(reqIP).version == 6 and ipaddress.IPv6Address(reqIP).ipv4_mapped: return ipaddress.IPv6Address(reqIP).ipv4_mapped
+    return reqIP
+
+@route('/connectivity',method='POST')
+def index():
+    requestIP = getReqIP()
     isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network('10.0.0.0/8')
     payload = json.load(request.body)
     #validate token
-    if not isInternal:
+    if not isInternal and not validateToken(payload): 
         logging.info(f"Invalid Token from {requestIP}")
-        if not validateToken(payload): return HTTPResponse(status=401, body="Invalid Token")
+        return HTTPResponse(status=401, body="Invalid Token")
+    return HTTPResponse(status=200, body={'connectivity':config['connectivity']})
+
+@route('/connect', method='POST')
+def index():
+    requestIP = getReqIP()
+    isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network('10.0.0.0/8')
+    payload = json.load(request.body)
+    #validate token
+    if not isInternal and not validateToken(payload): 
+        logging.info(f"Invalid Token from {requestIP}")
+        return HTTPResponse(status=401, body="Invalid Token")
     #validate id
     if not validateID(payload['id']): 
         logging.info(f"Invalid ID from {requestIP}")
@@ -94,7 +106,7 @@ def index():
     #check for dummy
     if not "dummy" in configs:
         logging.debug(f"Creating dummy")
-        dummyConfig = templator.genDummy(config['id'])
+        dummyConfig = templator.genDummy(config['id'],config['connectivity'])
         wg.saveFile(dummyConfig,f"{folder}/links/dummy.sh")
         logging.debug(f"dummy up")
         wg.setInterface("dummy","up")

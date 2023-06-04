@@ -20,8 +20,14 @@ class Bird(Base):
 
     def getAvrg(self,row):
         result = 0
-        for entry in row: result += float(entry[0])
-        return int(float(result / len(row)) * 100)
+        for entry in row: 
+            #ignore timed out
+            if entry[0] == "timed out": continue
+            result += float(entry[0])
+        total = int(float(result / len(row)) * 100)
+        #do not return 0
+        if total == 0: total = 65000
+        return total
     
     def genTargets(self,links):
         result = {}
@@ -42,14 +48,13 @@ class Bird(Base):
         for nic,data in targets.items():
             fping += f" {data['target']}"
         result = self.cmd(fping)[0]
-        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]).*?([0-9])% loss",result, re.MULTILINE)
+        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result, re.MULTILINE)
         if not parsed: 
             self.logger.warning("No pingable links found.")
             return False
         latency =  {}
         for ip,ms,loss in parsed:
-            if ip not in latency:
-                latency[ip] = []
+            if ip not in latency: latency[ip] = []
             latency[ip].append([ms,loss])
         for entry,row in latency.items():
             row = row[2:] #drop the first 2 pings
@@ -57,13 +62,14 @@ class Bird(Base):
         for nic,data in list(targets.items()):
             for entry,row in latency.items():
                 if entry == data['target']:
-                    if len(row) < 5: self.logger.debug("Warning, expected 5 pings, got",len(row),"from",data['target'],"possible Packetloss")
+                    if len(row) < 5: self.logger.warning(f"Expected 5 pings, got {len(row)} from {data['target']}, possible Packetloss")
                     data['latency'] = self.getAvrg(row)
-                elif data['target'] not in latency and nic in targets:
-                    self.logger.warning("Warning: cannot reach",data['target'],"skipping")
-                    del targets[nic]
-        if (len(targets) != len(latency)):
-            self.logger.warning("Warning: Targets do not match expected responses.")
+                    if data['latency'] == 65000: self.logger.warning(f"Cannot reach {nic} {data['target']}")
+                #apparently fping 4.2 and 5.0 result in different outputs, neat, so we keep this
+                elif data['target'] not in latency and not "latency" in data:
+                    self.logger.warning(f"Cannot reach {nic} {data['target']}")
+                    data['latency'] = 65000
+        if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
         return targets
 
     def bird(self):
@@ -130,7 +136,10 @@ class Bird(Base):
         vxlan = self.cmd("bridge fdb show dev vxlan1 | grep dst")[0]
         for target in targets:
             ip = target.replace("0/30","1")
-            if not ip in vxlan: self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1 dst {ip}")
+            splitted = ip.split(".")
+            if not ip in vxlan: 
+                self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1 dst {ip}")
+                self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1v6 dst fd10:0:{splitted[2]}::1")
         #remove local machine from list
         for ip in list(targets):
             if self.resolve(local[0],ip.replace("/30",""),30):
@@ -167,7 +176,9 @@ class Bird(Base):
                 resp = wg.connect(f"http://{dest}:8080")
                 if resp:
                     results[target] = True
+                    self.logger.info(f"Link established to http://{dest}:8080")
                 else:
                     results[target] = False
+                    self.logger.warning(f"Failed to setup link to http://{dest}:8080")
             self.logger.info("saving state.json")
             with open(f"{self.path}/configs/state.json", 'w') as f: json.dump(results, f ,indent=4)

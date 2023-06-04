@@ -38,7 +38,7 @@ class Wireguard(Base):
 
     def fetch(self,url):
         try:
-            request = urllib.request.urlopen(url, timeout=(3, 3))
+            request = urllib.request.urlopen(url, timeout=3)
             if (request.getcode() != 200): 
                 print(f"Failed to fetch {url}")
                 return
@@ -58,14 +58,15 @@ class Wireguard(Base):
         print(f"Got {ipv4} and {ipv6}")
         #config
         print("Generating config.json")
-        config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"connectivity":{"ipv4":ipv4,"ipv6":ipv6}}
+        connectivity = {"ipv4":ipv4,"ipv6":ipv6}
+        config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"connectivity":connectivity}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
         #load configs
         self.prefix = "pipe"
         configs = self.getConfigs(False)
         #dummy
         if not "dummy.sh" in configs:
-            dummyConfig = self.Templator.genDummy(id)
+            dummyConfig = self.Templator.genDummy(id,connectivity)
             self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
             self.setInterface("dummy","up")
 
@@ -140,10 +141,20 @@ class Wireguard(Base):
         #initial check
         configs = self.cmd('ip addr show')[0]
         links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        isInitial = False if links else True
+        #ask remote about available protocols
+        req = self.call(f'{dest}/connectivity',{"token":token})
+        if req == False: return False
+        if req.status_code != 200:
+            print("Failed to request connectivity info, maybe wrong version?")
+            return False
+        data = req.json()
+        #start with the protocol which is available
+        if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']: isv6 = False
+        elif data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']: isv6 = True
+        #if neither of these are available, leave it
+        else: return False
         for run in range(2):
-            #prepare
-            isInitial = False if links else True
-            isv6 = True if run == 0 and dest.count(':') > 2 or run == 1 and not dest.count(':') > 2 else False
             #call destination
             req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6,"initial":isInitial})
             if req == False: return False
@@ -163,6 +174,8 @@ class Wireguard(Base):
                 #before we try to setup a v4 in v6 wg, we check if booth hosts have IPv6 connectivity
                 if not self.config['connectivity']['ipv6'] or not resp['connectivity']['ipv6']: break
                 if not self.config['connectivity']['ipv4'] or not resp['connectivity']['ipv4']: break
+                #second run going to be IPv6 if available
+                isv6 = True
             else:
                 print(f"Failed to connect to {dest}")
                 print(f"Got {req.text} as response")

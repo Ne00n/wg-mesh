@@ -27,6 +27,8 @@ class Latency(Base):
 
     def parse(self,configRaw):
         parsed = re.findall('interface "([a-zA-Z0-9]{3,}?)".{50,170}?cost ([0-9.]+);\s#([0-9.]+)',configRaw, re.DOTALL)
+        #filter double entries
+        parsed = list(set(parsed))
         data = []
         for nic,weight,target in parsed:
             data.append({'nic':nic,'target':target,'weight':weight})
@@ -51,7 +53,7 @@ class Latency(Base):
         for row in config:
             fping.append(row['target'])
         result = subprocess.run(fping, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]).*?([0-9])% loss",result.stdout.decode('utf-8'), re.MULTILINE)
+        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]+).*?([0-9]+)% loss",result.stdout.decode('utf-8'), re.MULTILINE)
         latency =  {}
         for ip,ms,loss in parsed:
             if ip not in latency: latency[ip] = []
@@ -124,6 +126,8 @@ class Latency(Base):
                     self.total += 1
                     #make sure its always int
                     node['latency'] = int(node['latency'])
+                    #make sure we stay below max int
+                    if node['latency'] > 65535: node['latency'] = 65535
 
         self.logger.info(f"Total {self.total}, Jitter {self.hadJitter}, Packetloss {self.hadLoss}")
         self.network['updated'] = int(datetime.now().timestamp())

@@ -6,7 +6,7 @@ cd /opt/
 #git
 git clone https://github.com/Ne00n/wg-mesh.git
 cd wg-mesh
-#git checkout experimental
+git checkout experimental
 useradd wg-mesh -r -d /opt/wg-mesh -s /bin/bash
 #run init
 ./cli.py $@
@@ -29,6 +29,7 @@ echo "net.ipv4.conf.all.rp_filter=0" >> /etc/sysctl.d/wg-mesh.conf
 echo "net.ipv4.conf.default.rp_filter=0" >> /etc/sysctl.d/wg-mesh.conf
 echo "net.core.default_qdisc=fq " >> /etc/sysctl.d/wg-mesh.conf
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.d/wg-mesh.conf
+echo "net.ipv6.conf.all.forwarding=1" >> /etc/sysctl.d/wg-mesh.conf
 sysctl --system
 #systemd wg-mesh service
 cp /opt/wg-mesh/configs/wgmesh.service /etc/systemd/system/wgmesh.service
