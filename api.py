@@ -136,11 +136,11 @@ def index():
     #get public key from private key
     publicKeyServer = wg.getPublic(privateKeyServer)
     #check if they match
-    if not payload['publicKeyServer'] == publicKeyServer:
+    if payload['publicKeyServer'] != publicKeyServer:
         logging.info(f"Invalid public key from {reqIP}")
         return HTTPResponse(status=400, body="invalid public key")
     #process request
-    
+
 
 @route('/disconnect', method='POST')
 def index():
@@ -153,25 +153,23 @@ def index():
         logging.info(f"Invalid interface name from {reqIP}")
         return HTTPResponse(status=400, body="Invalid link name")
     #check if interface exists
-    if os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
-        #read private key
-        with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
-        #get public key from private key
-        publicKeyServer = wg.getPublic(privateKeyServer)
-        #check if they match
-        if payload['publicKeyServer'] == publicKeyServer:
-            #terminate the link
-            logging.debug(f"starting termination thread")
-            termination = Thread(target=terminateLink, args=([folder,payload['interface']]))
-            termination.start()
-            logging.info(f"{payload['interface']} terminated")
-            return HTTPResponse(status=200, body="link terminated")
-        else:
-            logging.info(f"Invalid public key from {reqIP}")
-            return HTTPResponse(status=400, body="invalid public key")
-    else:
+    if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
         logging.info(f"Invalid link from {reqIP}")
         return HTTPResponse(status=400, body="invalid link")
+    #read private key
+    with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
+    #get public key from private key
+    publicKeyServer = wg.getPublic(privateKeyServer)
+    #check if they match
+    if payload['publicKeyServer'] != publicKeyServer:
+        logging.info(f"Invalid public key from {reqIP}")
+        return HTTPResponse(status=400, body="invalid public key")
+    #terminate the link
+    logging.debug(f"starting termination thread")
+    termination = Thread(target=terminateLink, args=([folder,payload['interface']]))
+    termination.start()
+    logging.info(f"{payload['interface']} terminated")
+    return HTTPResponse(status=200, body="link terminated")
 
 listen = '::' if config['listen'] == "public" else f"10.0.{config['id']}.1"
 run(host=listen, port=8080, server='paste')
