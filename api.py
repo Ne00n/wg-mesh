@@ -117,6 +117,31 @@ def index():
     logging.info(f"{interface} created for {requestIP}")
     return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'id':config['id'],'lastbyte':lastbyte,'port':port,'connectivity':config['connectivity']})
 
+@route('/update', method='PATCH')
+def index():
+    reqIP = request.environ.get('HTTP_X_REAL_IP') or request.environ.get('REMOTE_ADDR')
+    logging.debug(f"{reqIP} connecting")
+    payload = json.load(request.body)
+    #validate interface name
+    interface = re.findall(r"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
+    if not interface: 
+        logging.info(f"Invalid interface name from {reqIP}")
+        return HTTPResponse(status=400, body="Invalid link name")
+    #check if interface exists
+    if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
+        logging.info(f"Invalid link from {reqIP}")
+        return HTTPResponse(status=400, body="invalid link")
+    #read private key
+    with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
+    #get public key from private key
+    publicKeyServer = wg.getPublic(privateKeyServer)
+    #check if they match
+    if not payload['publicKeyServer'] == publicKeyServer:
+        logging.info(f"Invalid public key from {reqIP}")
+        return HTTPResponse(status=400, body="invalid public key")
+    #process request
+    
+
 @route('/disconnect', method='POST')
 def index():
     reqIP = request.environ.get('HTTP_X_REAL_IP') or request.environ.get('REMOTE_ADDR')
