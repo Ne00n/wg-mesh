@@ -85,6 +85,12 @@ def index():
         if f"10.0.{payload['id']}.0/30" in targets: 
             logging.info(f"ID Collision from {requestIP}")
             return HTTPResponse(status=416, body="Collision")
+    #generate interface name
+    servName = "v6Serv" if payload['ipv6'] else "Serv"
+    interface = wg.getInterface(payload['id'],servName)
+    #check if interface exists
+    if os.path.isfile(f"{folder}/links/{interface}.sh"):
+        return HTTPResponse(status=412, body="link already exists")
     #block any other requests to prevent issues regarding port and ip assignment
     mutex.acquire()
     #generate new key pair
@@ -92,9 +98,6 @@ def index():
     #load configs
     configs = wg.getConfigs(False)
     lastbyte,port = wg.minimal(configs,4,config['basePort'])
-    #generate interface name
-    servName = "v6Serv" if payload['ipv6'] else "Serv"
-    interface = wg.getInterface(payload['id'],servName)
     #generate wireguard config
     serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'])
     #save
