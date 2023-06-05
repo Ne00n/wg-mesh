@@ -182,6 +182,11 @@ class Wireguard(Base):
                 return False
         return True
 
+    def update(self,link,data):
+        with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
+        config = re.sub(f"listen-port ([0-9]+)", data['port'], config, 0, re.MULTILINE)
+        self.saveFile(config,f"{self.path}/links/{link}.sh")
+
     def disconnect(self,force=False,link=""):
         print("Getting Links")
         files = os.listdir(f"{self.path}/links/")

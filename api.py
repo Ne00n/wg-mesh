@@ -139,8 +139,11 @@ def index():
     if payload['publicKeyServer'] != publicKeyServer:
         logging.info(f"Invalid public key from {reqIP}")
         return HTTPResponse(status=400, body="invalid public key")
-    #process request
-
+    #update
+    wg.setInterface(interface,"down")
+    wg.update(interface,payload)
+    wg.setInterface(interface,"up")
+    return HTTPResponse(status=200, body="link updated")
 
 @route('/disconnect', method='POST')
 def index():
