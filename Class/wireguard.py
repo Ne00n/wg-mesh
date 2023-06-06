@@ -134,6 +134,16 @@ class Wireguard(Base):
             links[filename] = {"filename":filename,"vxlan":destination,"local":local[0],"remote":remote,'publicKey':publicKey}
         return links
 
+    def AskProtocol(self,dest,token=""):
+        #ask remote about available protocols
+        req = self.call(f'{dest}/connectivity',{"token":token})
+        if req == False: return False
+        if req.status_code != 200:
+            print("Failed to request connectivity info, maybe wrong version?")
+            return False
+        data = req.json()
+        return data
+
     def connect(self,dest,token=""):
         print(f"Connecting to {dest}")
         #generate new key pair
@@ -143,12 +153,7 @@ class Wireguard(Base):
         links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
         isInitial = False if links else True
         #ask remote about available protocols
-        req = self.call(f'{dest}/connectivity',{"token":token})
-        if req == False: return False
-        if req.status_code != 200:
-            print("Failed to request connectivity info, maybe wrong version?")
-            return False
-        data = req.json()
+        data = self.AskProtocol(dest,token)
         #start with the protocol which is available
         if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']: isv6 = False
         elif data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']: isv6 = True
@@ -192,9 +197,15 @@ class Wireguard(Base):
         print("Checking Links")
         offline,online = self.checkLinks(links)
         for link in online:
+            #ignore v6 for now
+            if "v6" in link: continue
             print(f"Checking {link}")
-            
+            #prepare
+            interfaceRemote = self.getInterfaceRemote(link)
+            data = links[link]
+            #call
 
+            
     def getLinks(self):
         print("Getting Links")
         files = os.listdir(f"{self.path}/links/")
