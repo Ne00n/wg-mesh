@@ -187,11 +187,14 @@ class Wireguard(Base):
         config = re.sub(f"listen-port ([0-9]+)", data['port'], config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
-    def disconnect(self,force=False,link=""):
+    def getLinks(self):
         print("Getting Links")
         files = os.listdir(f"{self.path}/links/")
         links = self.filesToLinks(files)
         if not links: exit("No links found.")
+
+    def disconnect(self,force=False,link=""):
+        links = self.getLinks()
         print("Checking Links")
         #fping
         fping = "fping -c2"
