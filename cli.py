@@ -14,6 +14,8 @@ elif sys.argv[1] == "init":
     cli.init(sys.argv[2],state)
 elif sys.argv[1] == "connect":
     cli.connect(sys.argv[2],sys.argv[3])
+elif sys.argv[1] == "optimize":
+    cli.optimize()
 elif sys.argv[1] == "disconnect":
     force = True if len(sys.argv) == 3 and sys.argv[2] == "force" or len(sys.argv) == 4 and sys.argv[3] == "force" else False
     link = sys.argv[2] if len(sys.argv) == 3 and sys.argv[2] != "force" else ""

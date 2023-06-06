@@ -16,6 +16,10 @@ class CLI:
         self.wg = Wireguard(self.path)
         self.wg.connect(dest,token)
 
+    def optimize(self):
+        self.wg = Wireguard(self.path)
+        self.wg.optimize()
+
     def disconnect(self,force=False,link=""):
         self.wg = Wireguard(self.path)
         self.wg.disconnect(force,link)
