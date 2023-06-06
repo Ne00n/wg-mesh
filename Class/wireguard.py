@@ -193,9 +193,7 @@ class Wireguard(Base):
         links = self.filesToLinks(files)
         if not links: exit("No links found.")
 
-    def disconnect(self,force=False,link=""):
-        links = self.getLinks()
-        print("Checking Links")
+    def checkLinks(self,links):
         #fping
         fping = "fping -c2"
         for filename,row in links.items(): fping += f" {row['remote']}"
@@ -207,6 +205,12 @@ class Wireguard(Base):
                 ip = re.findall(f'([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)',row, re.MULTILINE)[0]
                 filename = self.getFilename(links,ip)
                 offline.append(filename) if "100%" in row else online.append(filename)
+        return offline,online
+
+    def disconnect(self,force=False,link=""):
+        links = self.getLinks()
+        print("Checking Links")
+        offline,online = self.checkLinks(links)
         #shutdown the links that are offline first
         if offline: print(f"Found offline links, disconnecting them first. {offline}")
         targets = offline + online
