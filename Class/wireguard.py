@@ -215,7 +215,7 @@ class Wireguard(Base):
                 print(f"Testing on Port {port}")
                 #setup link
                 print(f'Calling {dest}/connect')
-                req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":"","ipv6":False,"initial":False})
+                req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":""})
                 if req == False: 
                     print(f"Failed to setup Link for Port {port}, aborting")
                     continue

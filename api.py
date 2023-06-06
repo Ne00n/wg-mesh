@@ -78,6 +78,9 @@ def index():
     if not validateID(payload['id']): 
         logging.info(f"Invalid ID from {requestIP}")
         return HTTPResponse(status=404, body="Invalid ID")
+    #defaults
+    if not "initial" in payload: payload['initial'] = False
+    if not "ipv6" in payload: payload['ipv6'] = False
     #initial
     if payload['initial']:
         routes = wg.cmd("birdc show route")[0]
