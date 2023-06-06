@@ -200,6 +200,7 @@ class Wireguard(Base):
         files = os.listdir(f"{self.path}/links/")
         links = self.filesToLinks(files)
         if not links: exit("No links found.")
+        return links
 
     def checkLinks(self,links):
         #fping
