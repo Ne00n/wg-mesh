@@ -80,6 +80,7 @@ def index():
         return HTTPResponse(status=404, body="Invalid ID")
     #defaults
     if not "initial" in payload: payload['initial'] = False
+    if not "prefix" in payload: payload['prefix'] = "10.0."
     if not "ipv6" in payload: payload['ipv6'] = False
     #initial
     if payload['initial']:
@@ -102,7 +103,7 @@ def index():
     configs = wg.getConfigs(False)
     lastbyte,port = wg.minimal(configs,4,config['basePort'])
     #generate wireguard config
-    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'])
+    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'],payload['prefix'])
     #save
     logging.debug(f"Creating wireguard link {interface}")
     wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
