@@ -215,7 +215,7 @@ class Wireguard(Base):
                 print(f"Testing on Port {port}")
                 #setup link
                 print(f'Calling {dest}/connect')
-                req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":""})
+                req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"prefix":"172.16."})
                 if req == False: 
                     print(f"Failed to setup Link for Port {port}, aborting")
                     continue
@@ -228,7 +228,7 @@ class Wireguard(Base):
                 connectivity = resp['connectivity']['ipv4']
                 interface = self.getInterface(interfaceID)
                 #generate config
-                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'])
+                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'],"172.16.")
                 #bring up the interface
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
