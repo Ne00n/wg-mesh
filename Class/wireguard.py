@@ -203,9 +203,53 @@ class Wireguard(Base):
             #prepare
             interfaceRemote = self.getInterfaceRemote(link)
             data = links[link]
-            #call
+            #ask remote about available protocols
+            dest = f'http://{data["vxlan"]}:8080'
+            print(f'Calling {dest}/connectivity')
+            data = self.AskProtocol(f'{dest}/connectivity','')
+            #ignore v6 for now
+            if not data['connectivity']['ipv4']: continue
+            #generate new key pair
+            clientPrivateKey, clientPublicKey = self.genKeys()
+            for port in range(1000,65000,1000):
+                print(f"Testing on Port {port}")
+                #setup link
+                print(f'Calling {dest}/connect')
+                req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":"","ipv6":False,"initial":False})
+                if req == False: 
+                    print(f"Failed to setup Link for Port {port}, aborting")
+                    continue
+                if req.status_code != 200: 
+                    print(f"Got {req.status_code} with {req.text} aborting")
+                    continue
+                resp = req.json()
+                #prepare
+                interfaceID = resp['id']
+                connectivity = resp['connectivity']['ipv4']
+                interface = self.getInterface(interfaceID)
+                #generate config
+                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'])
+                #bring up the interface
+                print(f"Creating & Starting {interface}")
+                self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
+                self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
+                self.setInterface(interface,"up")
+                #measure
+                print("Measurement...")
+                #terminate link
+                interfaceRemote = self.getInterfaceRemote(interface)
+                print(f'Calling {dest}/disconnect')
+                req = self.call(f'{dest}/disconnect',{"publicKeyServer":clientPublicKey,"interface":interfaceRemote})
+                if req == False:
+                    print("Failed to terminate link")
+                    exit()
+                if req.status_code == 200:
+                    self.setInterface(interface,"down")
+                    self.cleanInterface(interface)
+                else:
+                    print(f"Failed to terminate link, got {req.status_code} with {req.text} aborting")
+                    exit()
 
-            
     def getLinks(self):
         print("Getting Links")
         files = os.listdir(f"{self.path}/links/")
