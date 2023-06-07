@@ -207,6 +207,7 @@ class Wireguard(Base):
             dest = f'http://{data["vxlan"]}:8080'
             print(f'Calling {dest}/connectivity')
             data = self.AskProtocol(f'{dest}/connectivity','')
+            if not data: exit()
             #ignore v6 for now
             if not data['connectivity']['ipv4']: continue
             #generate new key pair
