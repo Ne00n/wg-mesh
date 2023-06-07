@@ -11,6 +11,10 @@ class Bird(Base):
         self.logger = logger
         self.path = path
 
+    def filter(entry):
+        if "Ping" in entry: return False
+        return True
+
     def resolve(self,ip,range,netmask):
         rangeDecimal = int(netaddr.IPAddress(range))
         ipDecimal = int(netaddr.IPAddress(ip))

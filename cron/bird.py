@@ -24,6 +24,8 @@ path,links = f'{path}/links/',[]
 while True:
     for runs in range(6):
         currentLinks = os.listdir(path)
+        #filter out specific links
+        currentLinks = [x for x in currentLinks if bird.filter(x)]
         if links != currentLinks:
             #hold until bird reports success
             if bird.bird():
