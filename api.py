@@ -46,6 +46,15 @@ def validatePort(port):
     if not result: return False
     return True
 
+def validateNetwork(network):
+    result = re.findall(r"^[A-Za-z]{3,6}$",port,re.MULTILINE | re.DOTALL)
+    if not result: return False
+    return True
+
+def validatePrefix(prefix):
+    if prefix == "10.0." or prefix == "172.16.": return True
+    return False
+
 def terminateLink(folder,interface):
     wg = Wireguard(folder)
     time.sleep(2)
@@ -87,6 +96,14 @@ def index():
     if "port" in payload and not validatePort(payload['port']): 
         logging.info(f"Invalid Port from {requestIP}")
         return HTTPResponse(status=404, body="Invalid Port")
+    #validate prefix
+    if "prefix" in payload and not validatePrefix(payload['prefix']):
+        logging.info(f"Invalid Prefix from {requestIP}")
+        return HTTPResponse(status=404, body="Invalid Prefix")
+    #validate network
+    if "network" in payload and not validateNetwork(payload['network']):
+        logging.info(f"Invalid Network from {requestIP}")
+        return HTTPResponse(status=404, body="Invalid Network")
     #defaults
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
