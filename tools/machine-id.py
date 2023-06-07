@@ -6,9 +6,11 @@ B = Base()
 
 ids = {}
 for i in range(1,80):
-    print(i,"Checking machine-ID")
+    print(f"10.0.{i}.1","Checking machine-ID")
     resp = B.cmd(f"ssh root@10.0.{i}.1 cat /etc/machine-id",3)
-    if resp[0] == "": continue
+    if resp[0] == "": 
+        print("Err")
+        continue
     ids[i] = resp[0]
 
 currentIDs = []
