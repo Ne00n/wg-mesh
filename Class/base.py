@@ -14,8 +14,8 @@ class Base:
         o = ip_network(origin, strict = False).network_address
         t = ip_network(target, strict = False).network_address
         return o == t
-        
-    def getAvrg(list):
+
+    def getAvrg(self,list):
         result = 0
         for ms in list:
             result += float(ms)

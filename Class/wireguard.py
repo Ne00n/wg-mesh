@@ -120,8 +120,11 @@ class Wireguard(Base):
             with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
             #grab wg server ip from client wg config
             if "endpoint" in config:
-                destination = re.findall(f'(10\.0\.[0-9]+\.)',config, re.MULTILINE)[0]
-                destination = f"{destination}1"
+                destination = re.findall(f'(10\.0\.[0-9]+\.)',config, re.MULTILINE)
+                if not destination:
+                    print(f"Ignoring {filename}")
+                    continue
+                destination = f"{destination[0]}1"
             elif "listen-port" in config:
                 #grab ID from filename
                 linkID = re.findall(f"pipe.*?([0-9]+)",filename, re.MULTILINE)[0]
@@ -238,7 +241,7 @@ class Wireguard(Base):
                 #measure
                 print("Measurement...")
                 #Running fping
-                ping = self.cmd(f"fping -c5 172.16.{resp['id']}.{resp['lastbyte']}")[0]
+                fping = self.cmd(f"fping -c5 172.16.{resp['id']}.{resp['lastbyte']}")[0]
                 parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]).*?([0-9])% loss",fping, re.MULTILINE)
                 for ip,ms,loss in parsed:
                     if port not in latency: latency[port] = []
@@ -252,7 +255,7 @@ class Wireguard(Base):
                 #terminate link
                 interfaceRemote = self.getInterfaceRemote(interface,"Ping")
                 print(f'Calling {dest}/disconnect')
-                req = self.call(f'{dest}/disconnect',{"publicKeyServer":clientPublicKey,"interface":interfaceRemote},10)
+                req = self.call(f'{dest}/disconnect',{"publicKeyServer":resp['publicKeyServer'],"interface":interfaceRemote},10)
                 if req == False:
                     print("Failed to terminate link")
                     exit()
@@ -262,6 +265,7 @@ class Wireguard(Base):
                 else:
                     print(f"Failed to terminate link, got {req.status_code} with {req.text} aborting")
                     exit()
+                time.sleep(2)
             latency = sorted(latency.items(), key=lambda x: x[1])
             for row in latency:
                 print(f"{row[1]:.2f}ms {row[0]}")
