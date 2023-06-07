@@ -206,7 +206,7 @@ class Wireguard(Base):
             #ask remote about available protocols
             dest = f'http://{data["vxlan"]}:8080'
             print(f'Calling {dest}/connectivity')
-            data = self.AskProtocol(f'{dest}/connectivity','')
+            data = self.AskProtocol(f'{dest}','')
             if not data: exit()
             #ignore v6 for now
             if not data['connectivity']['ipv4']: continue
