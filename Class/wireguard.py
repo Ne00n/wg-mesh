@@ -268,8 +268,13 @@ class Wireguard(Base):
                     print(f"Failed to terminate link, got {req.status_code} with {req.text} aborting")
                     exit()
             latency = sorted(latency.items(), key=lambda x: x[1])
-            for row in latency:
-                print(f"{row[1]:.2f}ms {row[0]}")
+            lowestPort = latency[0][0]
+            print(f"Port with lowest latency {lowestPort}")
+            diff = int(float(latency[len(latency) -1][1]) - float(latency[0][1]))
+            if diff >= 10:
+                print(f"Suggested {lowestPort} for a reduction of {diff}ms")
+            else:
+                print("Nothing to optimize")
 
     def getLinks(self):
         print("Getting Links")
