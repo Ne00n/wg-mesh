@@ -11,7 +11,7 @@ class Bird(Base):
         self.logger = logger
         self.path = path
 
-    def filter(entry):
+    def filter(self,entry):
         if "Ping" in entry: return False
         return True
 
