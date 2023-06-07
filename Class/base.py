@@ -14,6 +14,12 @@ class Base:
         o = ip_network(origin, strict = False).network_address
         t = ip_network(target, strict = False).network_address
         return o == t
+        
+    def getAvrg(list):
+        result = 0
+        for ms in list:
+            result += float(ms)
+        return round(float(result / len(list)),2)
 
     def call(self,url,payload,max=5):
         for run in range(1,max):

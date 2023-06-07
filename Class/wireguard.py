@@ -201,6 +201,7 @@ class Wireguard(Base):
             if "v6" in link: continue
             print(f"Checking {link}")
             #prepare
+            latency = {}
             data = links[link]
             #ask remote about available protocols
             dest = f'http://{data["vxlan"]}:8080'
@@ -235,6 +236,18 @@ class Wireguard(Base):
                 self.setInterface(interface,"up")
                 #measure
                 print("Measurement...")
+                #Running fping
+                ping = self.cmd(f"fping -c5 172.16.{resp['id']}.{resp['lastbyte']}")[0]
+                parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]).*?([0-9])% loss",fping, re.MULTILINE)
+                for ip,ms,loss in parsed:
+                    if port not in latency: latency[port] = []
+                    latency[port].append(ms)
+                #drop first ping result
+                del latency[port][0]
+                latency[port].sort()
+                avg = self.getAvrg(latency[port])
+                latency[port] = avg
+                print(f"Got {avg}ms")
                 #terminate link
                 interfaceRemote = self.getInterfaceRemote(interface,"Ping")
                 print(f'Calling {dest}/disconnect')
@@ -248,6 +261,9 @@ class Wireguard(Base):
                 else:
                     print(f"Failed to terminate link, got {req.status_code} with {req.text} aborting")
                     exit()
+            latency = sorted(latency.items(), key=lambda x: x[1])
+            for row in latency:
+                print(f"{row[1]:.2f}ms {row[0]}")
 
     def getLinks(self):
         print("Getting Links")
