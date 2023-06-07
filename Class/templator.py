@@ -115,26 +115,26 @@ filter export_OSPF {
     reject;
 }
 
-'''
-        for target,data in latency.items():
-            template += '''
-protocol ospf '''+target+''' {
-    ipv4 {
+protocol ospf {
+ipv4 {
         import all;
         export filter export_OSPF;
     };
-    area 0 {
-        interface "'''+target+'''" {
-                type ptmp;
-                neighbors {
-                    '''+data['target']+''';
+	area 0 { '''
+        for target,data in latency.items():
+            template += '''
+                interface "'''+target+'''" {
+                        type ptmp;
+                        neighbors {
+                        '''+data['target']+''';
+                        };
+                        cost '''+str(data['latency'])+'''; #'''+data['target']+'''
                 };
-                cost '''+str(data['latency'])+'''; #'''+data['target']+'''
+            '''
+        template += """
         };
-    };
 }
-'''
-        template += '''
+
 filter export_OSPFv3 {
     if (net.len > 48) then reject;
     if source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;
@@ -145,7 +145,7 @@ protocol ospf v3 {
         export filter export_OSPFv3;
     };
     area 0 {
-        '''
+        """
         for target,data in latency.items():
             template += '''
                 interface "'''+target+'''" {
@@ -153,7 +153,7 @@ protocol ospf v3 {
                     cost '''+str(data['latency'])+'''; #'''+data['target']+'''
                 };
             '''
-        template += '''
+        template += """
     };
-}'''
+}"""
         return template
