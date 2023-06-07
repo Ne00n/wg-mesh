@@ -269,7 +269,6 @@ class Wireguard(Base):
                     exit()
             latency = sorted(latency.items(), key=lambda x: x[1])
             lowestPort = latency[0][0]
-            print(f"Port with lowest latency {lowestPort}")
             diff = int(float(latency[len(latency) -1][1]) - float(latency[0][1]))
             if diff >= 10:
                 print(f"Suggested {lowestPort} for a reduction of {diff}ms")
