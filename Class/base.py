@@ -15,8 +15,8 @@ class Base:
         t = ip_network(target, strict = False).network_address
         return o == t
 
-    def call(self,url,payload):
-        for run in range(1,5):
+    def call(self,url,payload,max=5):
+        for run in range(1,max):
             try:
                 req = requests.post(url, json=payload, timeout=(5,5))
                 if req.status_code == 200: return req

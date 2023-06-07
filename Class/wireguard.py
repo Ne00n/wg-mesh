@@ -238,7 +238,7 @@ class Wireguard(Base):
                 #terminate link
                 interfaceRemote = self.getInterfaceRemote(interface,"Ping")
                 print(f'Calling {dest}/disconnect')
-                req = self.call(f'{dest}/disconnect',{"publicKeyServer":clientPublicKey,"interface":interfaceRemote})
+                req = self.call(f'{dest}/disconnect',{"publicKeyServer":clientPublicKey,"interface":interfaceRemote},10)
                 if req == False:
                     print("Failed to terminate link")
                     exit()
