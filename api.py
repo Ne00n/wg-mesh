@@ -47,7 +47,7 @@ def validatePort(port):
     return True
 
 def validateNetwork(network):
-    result = re.findall(r"^[A-Za-z]{3,6}$",port,re.MULTILINE | re.DOTALL)
+    result = re.findall(r"^[A-Za-z]{3,6}$",network,re.MULTILINE | re.DOTALL)
     if not result: return False
     return True
 
