@@ -55,9 +55,9 @@ def validatePrefix(prefix):
     if prefix == "10.0." or prefix == "172.16.": return True
     return False
 
-def terminateLink(folder,interface):
+def terminateLink(folder,interface,wait=True):
     wg = Wireguard(folder)
-    time.sleep(2)
+    if wait: time.sleep(2)
     wg.setInterface(interface,"down")
     wg.cleanInterface(interface)
     return
@@ -201,8 +201,11 @@ def index():
         return HTTPResponse(status=400, body="invalid public key")
     #terminate the link
     logging.debug(f"starting termination thread")
-    termination = Thread(target=terminateLink, args=([folder,payload['interface']]))
-    termination.start()
+    if "wait" in payload and payload['wait'] == False:
+        terminateLink(folder,payload['interface'],False)
+    else:
+        termination = Thread(target=terminateLink, args=([folder,payload['interface']]))
+        termination.start()
     logging.info(f"{payload['interface']} terminated")
     return HTTPResponse(status=200, body="link terminated")
 

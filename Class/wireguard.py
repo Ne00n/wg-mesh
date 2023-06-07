@@ -255,7 +255,7 @@ class Wireguard(Base):
                 #terminate link
                 interfaceRemote = self.getInterfaceRemote(interface,"Ping")
                 print(f'Calling {dest}/disconnect')
-                req = self.call(f'{dest}/disconnect',{"publicKeyServer":resp['publicKeyServer'],"interface":interfaceRemote},10)
+                req = self.call(f'{dest}/disconnect',{"publicKeyServer":resp['publicKeyServer'],"interface":interfaceRemote,"wait":False},10)
                 if req == False:
                     print("Failed to terminate link")
                     exit()
@@ -265,7 +265,6 @@ class Wireguard(Base):
                 else:
                     print(f"Failed to terminate link, got {req.status_code} with {req.text} aborting")
                     exit()
-                time.sleep(2)
             latency = sorted(latency.items(), key=lambda x: x[1])
             for row in latency:
                 print(f"{row[1]:.2f}ms {row[0]}")
