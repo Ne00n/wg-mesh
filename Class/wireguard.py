@@ -124,7 +124,7 @@ class Wireguard(Base):
                 destination = f"{destination}1"
             elif "listen-port" in config:
                 #grab ID from filename
-                linkID = re.findall(f"pipe([0-9]+)",filename, re.MULTILINE)[0]
+                linkID = re.findall(f"pipe.*?([0-9]+)",filename, re.MULTILINE)[0]
                 destination = f"10.0.{linkID}.1"
             #get remote endpoint
             local = re.findall(f'((10\.0\.[0-9]+\.)([0-9]+)\/31)',config, re.MULTILINE)[0]
