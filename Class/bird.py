@@ -85,6 +85,8 @@ class Bird(Base):
         self.logger.info("Collecting Network data")
         configs = self.cmd('ip addr show')[0]
         links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        #filter out specific links
+        links = [x for x in links if self.filter(x[0])]
         local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/(32|30) scope global lo",configs, re.MULTILINE | re.DOTALL)
         if not links: 
             self.logger.warning("No wireguard interfaces found") 
