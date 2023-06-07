@@ -79,6 +79,7 @@ def index():
         logging.info(f"Invalid ID from {requestIP}")
         return HTTPResponse(status=404, body="Invalid ID")
     #defaults
+    if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
     if not "prefix" in payload: payload['prefix'] = "10.0."
     if not "ipv6" in payload: payload['ipv6'] = False
@@ -91,7 +92,7 @@ def index():
             return HTTPResponse(status=416, body="Collision")
     #generate interface name
     servName = "v6Serv" if payload['ipv6'] else "Serv"
-    interface = wg.getInterface(payload['id'],servName)
+    interface = wg.getInterface(payload['id'],servName,payload['network'])
     #check if interface exists
     if os.path.isfile(f"{folder}/links/{interface}.sh"):
         return HTTPResponse(status=412, body="link already exists")
