@@ -41,6 +41,11 @@ def validateID(id):
     if not result: return False
     return True
 
+def validatePort(port):
+    result = re.findall(r"^[0-9]{4,5}$",port,re.MULTILINE | re.DOTALL)
+    if not result: return False
+    return True
+
 def terminateLink(folder,interface):
     wg = Wireguard(folder)
     time.sleep(2)
@@ -78,6 +83,10 @@ def index():
     if not validateID(payload['id']): 
         logging.info(f"Invalid ID from {requestIP}")
         return HTTPResponse(status=404, body="Invalid ID")
+    #validate port
+    if "port" in payload and not validatePort(payload['port']): 
+        logging.info(f"Invalid Port from {requestIP}")
+        return HTTPResponse(status=404, body="Invalid Port")
     #defaults
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
