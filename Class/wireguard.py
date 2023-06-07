@@ -201,7 +201,6 @@ class Wireguard(Base):
             if "v6" in link: continue
             print(f"Checking {link}")
             #prepare
-            interfaceRemote = self.getInterfaceRemote(link)
             data = links[link]
             #ask remote about available protocols
             dest = f'http://{data["vxlan"]}:8080'
@@ -226,7 +225,7 @@ class Wireguard(Base):
                 #prepare
                 interfaceID = resp['id']
                 connectivity = resp['connectivity']['ipv4']
-                interface = self.getInterface(interfaceID)
+                interface = self.getInterface(interfaceID,"v4","Ping")
                 #generate config
                 clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'],"172.16.")
                 #bring up the interface
@@ -237,7 +236,7 @@ class Wireguard(Base):
                 #measure
                 print("Measurement...")
                 #terminate link
-                interfaceRemote = self.getInterfaceRemote(interface)
+                interfaceRemote = self.getInterfaceRemote(interface,"Ping")
                 print(f'Calling {dest}/disconnect')
                 req = self.call(f'{dest}/disconnect',{"publicKeyServer":clientPublicKey,"interface":interfaceRemote})
                 if req == False:
