@@ -195,11 +195,13 @@ class Wireguard(Base):
         config = re.sub(f"listen-port ([0-9]+)", data['port'], config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
-    def optimize(self):
+    def optimize(self,include=[]):
         links = self.getLinks()
         print("Checking Links")
         offline,online = self.checkLinks(links)
         for link in online:
+            #if include given, ignore anything else not in the list
+            if include and link not in include: continue
             #ignore v6 for now
             if "v6" in link: continue
             print(f"Checking {link}")
