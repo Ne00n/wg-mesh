@@ -82,6 +82,7 @@ def index():
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
     if not "prefix" in payload: payload['prefix'] = "10.0."
+    if not "port" in payload: payload['port'] = config['basePort']
     if not "ipv6" in payload: payload['ipv6'] = False
     #initial
     if payload['initial']:
@@ -102,7 +103,7 @@ def index():
     privateKeyServer, publicKeyServer = wg.genKeys()
     #load configs
     configs = wg.getConfigs(False)
-    lastbyte,port = wg.minimal(configs,4,config['basePort'])
+    lastbyte,port = wg.minimal(configs,4,payload['basePort'])
     #generate wireguard config
     serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'],payload['prefix'])
     #save
