@@ -87,16 +87,16 @@ class Wireguard(Base):
         lastbyte = self.findLowest(lastbyte,ips)
         return lastbyte,port
 
-    def getInterface(self,id,type=""):
-        return f"{self.prefix}{id}{type}"
+    def getInterface(self,id,type="",network=""):
+        return f"{self.prefix}{network}{id}{type}"
 
     def filterInterface(self,interface):
         return interface.replace(".sh","")
 
-    def getInterfaceRemote(self,interface):
+    def getInterfaceRemote(self,interface,network=""):
         serv = "" if "Serv" in interface else "Serv"
         v6 = "v6" if "v6" in interface else ""
-        return f"{self.prefix}{self.config['id']}{v6}{serv}"
+        return f"{self.prefix}{network}{self.config['id']}{v6}{serv}"
 
     def setInterface(self,file,state):
         self.cmd(f'bash {self.path}/links/{file}.sh {state}')
