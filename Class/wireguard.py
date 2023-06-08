@@ -195,7 +195,7 @@ class Wireguard(Base):
         config = re.sub(f"listen-port ([0-9]+)", data['port'], config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
-    def updateClient(self,link,port)
+    def updateClient(self,link,port):
         with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
         config = re.sub(f"endpoint.*?:([0-9]+)", port, config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
