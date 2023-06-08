@@ -48,18 +48,12 @@ class Bird(Base):
         return result
 
     def getLatency(self,targets):
-        fping = "fping -c 7"
-        for nic,data in targets.items():
-            fping += f" {data['target']}"
-        result = self.cmd(fping)[0]
-        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result, re.MULTILINE)
-        if not parsed: 
+        targets = []
+        for nic,data in targets.items(): targets.append(data['target'])
+        latency =  self.fping(targets,pings)
+        if not latency:
             self.logger.warning("No pingable links found.")
             return False
-        latency =  {}
-        for ip,ms,loss in parsed:
-            if ip not in latency: latency[ip] = []
-            latency[ip].append([ms,loss])
         for entry,row in latency.items():
             row = row[2:] #drop the first 2 pings
             row.sort()

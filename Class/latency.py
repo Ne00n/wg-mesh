@@ -52,6 +52,9 @@ class Latency(Base):
         targets = []
         for row in config: targets.append(row['target'])
         latency =  self.fping(targets,pings)
+        if not latency:
+            self.logger.warning("No pingable links found.")
+            return False
         for entry,row in latency.items():
             del row[0] #drop the first ping result
             row.sort()
