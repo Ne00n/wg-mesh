@@ -172,9 +172,9 @@ def index():
         logging.info(f"Invalid public key from {reqIP}")
         return HTTPResponse(status=400, body="invalid public key")
     #update
-    wg.setInterface(interface,"down")
-    wg.updateServer(interface,payload)
-    wg.setInterface(interface,"up")
+    wg.setInterface(payload['interface'],"down")
+    wg.updateServer(payload['interface'],payload)
+    wg.setInterface(payload['interface'],"up")
     return HTTPResponse(status=200, body="link updated")
 
 @route('/disconnect', method='POST')
