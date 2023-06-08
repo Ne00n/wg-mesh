@@ -190,9 +190,14 @@ class Wireguard(Base):
                 return False
         return True
 
-    def update(self,link,data):
+    def updateServer(self,link,data):
         with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
         config = re.sub(f"listen-port ([0-9]+)", data['port'], config, 0, re.MULTILINE)
+        self.saveFile(config,f"{self.path}/links/{link}.sh")
+
+    def updateClient(self,link,data)
+        with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
+        config = re.sub(f"endpoint.*?:([0-9]+)", data['port'], config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
     def optimize(self,include=[]):
@@ -265,7 +270,7 @@ class Wireguard(Base):
             lowestPort = latency[0][0]
             diff = int(float(latency[len(latency) -1][1]) - float(latency[0][1]))
             if diff >= 10:
-                print(f"Suggested {lowestPort} for a reduction of {diff}ms")
+                print(f"Suggested Port {lowestPort} for a reduction of {diff}ms")
             else:
                 print("Nothing to optimize")
 

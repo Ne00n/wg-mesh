@@ -173,7 +173,7 @@ def index():
         return HTTPResponse(status=400, body="invalid public key")
     #update
     wg.setInterface(interface,"down")
-    wg.update(interface,payload)
+    wg.updateServer(interface,payload)
     wg.setInterface(interface,"up")
     return HTTPResponse(status=200, body="link updated")
 
