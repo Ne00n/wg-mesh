@@ -21,10 +21,13 @@ class Base:
             result += float(ms)
         return round(float(result / len(list)),2)
 
-    def call(self,url,payload,max=5):
+    def call(self,url,payload,type="POST",max=5):
         for run in range(1,max):
             try:
-                req = requests.post(url, json=payload, timeout=(5,5))
+                if type == "POST":
+                    req = requests.post(url, json=payload, timeout=(5,5))
+                elif type == "PATCH":
+                    req = requests.patch(url, json=payload, timeout=(5,5))
                 if req.status_code == 200: return req
                 print(f"Got {req.text} as response")
             except Exception as ex:
