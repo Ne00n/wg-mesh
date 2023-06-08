@@ -216,10 +216,10 @@ class Wireguard(Base):
             #ask remote about available protocols
             dest = f'http://{data["vxlan"]}:8080'
             print(f'Calling {dest}/connectivity')
-            data = self.AskProtocol(f'{dest}','')
-            if not data: exit()
+            resp = self.AskProtocol(f'{dest}','')
+            if not resp: exit()
             #ignore v6 for now
-            if not data['connectivity']['ipv4']: continue
+            if not resp['connectivity']['ipv4']: continue
             #generate new key pair
             clientPrivateKey, clientPublicKey = self.genKeys()
             for port in range(1000,65000,1000):
@@ -262,7 +262,7 @@ class Wireguard(Base):
                 #terminate link
                 interfaceRemote = self.getInterfaceRemote(interface,"Ping")
                 print(f'Calling {dest}/disconnect')
-                req = self.call(f'{dest}/disconnect',{"publicKeyServer":resp['publicKeyServer'],"interface":interfaceRemote,"wait":False})
+                req = self.call(f'{dest}/disconnect',{"publicKeyServer":data['publicKeyServer'],"interface":interfaceRemote,"wait":False})
                 if req == False:
                     print("Failed to terminate link")
                     exit()
