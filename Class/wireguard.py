@@ -195,9 +195,9 @@ class Wireguard(Base):
         config = re.sub(f"listen-port ([0-9]+)", data['port'], config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
-    def updateClient(self,link,data)
+    def updateClient(self,link,port)
         with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
-        config = re.sub(f"endpoint.*?:([0-9]+)", data['port'], config, 0, re.MULTILINE)
+        config = re.sub(f"endpoint.*?:([0-9]+)", port, config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
     def optimize(self,include=[]):
@@ -271,6 +271,20 @@ class Wireguard(Base):
             diff = int(float(latency[len(latency) -1][1]) - float(latency[0][1]))
             if diff >= 10:
                 print(f"Suggested Port {lowestPort} for a reduction of {diff}ms")
+                print(f"Updating Link {link}...")
+                interfaceRemote = self.getInterfaceRemote(link)
+                req = self.call(f'{dest}/update',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote,"port":lowestPort},"PATCH")
+                if req == False:
+                    print("Failed to change port")
+                    exit()
+                if req.status_code == 200:
+                    interface = self.filterInterface(link)
+                    self.setInterface(interface,"down")
+                    self.updateClient(link,lowestPort)
+                    self.setInterface(interface,"up")
+                else:
+                    print(f"Failed to change port, got {req.status_code} with {req.text} aborting")
+                    exit()
             else:
                 print("Nothing to optimize")
 
