@@ -57,7 +57,7 @@ class Latency(Base):
         for node in list(config):
             for entry,row in latency.items():
                 if entry == node['target']:
-                    node['latency'] = self.getAvrg(row)
+                    node['latency'] = self.getAvrg(row,False)
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
 
                     #Packetloss
@@ -88,7 +88,7 @@ class Latency(Base):
                         self.hadLoss += 1
 
                     #Jitter
-                    hasJitter,peakJitter = self.hasJitter(row,self.getAvrg(row,True))
+                    hasJitter,peakJitter = self.hasJitter(row,self.getAvrg(row))
                     if hasJitter:
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = peakJitter

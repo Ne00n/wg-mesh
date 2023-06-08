@@ -15,7 +15,7 @@ class Base:
         t = ip_network(target, strict = False).network_address
         return o == t
 
-    def getAvrg(self,row,weight=False):
+    def getAvrg(self,row,weight=True):
         result = 0
         if not row: return 65000
         for entry in row:
