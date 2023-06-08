@@ -15,11 +15,17 @@ class Base:
         t = ip_network(target, strict = False).network_address
         return o == t
 
-    def getAvrg(self,list):
+    def getAvrg(self,row,weight=False):
         result = 0
-        for ms in list:
-            result += float(ms)
-        return round(float(result / len(list)),2)
+        if not row: return 65000
+        for entry in row:
+            #ignore timed out
+            if entry[0] == "timed out": continue
+            result += float(entry[0])
+        #do not return 0, never, ever
+        if total == 0: return 65000
+        if weight: return int(float(result / len(row)))
+        else: return int(float(result / len(row)) * 10)
 
     def fping(self,targets,pings=3):
         fping = f"fping -c {pings} "

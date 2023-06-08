@@ -258,7 +258,7 @@ class Wireguard(Base):
                 #drop first ping result
                 del fping[targetIP][0]
                 avg = self.getAvrg(fping[targetIP])
-                if not avg: exit("Failed to parse ping results")
+                if avg == 65000: exit("Failed to parse ping results")
                 latency[resp['port']] = avg
                 print(f"Got {avg}ms")
                 #terminate link
