@@ -21,6 +21,18 @@ class Base:
             result += float(ms)
         return round(float(result / len(list)),2)
 
+    def fping(self,targets,pings=3):
+        fping = f"fping -c {pings} "
+        fping += ",".join(targets)
+        result = self.cmd(fping)[0]
+        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result, re.MULTILINE)
+        if not parsed: return False
+        latency =  {}
+        for ip,ms,loss in parsed:
+            if ip not in latency: latency[ip] = []
+            latency[ip].append([ms,loss])
+        return latency
+
     def call(self,url,payload,method="POST",max=5):
         for run in range(1,max):
             try:
