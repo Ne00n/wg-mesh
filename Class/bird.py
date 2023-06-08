@@ -21,17 +21,6 @@ class Bird(Base):
         wildcardDecimal = pow( 2, ( 32 - int(netmask) ) ) - 1
         netmaskDecimal = ~ wildcardDecimal
         return ( ( ipDecimal & netmaskDecimal ) == ( rangeDecimal & netmaskDecimal ) );
-
-    def getAvrg(self,row):
-        result = 0
-        for entry in row: 
-            #ignore timed out
-            if entry[0] == "timed out": continue
-            result += float(entry[0])
-        total = int(float(result / len(row)) * 10)
-        #do not return 0
-        if total == 0: total = 65000
-        return total
     
     def genTargets(self,links):
         result = {}
