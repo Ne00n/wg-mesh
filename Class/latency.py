@@ -34,14 +34,6 @@ class Latency(Base):
             data.append({'nic':nic,'target':target,'weight':weight})
         return data
 
-    def getAvrg(self,row,weight=False):
-        result = 0
-        if not row: return 65000
-        for entry in row:
-            result += float(entry[0])
-        if weight: return int(float(result / len(row)))
-        else: return int(float(result / len(row)) * 10)
-
     def hasJitter(self,row,avrg):
         grace = 20
         for entry in row:
