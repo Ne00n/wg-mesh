@@ -1,4 +1,4 @@
-import subprocess, requests, time
+import subprocess, requests, time, re
 from ipaddress import ip_network
 
 class Base:
@@ -23,13 +23,13 @@ class Base:
             if entry[0] == "timed out": continue
             result += float(entry[0])
         #do not return 0, never, ever
-        if total == 0: return 65000
+        if result == 0: return 65000
         if weight: return int(float(result / len(row)))
         else: return int(float(result / len(row)) * 10)
 
     def fping(self,targets,pings=3):
         fping = f"fping -c {pings} "
-        fping += ",".join(targets)
+        fping += " ".join(targets)
         result = self.cmd(fping)[0]
         parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result, re.MULTILINE)
         if not parsed: return False

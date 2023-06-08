@@ -37,6 +37,7 @@ class Latency(Base):
     def hasJitter(self,row,avrg):
         grace = 20
         for entry in row:
+            if entry[0] == "timed out": continue
             if float(entry[0]) > avrg + grace: return True,float(entry[0]) - (avrg + grace)
         return False,0
 

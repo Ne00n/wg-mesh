@@ -37,9 +37,9 @@ class Bird(Base):
         return result
 
     def getLatency(self,targets):
-        targets = []
-        for nic,data in targets.items(): targets.append(data['target'])
-        latency =  self.fping(targets,pings)
+        ips = []
+        for nic,data in targets.items(): ips.append(data['target'])
+        latency =  self.fping(ips,5)
         if not latency:
             self.logger.warning("No pingable links found.")
             return False

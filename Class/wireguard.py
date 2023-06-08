@@ -252,7 +252,7 @@ class Wireguard(Base):
                 #measure
                 print("Measurement...")
                 #Running fping
-                targetIP = f"172.16.{resp['id']}.{resp['lastbyte']}
+                targetIP = f"172.16.{resp['id']}.{resp['lastbyte']}"
                 fping = self.fping([targetIP],5)
                 if not fping: exit("Failed to ping target IP")
                 #drop first ping result
