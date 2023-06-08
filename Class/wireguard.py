@@ -191,9 +191,9 @@ class Wireguard(Base):
         return True
 
     def updateServer(self,link,data):
-        with open(f"{self.path}/links/{link}", 'r') as file: config = file.read()
+        with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
         config = re.sub(f"listen-port ([0-9]+)", f"listen-port {data['port']}", config, 0, re.MULTILINE)
-        self.saveFile(config,f"{self.path}/links/{link}")
+        self.saveFile(config,f"{self.path}/links/{link}.sh")
 
     def updateClient(self,link,port):
         with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
@@ -289,7 +289,7 @@ class Wireguard(Base):
                 if req.status_code == 200:
                     interface = self.filterInterface(link)
                     self.setInterface(interface,"down")
-                    self.updateClient(link,lowestPort)
+                    self.updateClient(interface,lowestPort)
                     self.setInterface(interface,"up")
                 else:
                     print(f"Failed to change port, got {req.status_code} with {req.text} aborting")
