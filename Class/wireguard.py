@@ -223,7 +223,9 @@ class Wireguard(Base):
             #generate new key pair
             clientPrivateKey, clientPublicKey = self.genKeys()
             for port in range(1000,65000,1000):
+                print(f"Testing on Port {port}")
                 #setup link
+                print(f'Calling {dest}/connect')
                 req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"prefix":"172.16.","network":"Ping","basePort":port})
                 if req == False: 
                     print(f"Failed to setup Link for Port {port}, aborting")
@@ -239,10 +241,12 @@ class Wireguard(Base):
                 #generate config
                 clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'],"172.16.")
                 #bring up the interface
+                print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
                 self.setInterface(interface,"up")
                 #measure
+                print("Measurement...")
                 #Running fping
                 fping = self.cmd(f"fping -c5 172.16.{resp['id']}.{resp['lastbyte']}")[0]
                 parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]).*?([0-9])% loss",fping, re.MULTILINE)
@@ -254,8 +258,10 @@ class Wireguard(Base):
                 latency[port].sort()
                 avg = self.getAvrg(latency[port])
                 latency[port] = avg
+                print(f"Got {avg}ms")
                 #terminate link
                 interfaceRemote = self.getInterfaceRemote(interface,"Ping")
+                print(f'Calling {dest}/disconnect')
                 req = self.call(f'{dest}/disconnect',{"publicKeyServer":resp['publicKeyServer'],"interface":interfaceRemote,"wait":False},10)
                 if req == False:
                     print("Failed to terminate link")
