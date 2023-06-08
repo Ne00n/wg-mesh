@@ -208,7 +208,7 @@ class Wireguard(Base):
             #if include given, ignore anything else not in the list
             if include and link not in include: continue
             #ignore v6 for now
-            if "v6" in link: continue
+            if "v6" in link or "Serv" in link: continue
             print(f"Checking {link}")
             #prepare
             latency = {}
