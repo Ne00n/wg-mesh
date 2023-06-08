@@ -237,6 +237,7 @@ class Wireguard(Base):
                     print(f"Got {req.status_code} with {req.text} aborting")
                     continue
                 resp = req.json()
+                if resp['port'] != port: print(f"Switched from {port} to {resp['port']}")
                 #prepare
                 interfaceID = resp['id']
                 connectivity = resp['connectivity']['ipv4']
