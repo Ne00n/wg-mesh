@@ -252,15 +252,13 @@ class Wireguard(Base):
                 #measure
                 print("Measurement...")
                 #Running fping
-                fping = self.cmd(f"fping -c5 172.16.{resp['id']}.{resp['lastbyte']}")[0]
-                parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]).*?([0-9])% loss",fping, re.MULTILINE)
-                for ip,ms,loss in parsed:
-                    if resp['port'] not in latency: latency[resp['port']] = []
-                    latency[resp['port']].append(ms)
+                targetIP = f"172.16.{resp['id']}.{resp['lastbyte']}
+                fping = self.fping([targetIP],5)
+                if not fping: exit("Failed to ping target IP")
                 #drop first ping result
-                del latency[resp['port']][0]
-                latency[resp['port']].sort()
-                avg = self.getAvrg(latency[resp['port']])
+                del fping[targetIP][0]
+                avg = self.getAvrg(fping[targetIP])
+                if not avg: exit("Failed to parse ping results")
                 latency[resp['port']] = avg
                 print(f"Got {avg}ms")
                 #terminate link
@@ -268,7 +266,7 @@ class Wireguard(Base):
                 print(f'Calling {dest}/disconnect')
                 req = self.call(f'{dest}/disconnect',{"publicKeyServer":resp['publicKeyServer'],"interface":interfaceRemote,"wait":False})
                 if req == False:
-                    print("Failed to terminate link")
+                    print("Failed to terminate link, unable to contact remote")
                     exit()
                 if req.status_code == 200:
                     self.setInterface(interface,"down")
@@ -281,13 +279,14 @@ class Wireguard(Base):
             diff = int(float(latency[len(latency) -1][1]) - float(latency[0][1]))
             if diff >= 10:
                 print(f"Suggested Port {lowestPort} for a reduction of {diff}ms")
-                print(f"Updating Link {link}...")
+                print(f"Updating Remote Link {link}...")
                 interfaceRemote = self.getInterfaceRemote(link)
                 req = self.call(f'{dest}/update',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote,"port":lowestPort},"PATCH")
                 if req == False:
                     print("Failed to change port")
                     exit()
                 if req.status_code == 200:
+                    print(f"Updating Local Link {link}...")
                     interface = self.filterInterface(link)
                     self.setInterface(interface,"down")
                     self.updateClient(interface,lowestPort)
