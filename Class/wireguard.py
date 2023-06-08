@@ -192,12 +192,15 @@ class Wireguard(Base):
 
     def updateServer(self,link,data):
         with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
-        config = re.sub(f"listen-port ([0-9]+)", data['port'], config, 0, re.MULTILINE)
+        config = re.sub(f"listen-port ([0-9]+)", f"listen-port {data['port']}", config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
     def updateClient(self,link,port):
         with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
-        config = re.sub(f"endpoint.*?:([0-9]+)", port, config, 0, re.MULTILINE)
+        parsed = re.findall(f"(endpoint.*?:)([0-9]+)",config, re.MULTILINE)
+        oldEndPoint = ''.join(parsed[0])
+        newEndPoint = f"{parsed[0][0]}{port}"
+        config = re.sub(oldEndPoint, newEndPoint, config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
     def optimize(self,include=[]):
