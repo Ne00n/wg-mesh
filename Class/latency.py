@@ -49,15 +49,9 @@ class Latency(Base):
         return False,0
 
     def getLatency(self,config,pings=4):
-        fping = ["fping", "-c", str(pings)]
-        for row in config:
-            fping.append(row['target'])
-        result = subprocess.run(fping, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]+).*?([0-9]+)% loss",result.stdout.decode('utf-8'), re.MULTILINE)
-        latency =  {}
-        for ip,ms,loss in parsed:
-            if ip not in latency: latency[ip] = []
-            latency[ip].append([ms,loss])
+        targets = []
+        for row in config: targets.append(row['target'])
+        latency =  self.fping(targets,pings)
         for entry,row in latency.items():
             del row[0] #drop the first ping result
             row.sort()
