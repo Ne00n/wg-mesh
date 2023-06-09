@@ -212,10 +212,14 @@ class Wireguard(Base):
             if include and link not in include: continue
             #ignore v6 for now
             if "v6" in link or "Serv" in link: continue
-            print(f"Checking {link}")
             #prepare
             latency = {}
             data = links[link]
+            print(f"Measuring {link}")
+            fping = self.fping([data['remote']],5)
+            before = self.getAvrg(fping[data['remote']])
+            print(f"Current latency {before}ms")
+            print(f"Checking {link}")
             #ask remote about available protocols
             dest = f'http://{data["vxlan"]}:8080'
             print(f'Calling {dest}/connectivity')
@@ -225,7 +229,7 @@ class Wireguard(Base):
             if not resp['connectivity']['ipv4']: continue
             #generate new key pair
             clientPrivateKey, clientPublicKey = self.genKeys()
-            for port in range(1000,65000,1000):
+            for port in range(1000,65000,2000):
                 print(f"Testing on Port {port}")
                 #setup link
                 print(f'Calling {dest}/connect')
@@ -253,7 +257,7 @@ class Wireguard(Base):
                 print("Measurement...")
                 #Running fping
                 targetIP = f"172.16.{resp['id']}.{resp['lastbyte']}"
-                fping = self.fping([targetIP],5)
+                fping = self.fping([targetIP],4)
                 if not fping: exit("Failed to ping target IP")
                 #drop first ping result
                 del fping[targetIP][0]
@@ -290,7 +294,16 @@ class Wireguard(Base):
                     interface = self.filterInterface(link)
                     self.setInterface(interface,"down")
                     self.updateClient(interface,lowestPort)
+                    print("Waiting 20s before bringing the link back up")
+                    time.sleep(20)
                     self.setInterface(interface,"up")
+                    print(f"Measuring {link}")
+                    fping = self.fping([data['remote']],5)
+                    del fping[data['remote']][0]
+                    after = self.getAvrg(fping[data['remote']])
+                    print("--- Results ---")
+                    print(f"Before {before}ms")
+                    print(f"Now {after}ms")
                 else:
                     print(f"Failed to change port, got {req.status_code} with {req.text} aborting")
                     exit()
