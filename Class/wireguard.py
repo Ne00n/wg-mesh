@@ -280,7 +280,7 @@ class Wireguard(Base):
                     exit()
             latency = sorted(latency.items(), key=lambda x: x[1])
             lowestPort = latency[0][0]
-            diff = int(float(latency[len(latency) -1][1]) - float(latency[0][1]))
+            diff = int(float(latency[len(latency) -1][1]) - float(before))
             if diff >= 10:
                 print(f"Suggested Port {lowestPort} for a reduction of {diff}ms")
                 print(f"Updating Remote Link {link}...")
