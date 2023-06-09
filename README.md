@@ -93,7 +93,7 @@ Currently the webservice / API is exposed at ::8080, without TLS, use a reverse 
 Internal requests from 10.0.0.0/8 don't need a token.
 - /connect needs a valid token, otherwise the service will refuse to setup a wg link<br>
 Internal requests from 10.0.0.0/8 don't need a token.
-- /update needs a validate token, otherwise will not update port of wg link
+- /update needs a validate token, otherwise will not update port of wg link<br>
 Internal requests from 10.0.0.0/8 don't need a token.
 - /disconnect needs a valid wg public key and link name, otherwise will refuse to disconnect a specific link<br>
 
