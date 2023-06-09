@@ -287,7 +287,7 @@ class Wireguard(Base):
                 interfaceRemote = self.getInterfaceRemote(link)
                 req = self.call(f'{dest}/update',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote,"port":lowestPort},"PATCH")
                 if req == False:
-                    print("Failed to change port")
+                    print("Failed to change remote port")
                     exit()
                 if req.status_code == 200:
                     print(f"Updating Local Link {link}...")
@@ -305,7 +305,7 @@ class Wireguard(Base):
                     print(f"Before {before}ms")
                     print(f"Now {after}ms")
                 else:
-                    print(f"Failed to change port, got {req.status_code} with {req.text} aborting")
+                    print(f"Failed to change remote port, got {req.status_code} with {req.text} aborting")
                     exit()
             else:
                 print("Nothing to optimize")
