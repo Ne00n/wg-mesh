@@ -30,6 +30,7 @@
 - [x] Active Latency optimisation
 - [x] Packet loss detection & rerouting
 - [x] High Jitter detection & rerouting
+- [x] Port Optimizer for lowest Ping
  
 Tested on Debian 11 with systemd.<br>
 Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
@@ -91,6 +92,8 @@ Currently the webservice / API is exposed at ::8080, without TLS, use a reverse 
 - /connectivity needs a valid token, otherwise will refuse to provide connectivity info<br>
 Internal requests from 10.0.0.0/8 don't need a token.
 - /connect needs a valid token, otherwise the service will refuse to setup a wg link<br>
+Internal requests from 10.0.0.0/8 don't need a token.
+- /update needs a validate token, otherwise will not update port of wg link
 Internal requests from 10.0.0.0/8 don't need a token.
 - /disconnect needs a valid wg public key and link name, otherwise will refuse to disconnect a specific link<br>
 
