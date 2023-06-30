@@ -108,7 +108,7 @@ def index():
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
     if not "prefix" in payload: payload['prefix'] = "10.0."
-    if not "port" in payload: payload['port'] = config['basePort']
+    payload['basePort'] = config['basePort'] if not "port" in payload else payload['port']
     if not "ipv6" in payload: payload['ipv6'] = False
     #initial
     if payload['initial']:
