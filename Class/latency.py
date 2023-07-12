@@ -53,7 +53,7 @@ class Latency(Base):
             row.sort()
             #del row[len(row) -1] #drop the highest ping result
         current = int(datetime.now().timestamp())
-        self.total,self.hadLoss,self.hadJitter = 0,0,0
+        self.total,self.hadLoss,self.hadJitter,self.reload = 0,0,0,0
         for node in list(config):
             for entry,row in latency.items():
                 if entry == node['target']:
