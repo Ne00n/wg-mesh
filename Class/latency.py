@@ -151,7 +151,7 @@ class Latency(Base):
             self.logger.warning("Nothing todo")
         else:
             #reload bird with updates only every 5 minutes or if packetloss is detected
-            if (datetime.now().minute % 5 == 0 and runs == 0) or self.hasLoss > 0 or self.hasJitter > 0:
+            if (datetime.now().minute % 5 == 0 and runs == 0) or self.hasLoss > 1 or self.hasJitter > 3:
                 #write
                 self.logger.info("Writing config")
                 self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
