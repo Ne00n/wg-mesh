@@ -53,7 +53,7 @@ class Latency(Base):
             row.sort()
             #del row[len(row) -1] #drop the highest ping result
         current = int(datetime.now().timestamp())
-        self.total,self.hadLoss,self.hasLoss,self.hasJitter,self.hadJitter = 0,0,0,0,0
+        self.total,self.hadLoss,self.hadJitter = 0,0,0
         for node in list(config):
             for entry,row in latency.items():
                 if entry == node['target']:
@@ -66,7 +66,6 @@ class Latency(Base):
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = peakLoss
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
-                        self.hasLoss =+ 1
 
                     threshold,eventCount,eventScore = 2,0,0
                     for event,lost in list(self.network[entry]['packetloss'].items()):
@@ -85,8 +84,8 @@ class Latency(Base):
                         #500 = 50ms because we multiply by 100 since we can only use int to reflect smol changes
                         node['latency'] = node['latency'] + (500 * eventScore) #+ 50ms / weight
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
-                        #Trigger reload
-                        if hasLoss: self.hadLoss += 1
+                        #Trigger reload on recent loss which exceeded the given threshold
+                        if hasLoss: self.reload += 1
 
                     #Jitter
                     hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
@@ -94,7 +93,6 @@ class Latency(Base):
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = peakJitter
                         self.logger.info(f"{node['nic']} ({entry}) High Jitter dectected")
-                        self.hasJitter =+ 1
 
                     threshold,eventCount,eventScore = 4,0,0
                     for event,peak in list(self.network[entry]['jitter'].items()):
@@ -113,8 +111,8 @@ class Latency(Base):
                         #100 = 10ms because we multiply by 100 since we can only use int to reflect smol changes
                         node['latency'] = node['latency'] + (100 * eventScore) #+ packetloss /weight
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
-                        #Trigger reload
-                        if hasJitter: self.hadJitter += 1
+                        #Trigger reload on recent jittar which exceeded the given threshold
+                        if hasJitter: self.reload += 1
 
                     self.total += 1
                     #make sure its always int
@@ -153,7 +151,7 @@ class Latency(Base):
             self.logger.warning("Nothing todo")
         else:
             #reload bird with updates only every 5 minutes or if packetloss is detected
-            if (datetime.now().minute % 5 == 0 and runs == 0) or self.hasLoss > 0 or self.hasJitter > 0:
+            if (datetime.now().minute % 5 == 0 and runs == 0) or self.reload > 0:
                 #write
                 self.logger.info("Writing config")
                 self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
