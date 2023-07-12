@@ -310,6 +310,9 @@ class Wireguard(Base):
             else:
                 print("Nothing to optimize")
 
+    def proximity(self):
+        print("Checking Links")
+
     def getLinks(self):
         print("Getting Links")
         files = os.listdir(f"{self.path}/links/")
