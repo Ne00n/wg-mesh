@@ -85,7 +85,8 @@ class Latency(Base):
                         #500 = 50ms because we multiply by 100 since we can only use int to reflect smol changes
                         node['latency'] = node['latency'] + (500 * eventScore) #+ 50ms / weight
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
-                        self.hadLoss += 1
+                        #Trigger reload
+                        if hasLoss: self.hadLoss += 1
 
                     #Jitter
                     hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
@@ -112,7 +113,8 @@ class Latency(Base):
                         #100 = 10ms because we multiply by 100 since we can only use int to reflect smol changes
                         node['latency'] = node['latency'] + (100 * eventScore) #+ packetloss /weight
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
-                        self.hadJitter += 1
+                        #Trigger reload
+                        if hasJitter: self.hadJitter += 1
 
                     self.total += 1
                     #make sure its always int
@@ -151,7 +153,7 @@ class Latency(Base):
             self.logger.warning("Nothing todo")
         else:
             #reload bird with updates only every 5 minutes or if packetloss is detected
-            if (datetime.now().minute % 5 == 0 and runs == 0) or self.hasLoss > 1 or self.hasJitter > 3:
+            if (datetime.now().minute % 5 == 0 and runs == 0) or self.hasLoss > 0 or self.hasJitter > 0:
                 #write
                 self.logger.info("Writing config")
                 self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
