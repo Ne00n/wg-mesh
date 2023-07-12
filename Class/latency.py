@@ -34,7 +34,7 @@ class Latency(Base):
             data.append({'nic':nic,'target':target,'weight':weight})
         return data
 
-    def hasJitter(self,row,avrg):
+    def checkJitter(self,row,avrg):
         grace = 20
         for entry in row:
             if entry[0] == "timed out": continue
@@ -53,7 +53,7 @@ class Latency(Base):
             row.sort()
             #del row[len(row) -1] #drop the highest ping result
         current = int(datetime.now().timestamp())
-        self.total,self.hadLoss,self.hasLoss,self.hadJitter = 0,0,0,0
+        self.total,self.hadLoss,self.hasLoss,self.hasJitter,self.hadJitter = 0,0,0,0,0
         for node in list(config):
             for entry,row in latency.items():
                 if entry == node['target']:
@@ -88,11 +88,12 @@ class Latency(Base):
                         self.hadLoss += 1
 
                     #Jitter
-                    hasJitter,peakJitter = self.hasJitter(row,self.getAvrg(row))
+                    hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
                     if hasJitter:
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = peakJitter
                         self.logger.info(f"{node['nic']} ({entry}) High Jitter dectected")
+                        self.hasJitter =+ 1
 
                     threshold,eventCount,eventScore = 4,0,0
                     for event,peak in list(self.network[entry]['jitter'].items()):
