@@ -44,13 +44,15 @@ class Latency(Base):
     def getLatency(self,config,pings=4):
         targets = []
         for row in config: targets.append(row['target'])
-        latency =  self.fping(targets,pings)
+        latency =  self.fping(targets,pings,True)
         if not latency:
             self.logger.warning("No pingable links found.")
             return False
         for entry,row in latency.items():
-            del row[0] #drop the first ping result
-            row.sort()
+            #drop the first ping result
+            if row: 
+                del row[0]
+                row.sort()
             #del row[len(row) -1] #drop the highest ping result
         current = int(datetime.now().timestamp())
         self.total,self.hadLoss,self.hadJitter,self.reload = 0,0,0,0

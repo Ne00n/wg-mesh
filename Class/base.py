@@ -27,7 +27,7 @@ class Base:
         if weight: return int(float(result / len(row)))
         else: return int(float(result / len(row)) * 10)
 
-    def fping(self,targets,pings=3):
+    def fping(self,targets,pings=3,dropTimeout = False):
         fping = f"fping -c {pings} "
         fping += " ".join(targets)
         result = self.cmd(fping)[0]
@@ -36,6 +36,7 @@ class Base:
         latency =  {}
         for ip,ms,loss in parsed:
             if ip not in latency: latency[ip] = []
+            if dropTimeout and ms == "timed out": continue
             latency[ip].append([ms,loss])
         return latency
 
