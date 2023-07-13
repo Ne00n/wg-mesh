@@ -208,7 +208,8 @@ class Wireguard(Base):
         links = self.getLinks()
         print("Checking Links")
         offline,online = self.checkLinks(links)
-        for link in online:
+        links = offline + online
+        for link in links:
             #if include given, ignore anything else not in the list
             if include and link not in include: continue
             #ignore v6 for now
