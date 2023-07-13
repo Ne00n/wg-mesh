@@ -157,6 +157,7 @@ class Wireguard(Base):
         isInitial = False if links else True
         #ask remote about available protocols
         data = self.AskProtocol(dest,token)
+        if not data: return False
         #start with the protocol which is available
         if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']: isv6 = False
         elif data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']: isv6 = True
