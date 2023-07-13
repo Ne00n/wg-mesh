@@ -86,6 +86,7 @@ class Latency(Base):
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
                         #Trigger reload on recent loss which exceeded the given threshold
                         if hasLoss: self.reload += 1
+                        self.hadLoss = +1
 
                     #Jitter
                     hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
@@ -113,6 +114,7 @@ class Latency(Base):
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
                         #Trigger reload on recent jittar which exceeded the given threshold
                         if hasJitter: self.reload += 1
+                        self.hadJitter += 1
 
                     self.total += 1
                     #make sure its always int
