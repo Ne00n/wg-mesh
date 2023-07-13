@@ -68,7 +68,7 @@ class Latency(Base):
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = peakLoss
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
-                        self.hasLoss += 1
+                        if len(row) > 0: self.hasLoss += 1
 
                     threshold,eventCount,eventScore = 2,0,0
                     for event,lost in list(self.network[entry]['packetloss'].items()):
