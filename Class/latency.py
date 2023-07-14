@@ -85,7 +85,7 @@ class Latency(Base):
                         tmpLatency = node['latency']
                         self.logger.debug(f"{node['nic']} ({entry}) Ongoing Packetloss")
                         node['latency'] = round(node['latency'] * eventScore)
-                        self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
+                        self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
                         #Trigger reload on recent loss which is below the given eventCount
                         if hasLoss and eventCount < 10: self.reload += 1
                         self.hadLoss += 1
