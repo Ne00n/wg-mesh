@@ -87,7 +87,9 @@ class Latency(Base):
                         node['latency'] = round(node['latency'] * eventScore)
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
                         #Trigger reload on recent loss which is below the given eventCount
-                        if hasLoss and eventCount < 10: self.reload += 1
+                        if hasLoss and eventCount < 10: 
+                            self.logger.debug(f"{node['nic']} ({entry}) Triggering reload")
+                            self.reload += 1
                         self.hadLoss += 1
 
                     #Jitter
