@@ -83,7 +83,7 @@ class Latency(Base):
                     hadLoss = True if eventCount >= threshold else False
                     if hadLoss:
                         tmpLatency = node['latency']
-                        self.logger.debug(f"{node['nic']} ({entry}) Ongoing Packetloss")
+                        self.logger.info(f"{node['nic']} ({entry}) Ongoing Packetloss")
                         #500 = 50ms because we multiply by 100 since we can only use int to reflect smol changes
                         node['latency'] = node['latency'] + (500 * eventScore) #+ 50ms / weight
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
