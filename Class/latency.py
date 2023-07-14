@@ -84,8 +84,7 @@ class Latency(Base):
                     if hadLoss:
                         tmpLatency = node['latency']
                         self.logger.info(f"{node['nic']} ({entry}) Ongoing Packetloss")
-                        #500 = 50ms because we multiply by 100 since we can only use int to reflect smol changes
-                        node['latency'] = node['latency'] + (500 * eventScore) #+ 50ms / weight
+                        node['latency'] = round(node['latency'] * eventScore)
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
                         #Trigger reload on recent loss which exceeded the given threshold
                         if hasLoss and len(row) > 0: self.reload += 1
@@ -112,8 +111,7 @@ class Latency(Base):
                     if hadJitter:
                         tmpLatency = node['latency']
                         self.logger.debug(f"{node['nic']} ({entry}) Ongoing Jitter")
-                        #100 = 10ms because we multiply by 100 since we can only use int to reflect smol changes
-                        node['latency'] = node['latency'] + (100 * eventScore) #+ packetloss /weight
+                        node['latency'] = round(node['latency'] * eventScore)
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
                         #Trigger reload on recent jittar which exceeded the given threshold
                         if hasJitter: self.reload += 1
