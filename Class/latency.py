@@ -114,7 +114,7 @@ class Latency(Base):
                         tmpLatency = node['latency']
                         self.logger.debug(f"{node['nic']} ({entry}) Ongoing Jitter")
                         node['latency'] = round(node['latency'] * eventScore)
-                        self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
+                        self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
                         #Trigger reload on recent jittar which exceeded the given threshold
                         if hasJitter: 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
