@@ -88,7 +88,7 @@ class Latency(Base):
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
                         #Trigger reload on recent loss which is below the given eventCount
                         if hasLoss and eventCount < 10: 
-                            self.logger.debug(f"{node['nic']} ({entry}) Triggering reload")
+                            self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
                             self.reload += 1
                         self.hadLoss += 1
 
@@ -116,7 +116,9 @@ class Latency(Base):
                         node['latency'] = round(node['latency'] * eventScore)
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
                         #Trigger reload on recent jittar which exceeded the given threshold
-                        if hasJitter: self.reload += 1
+                        if hasJitter: 
+                            self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
+                            self.reload += 1
                         self.hadJitter += 1
 
                     self.total += 1
