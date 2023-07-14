@@ -325,7 +325,7 @@ class Wireguard(Base):
             resp = self.AskProtocol(f'http://{target}:8080','')
             if not resp: continue
             ips[resp['connectivity']['ipv4']] = target
-            #ips[resp['connectivity']['ipv6']] = target
+            ips[resp['connectivity']['ipv6']] = target
         existing = []
         for ip in list(targets):
             for link in links:
