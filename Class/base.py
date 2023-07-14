@@ -38,7 +38,7 @@ class Base:
         fping = f"fping -c {pings} "
         fping += " ".join(targets)
         result = self.cmd(fping)[0]
-        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result, re.MULTILINE)
+        parsed = re.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result, re.MULTILINE)
         if not parsed: return False
         latency =  {}
         for ip,ms,loss in parsed:
