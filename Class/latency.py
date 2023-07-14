@@ -55,7 +55,7 @@ class Latency(Base):
                 row.sort()
             #del row[len(row) -1] #drop the highest ping result
         current = int(datetime.now().timestamp())
-        self.total,self.hadLoss,self.hadJitter,self.reload,self.hasLoss = 0,0,0,0,0
+        self.total,self.hadLoss,self.hadJitter,self.reload,self.noWait = 0,0,0,0,0
         for node in list(config):
             for entry,row in latency.items():
                 if entry == node['target']:
@@ -68,7 +68,7 @@ class Latency(Base):
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = peakLoss
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
-                        if len(row) > 0: self.hasLoss += 1
+                        if len(row) > 0: self.noWait += 1
 
                     threshold,eventCount,eventScore = 2,0,0
                     for event,lost in list(self.network[entry]['packetloss'].items()):
@@ -167,4 +167,4 @@ class Latency(Base):
                 self.logger.debug(f"{datetime.now().minute} not in window.")
         #however save any packetloss or jitter detected
         self.save()
-        return self.hasLoss
+        return self.noWait
