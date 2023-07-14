@@ -1,4 +1,4 @@
-import subprocess, requests, time, re
+import subprocess, requests, netaddr, time, re
 from ipaddress import ip_network
 
 class Base:
@@ -14,6 +14,13 @@ class Base:
         o = ip_network(origin, strict = False).network_address
         t = ip_network(target, strict = False).network_address
         return o == t
+
+    def resolve(self,ip,range,netmask):
+        rangeDecimal = int(netaddr.IPAddress(range))
+        ipDecimal = int(netaddr.IPAddress(ip))
+        wildcardDecimal = pow( 2, ( 32 - int(netmask) ) ) - 1
+        netmaskDecimal = ~ wildcardDecimal
+        return ( ( ipDecimal & netmaskDecimal ) == ( rangeDecimal & netmaskDecimal ) )
 
     def getAvrg(self,row,weight=True):
         result = 0
@@ -56,3 +63,21 @@ class Base:
                 print("Aborting, limit reached.")
                 return False
             time.sleep(2)
+
+    def formatTable(self,list):
+        longest,response = {},""
+        for row in list:
+            elements = row.split("\t")
+            for index, entry in enumerate(elements):
+                if not index in longest: longest[index] = 0
+                if len(entry) > longest[index]: longest[index] = len(entry)
+        for i, row in enumerate(list):
+            elements = row.split("\t")
+            for index, entry in enumerate(elements):
+                if len(entry) < longest[index]:
+                    diff = longest[index] - len(entry)
+                    while len(entry) < longest[index]:
+                        entry += " "
+                response += f"{entry}" if response.endswith("\n") or response == "" else f" {entry}"
+            if i < len(list) -1: response += "\n"
+        return response

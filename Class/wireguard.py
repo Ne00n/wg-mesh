@@ -313,7 +313,40 @@ class Wireguard(Base):
                 print("Nothing to optimize")
 
     def proximity(self):
-        print("Checking Links")
+        print("Getting Routes")
+        routes = self.cmd("birdc show route")[0]
+        targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+        configs = self.cmd('ip addr show')[0]
+        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        print("Getting Connection info")
+        ips = {}
+        for target in targets:
+            target = target.replace("0/30","1")
+            resp = self.AskProtocol(f'http://{target}:8080','')
+            if not resp: continue
+            ips[resp['connectivity']['ipv4']] = target
+            #ips[resp['connectivity']['ipv6']] = target
+        existing = []
+        for ip in list(targets):
+            for link in links:
+                if self.resolve(link[1],ip.replace("/30",""),24):
+                    #multiple links in the same subnet
+                    if ip in targets: existing.append(ip.replace("0/30","1"))
+        fpingTargets = []
+        for ip in ips:
+            if ip != None: fpingTargets.append(ip)
+        print("Getting Latency")
+        fping = self.fping(fpingTargets)
+        latencyData = {}
+        print("Parsing Results")
+        for ip in fping: latencyData[ip] = self.getAvrg(fping[ip])
+        latencyData = {k: latencyData[k] for k in sorted(latencyData, key=latencyData.get)}
+        result = []
+        result.append("Target\tIP address\tConnected\tLatency")
+        result.append("-------\t-------\t-------\t-------")
+        for ip,latency in latencyData.items(): result.append(f"{ips[ip]}\t{ip}\t{bool(ips[ip] in existing)}\t{latency}ms")
+        result = self.formatTable(result)
+        print(result)
 
     def getLinks(self):
         print("Getting Links")

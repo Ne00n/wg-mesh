@@ -1,4 +1,4 @@
-import netaddr, random, time, json, re, os
+import random, time, json, re, os
 from Class.templator import Templator
 from Class.wireguard import Wireguard
 from Class.base import Base
@@ -14,13 +14,6 @@ class Bird(Base):
     def filter(self,entry):
         if "Ping" in entry: return False
         return True
-
-    def resolve(self,ip,range,netmask):
-        rangeDecimal = int(netaddr.IPAddress(range))
-        ipDecimal = int(netaddr.IPAddress(ip))
-        wildcardDecimal = pow( 2, ( 32 - int(netmask) ) ) - 1
-        netmaskDecimal = ~ wildcardDecimal
-        return ( ( ipDecimal & netmaskDecimal ) == ( rangeDecimal & netmaskDecimal ) );
     
     def genTargets(self,links):
         result = {}
