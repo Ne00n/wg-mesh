@@ -137,6 +137,7 @@ This will drop long lived TCP connections.
 **Known Issues**<br>
 - Remvoing wg-mesh without prior disconnecting active links, will result in broken links until restarted.<br>
 - A client that does not have a direct connection to a newly added server, is stuck with a old outdated vxlan configuration.<br> 
+This can be fixed by reloading wgmesh-bird.<br>
 
 **Troubleshooting**
 - You can check the logs/<br>
@@ -148,7 +149,7 @@ bird2 needs to be running / hidepid can block said access to check if bird is ru
 Can also mean the Port wg tries to listen, is already in use. Check your existing wg links.<br>
 - duplicate vxlan mac address / vxlan mac flapping<br>
 If you are using a virtual machine, check your machine-id if they are the same.<br>
-You can check it with.<br>
+You can check it with or tools/machine-id.py<br>
 ```
 cat /etc/machine-id
 ```
