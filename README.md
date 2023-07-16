@@ -126,10 +126,13 @@ su wg-mesh -c "cd /opt/wg-mesh/; git pull" && systemctl restart wgmesh && system
 ```
 **Limitations**<br>
 Connecting multiple nodes at once, without waiting for the other node to finish, will result in double links.<br>
-By default, when a new node joins, it checks which connections it don't has, which with a new node would be everything.<br>
+By default, when a new node joins, it checks which connections it does not have, which with a new node would be everything.<br>
 
 Additional, bird2, by default, takes 30s to distribute the routes, there will be also a delay.<br>
 In total roughtly 60s, depending on the network size, to avoid this issue.<br>
+
+Depending on network conditions, bird will be reloaded, every 5 minutes or as short as every 10 seconds.
+This will drop long lived TCP connections.
 
 **Known Issues**<br>
 - Remvoing wg-mesh without prior disconnecting active links, will result in broken links until restarted.<br>
