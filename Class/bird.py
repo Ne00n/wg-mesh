@@ -1,4 +1,4 @@
-import netaddr, random, time, json, re, os
+import random, time, json, re, os
 from Class.templator import Templator
 from Class.wireguard import Wireguard
 from Class.base import Base
@@ -11,23 +11,9 @@ class Bird(Base):
         self.logger = logger
         self.path = path
 
-    def resolve(self,ip,range,netmask):
-        rangeDecimal = int(netaddr.IPAddress(range))
-        ipDecimal = int(netaddr.IPAddress(ip))
-        wildcardDecimal = pow( 2, ( 32 - int(netmask) ) ) - 1
-        netmaskDecimal = ~ wildcardDecimal
-        return ( ( ipDecimal & netmaskDecimal ) == ( rangeDecimal & netmaskDecimal ) );
-
-    def getAvrg(self,row):
-        result = 0
-        for entry in row: 
-            #ignore timed out
-            if entry[0] == "timed out": continue
-            result += float(entry[0])
-        total = int(float(result / len(row)) * 100)
-        #do not return 0
-        if total == 0: total = 65000
-        return total
+    def filter(self,entry):
+        if "Ping" in entry: return False
+        return True
     
     def genTargets(self,links):
         result = {}
@@ -44,18 +30,12 @@ class Bird(Base):
         return result
 
     def getLatency(self,targets):
-        fping = "fping -c 7"
-        for nic,data in targets.items():
-            fping += f" {data['target']}"
-        result = self.cmd(fping)[0]
-        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result, re.MULTILINE)
-        if not parsed: 
+        ips = []
+        for nic,data in targets.items(): ips.append(data['target'])
+        latency =  self.fping(ips,5)
+        if not latency:
             self.logger.warning("No pingable links found.")
             return False
-        latency =  {}
-        for ip,ms,loss in parsed:
-            if ip not in latency: latency[ip] = []
-            latency[ip].append([ms,loss])
         for entry,row in latency.items():
             row = row[2:] #drop the first 2 pings
             row.sort()
@@ -63,7 +43,7 @@ class Bird(Base):
             for entry,row in latency.items():
                 if entry == data['target']:
                     if len(row) < 5: self.logger.warning(f"Expected 5 pings, got {len(row)} from {data['target']}, possible Packetloss")
-                    data['latency'] = self.getAvrg(row)
+                    data['latency'] = self.getAvrg(row,False)
                     if data['latency'] == 65000: self.logger.warning(f"Cannot reach {nic} {data['target']}")
                 #apparently fping 4.2 and 5.0 result in different outputs, neat, so we keep this
                 elif data['target'] not in latency and not "latency" in data:
@@ -81,6 +61,8 @@ class Bird(Base):
         self.logger.info("Collecting Network data")
         configs = self.cmd('ip addr show')[0]
         links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        #filter out specific links
+        links = [x for x in links if self.filter(x[0])]
         local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/(32|30) scope global lo",configs, re.MULTILINE | re.DOTALL)
         if not links: 
             self.logger.warning("No wireguard interfaces found") 
@@ -168,8 +150,8 @@ class Bird(Base):
             results = {}
             for target in targets:
                 targetSplit = target.split(".")
-                #reserve 10.0.240+ for clients, don't mesh
-                if int(targetSplit[2]) >= 240: continue
+                #reserve 10.0.200+ for clients, don't mesh
+                if int(targetSplit[2]) >= 200: continue
                 dest = target.replace(".0/30",".1")
                 #no token needed but external IP for the client
                 self.logger.info(f"Setting up link to {dest}")

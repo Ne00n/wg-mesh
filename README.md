@@ -30,13 +30,14 @@
 - [x] Active Latency optimisation
 - [x] Packet loss detection & rerouting
 - [x] High Jitter detection & rerouting
+- [x] Port Optimizer for lowest Ping
  
 Tested on Debian 11 with systemd.<br>
 Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
 
 **Example 2 nodes**<br>
 The ID needs to be unique, otherwise it will result in collisions.<br>
-Keep in mind, ID's 240 and higher are reserved for clients, they won't get meshed.<br>
+Keep in mind, ID's 200 and higher are reserved for clients, they won't get meshed.<br>
 Public is used to expose the API to all interfaces, by default it listens only local on 10.0.id.1.<br>
 ```
 #Install wg-mesh and initialize the first node
@@ -92,6 +93,8 @@ Currently the webservice / API is exposed at ::8080, without TLS, use a reverse 
 Internal requests from 10.0.0.0/8 don't need a token.
 - /connect needs a valid token, otherwise the service will refuse to setup a wg link<br>
 Internal requests from 10.0.0.0/8 don't need a token.
+- /update needs a validate token, otherwise will not update port of wg link<br>
+Internal requests from 10.0.0.0/8 don't need a token.
 - /disconnect needs a valid wg public key and link name, otherwise will refuse to disconnect a specific link<br>
 
 **Shutdown/Startup**
@@ -123,14 +126,18 @@ su wg-mesh -c "cd /opt/wg-mesh/; git pull" && systemctl restart wgmesh && system
 ```
 **Limitations**<br>
 Connecting multiple nodes at once, without waiting for the other node to finish, will result in double links.<br>
-By default, when a new node joins, it checks which connections it don't has, which with a new node would be everything.<br>
+By default, when a new node joins, it checks which connections it does not have, which with a new node would be everything.<br>
 
 Additional, bird2, by default, takes 30s to distribute the routes, there will be also a delay.<br>
 In total roughtly 60s, depending on the network size, to avoid this issue.<br>
 
+Depending on network conditions, bird will be reloaded, every 5 minutes or as short as every 10 seconds.
+This will drop long lived TCP connections.
+
 **Known Issues**<br>
 - Remvoing wg-mesh without prior disconnecting active links, will result in broken links until restarted.<br>
 - A client that does not have a direct connection to a newly added server, is stuck with a old outdated vxlan configuration.<br> 
+This can be fixed by reloading wgmesh-bird.<br>
 
 **Troubleshooting**
 - You can check the logs/<br>
@@ -142,7 +149,7 @@ bird2 needs to be running / hidepid can block said access to check if bird is ru
 Can also mean the Port wg tries to listen, is already in use. Check your existing wg links.<br>
 - duplicate vxlan mac address / vxlan mac flapping<br>
 If you are using a virtual machine, check your machine-id if they are the same.<br>
-You can check it with.<br>
+You can check it with or tools/machine-id.py<br>
 ```
 cat /etc/machine-id
 ```

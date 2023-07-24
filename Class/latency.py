@@ -34,40 +34,32 @@ class Latency(Base):
             data.append({'nic':nic,'target':target,'weight':weight})
         return data
 
-    def getAvrg(self,row,weight=False):
-        result = 0
-        if not row: return 65000
-        for entry in row:
-            result += float(entry[0])
-        if weight: return int(float(result / len(row)))
-        else: return int(float(result / len(row)) * 10)
-
-    def hasJitter(self,row,avrg):
+    def checkJitter(self,row,avrg):
         grace = 20
         for entry in row:
+            if entry[0] == "timed out": continue
             if float(entry[0]) > avrg + grace: return True,float(entry[0]) - (avrg + grace)
         return False,0
 
     def getLatency(self,config,pings=4):
-        fping = ["fping", "-c", str(pings)]
-        for row in config:
-            fping.append(row['target'])
-        result = subprocess.run(fping, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        parsed = re.findall("([0-9.]+).*?([0-9]+.[0-9]+).*?([0-9]+)% loss",result.stdout.decode('utf-8'), re.MULTILINE)
-        latency =  {}
-        for ip,ms,loss in parsed:
-            if ip not in latency: latency[ip] = []
-            latency[ip].append([ms,loss])
+        targets = []
+        for row in config: targets.append(row['target'])
+        latency =  self.fping(targets,pings,True)
+        if not latency:
+            self.logger.warning("No pingable links found.")
+            return False
         for entry,row in latency.items():
-            del row[0] #drop the first ping result
-            row.sort()
+            #drop the first ping result
+            if row: 
+                del row[0]
+                row.sort()
             #del row[len(row) -1] #drop the highest ping result
         current = int(datetime.now().timestamp())
-        self.total,self.hadLoss,self.hasLoss,self.hadJitter = 0,0,0,0
+        self.total,self.hadLoss,self.hadJitter,self.reload,self.noWait = 0,0,0,0,0
         for node in list(config):
             for entry,row in latency.items():
                 if entry == node['target']:
-                    node['latency'] = self.getAvrg(row)
+                    node['latency'] = self.getAvrg(row,False)
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
 
                     #Packetloss
@@ -76,7 +68,7 @@ class Latency(Base):
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = peakLoss
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
-                        self.hasLoss =+ 1
+                        if len(row) > 0: self.noWait += 1
 
                     threshold,eventCount,eventScore = 2,0,0
                     for event,lost in list(self.network[entry]['packetloss'].items()):
@@ -92,13 +84,16 @@ class Latency(Base):
                     if hadLoss:
                         tmpLatency = node['latency']
                         self.logger.debug(f"{node['nic']} ({entry}) Ongoing Packetloss")
-                        #500 = 50ms because we multiply by 100 since we can only use int to reflect smol changes
-                        node['latency'] = node['latency'] + (500 * eventScore) #+ 50ms / weight
-                        self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
+                        node['latency'] = round(node['latency'] * eventScore)
+                        self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
+                        #Trigger reload on recent loss which is below the given eventCount
+                        if hasLoss and eventCount < 10: 
+                            self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
+                            self.reload += 1
                         self.hadLoss += 1
 
                     #Jitter
-                    hasJitter,peakJitter = self.hasJitter(row,self.getAvrg(row,True))
+                    hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
                     if hasJitter:
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = peakJitter
@@ -118,9 +113,12 @@ class Latency(Base):
                     if hadJitter:
                         tmpLatency = node['latency']
                         self.logger.debug(f"{node['nic']} ({entry}) Ongoing Jitter")
-                        #100 = 10ms because we multiply by 100 since we can only use int to reflect smol changes
-                        node['latency'] = node['latency'] + (100 * eventScore) #+ packetloss /weight
-                        self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}")
+                        node['latency'] = round(node['latency'] * eventScore)
+                        self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
+                        #Trigger reload on recent jittar which exceeded the given threshold
+                        if hasJitter and eventCount < 10: 
+                            self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
+                            self.reload += 1
                         self.hadJitter += 1
 
                     self.total += 1
@@ -160,7 +158,7 @@ class Latency(Base):
             self.logger.warning("Nothing todo")
         else:
             #reload bird with updates only every 5 minutes or if packetloss is detected
-            if (datetime.now().minute % 5 == 0 and runs == 0) or self.hasLoss > 0:
+            if (datetime.now().minute % 5 == 0 and runs == 0) or self.reload > 0:
                 #write
                 self.logger.info("Writing config")
                 self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
@@ -171,3 +169,4 @@ class Latency(Base):
                 self.logger.debug(f"{datetime.now().minute} not in window.")
         #however save any packetloss or jitter detected
         self.save()
+        return self.noWait

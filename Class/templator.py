@@ -1,11 +1,11 @@
 class Templator:
 
-    def genServer(self,interface,serverID,serverIP,serverPort,ClientPublicKey):
+    def genServer(self,interface,serverID,serverIP,serverPort,ClientPublicKey,prefix="10.0."):
         mtu = 1412 if "v6" in interface else 1420
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
     sudo ip link add dev {interface} type wireguard
-    sudo ip address add dev {interface} 10.0.{serverID}.{serverIP}/31
+    sudo ip address add dev {interface} {prefix}{serverID}.{serverIP}/31
     sudo ip -6 address add dev {interface} fe82:{serverID}::{serverIP}/127
     sudo wg set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {ClientPublicKey} allowed-ips 0.0.0.0/0,::0/0
     sudo ip link set {interface} mtu {mtu}
@@ -15,12 +15,12 @@ else
 fi'''
         return template
 
-    def genClient(self,interface,serverID,serverIP,serverIPExternal,serverPort,serverPublicKey):
+    def genClient(self,interface,serverID,serverIP,serverIPExternal,serverPort,serverPublicKey,prefix="10.0."):
         mtu = 1412 if "v6" in interface else 1420
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
     sudo ip link add dev {interface} type wireguard
-    sudo ip address add dev {interface} 10.0.{serverID}.{int(serverIP)+1}/31
+    sudo ip address add dev {interface} {prefix}{serverID}.{int(serverIP)+1}/31
     sudo ip -6 address add dev {interface} fe82:{serverID}::{int(serverIP)+1}/127
     sudo wg set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} allowed-ips 0.0.0.0/0,::0/0 endpoint {serverIPExternal}:{serverPort}
     sudo ip link set {interface} mtu {mtu}
