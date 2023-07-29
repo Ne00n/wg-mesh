@@ -128,10 +128,10 @@ su wg-mesh -c "cd /opt/wg-mesh/; git pull" && systemctl restart wgmesh && system
 **Prevent meshing**<br>
 In case you want to stop a client/server from automatically meshing into the network.<br>
 You can simply block it by creating an empty state.json.<br>
-This needs to be done before you connecting to the network.<br>
 ```
 su wg-mesh -c "touch /opt/wg-mesh/configs/state.json"
 ```
+This needs to be done before you connecting to the network.<br>
 
 **Limitations**<br>
 Connecting multiple nodes at once, without waiting for the other node to finish, will result in double links.<br>
