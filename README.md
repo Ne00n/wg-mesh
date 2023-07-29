@@ -41,9 +41,9 @@ Keep in mind, ID's 200 and higher are reserved for clients, they won't get meshe
 Public is used to expose the API to all interfaces, by default it listens only local on 10.0.id.1.<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 1 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1 public
 #Install wg-mesh and initialize the second node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 2
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
 ```
 Grab the Token from Node1<br>
 ```
@@ -60,11 +60,11 @@ Regarding NAT or in general behind Firewalls, the "connector" is always a Client
 **Example 2+ nodes**<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 1 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1 public
 #Install wg-mesh and initialize the second node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 2
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
 #Install wg-mesh and initialize the third node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 3
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 3
 ```
 Grab the Token from Node1 with
 ```
@@ -131,7 +131,7 @@ By default, when a new node joins, it checks which connections it does not have,
 Additional, bird2, by default, takes 30s to distribute the routes, there will be also a delay.<br>
 In total roughtly 60s, depending on the network size, to avoid this issue.<br>
 
-Depending on network conditions, bird will be reloaded, every 5 minutes or as short as every 10 seconds.
+Depending on network conditions, bird will be reloaded, every 5 minutes or as short as every 10 seconds.<br>
 This will drop long lived TCP connections.
 
 **Known Issues**<br>
