@@ -157,7 +157,7 @@ class Latency(Base):
         if not result:
             self.logger.warning("Nothing todo")
         else:
-            #reload bird with updates only every 5 minutes or if packetloss is detected
+            #reload bird with updates only every 5 minutes or if reload is greater than 1
             if (datetime.now().minute % 5 == 0 and runs == 0) or self.reload > 0:
                 #write
                 self.logger.info("Writing config")
