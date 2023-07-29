@@ -124,6 +124,15 @@ su wg-mesh -c "/opt/wg-mesh/cli.py down" && bash /opt/wg-mesh/deinstall.sh
 ```
 su wg-mesh -c "cd /opt/wg-mesh/; git pull" && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
+
+**Prevent meshing**
+In case you want to stop a client/server from automatically meshing into the network.<br>
+You can simply block it by creating an empty state.json.<br>
+This needs to be done before you connecting to the network.<br>
+```
+su wg-mesh -c "touch /opt/wg-mesh/configs/state.json"
+```
+
 **Limitations**<br>
 Connecting multiple nodes at once, without waiting for the other node to finish, will result in double links.<br>
 By default, when a new node joins, it checks which connections it does not have, which with a new node would be everything.<br>
