@@ -8,7 +8,7 @@ path = os.path.dirname(os.path.realpath(__file__))
 cli = CLI(path)
 
 if len(sys.argv) == 1:
-    print("init <id>, connect <IP> <token>, disconnect, up, down")
+    print("init <id>, connect <IP> <token>, disconnect, up, down, proximity, optimize")
 elif sys.argv[1] == "init":
     state = sys.argv[3] if len(sys.argv) > 3 else "local"
     cli.init(sys.argv[2],state)
