@@ -125,7 +125,7 @@ su wg-mesh -c "/opt/wg-mesh/cli.py down" && bash /opt/wg-mesh/deinstall.sh
 su wg-mesh -c "cd /opt/wg-mesh/; git pull" && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
 
-**Prevent meshing**
+**Prevent meshing**<br>
 In case you want to stop a client/server from automatically meshing into the network.<br>
 You can simply block it by creating an empty state.json.<br>
 This needs to be done before you connecting to the network.<br>
