@@ -1,6 +1,6 @@
 #!/bin/bash
 if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
-apt-get install wireguard iptables bird2 sudo python3 python3-pip fping git -y
+apt-get install wireguard iptables bird2 sudo python3 python3-pip fping mtr vnstat git -y
 pip3 install netaddr requests bottle paste
 cd /opt/
 #git
