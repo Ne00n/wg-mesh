@@ -36,7 +36,7 @@ Tested on Debian 11 with systemd.<br>
 For Debian 12, python packages are externally managed, however, the installer installs all packages via pip3.<br>
 So you have to disable this with, otherwise the installation will fail.<br>
 ```
-rm /usr/lib/python3.11/EXTERNALLY-MANAGED
+apt-get install python3 -y && rm /usr/lib/python3.11/EXTERNALLY-MANAGED
 ```
 Keep in mind that some containers such as OVZ or LXC, depending on kernel version and host configuration have issues with bird and/or wireguard.<br>
 
