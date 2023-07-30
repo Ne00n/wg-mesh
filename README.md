@@ -33,7 +33,12 @@
 - [x] Port Optimizer for lowest Ping
  
 Tested on Debian 11 with systemd.<br>
-Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
+For Debian 12, python packages are externally managed, however, the installer installs all packages via pip3.<br>
+So you have to disable this with, otherwise the installation will fail.<br>
+```
+rm /usr/lib/python3.11/EXTERNALLY-MANAGED
+```
+However Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
 
 **Example 2 nodes**<br>
 The ID needs to be unique, otherwise it will result in collisions.<br>
