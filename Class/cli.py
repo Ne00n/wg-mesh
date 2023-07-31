@@ -12,9 +12,9 @@ class CLI:
     def init(self,id,listen):
         self.wg.init(id,listen)
 
-    def connect(self,dest,token):
+    def connect(self,dest,token,linkType="default"):
         self.wg = Wireguard(self.path)
-        self.wg.connect(dest,token)
+        self.wg.connect(dest,token,linkType)
 
     def optimize(self,links):
         self.wg = Wireguard(self.path)

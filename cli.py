@@ -13,7 +13,8 @@ elif sys.argv[1] == "init":
     state = sys.argv[3] if len(sys.argv) > 3 else "local"
     cli.init(sys.argv[2],state)
 elif sys.argv[1] == "connect":
-    cli.connect(sys.argv[2],sys.argv[3])
+    linkType = "default" if len(sys.argv) == 3 else sys.argv[4]
+    cli.connect(sys.argv[2],sys.argv[3],linkType)
 elif sys.argv[1] == "optimize":
     links = sys.argv[2] if len(sys.argv) == 3 else []
     cli.optimize(links)
