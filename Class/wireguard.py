@@ -165,7 +165,7 @@ class Wireguard(Base):
         else: return False
         for run in range(2):
             #call destination
-            req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6,"initial":isInitial})
+            req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6,"initial":isInitial,"linkType":linkType})
             if req == False: return False
             if req.status_code == 200:
                 resp = req.json()

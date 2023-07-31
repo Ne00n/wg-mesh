@@ -51,6 +51,11 @@ def validateNetwork(network):
     if not result: return False
     return True
 
+def validateLinkType(linkType):
+    linkTypes = ["default"]
+    if linkType in linkTypes: return True
+    return False
+
 def validatePrefix(prefix):
     if prefix == "10.0." or prefix == "172.16.": return True
     return False
@@ -104,7 +109,12 @@ def index():
     if "network" in payload and not validateNetwork(payload['network']):
         logging.info(f"Invalid Network from {requestIP}")
         return HTTPResponse(status=404, body="Invalid Network")
+    #validate linkType
+    if "linkType" in payload and not validateLinkType(payload['linkType']):
+        logging.info(f"Invalid linkType from {requestIP}")
+        return HTTPResponse(status=404, body="Invalid linkType")
     #defaults
+    if not "linkType" in payload: payload['linkType'] = "default"
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
     if not "prefix" in payload: payload['prefix'] = "10.0."
@@ -131,7 +141,7 @@ def index():
     configs = wg.getConfigs(False)
     lastbyte,port = wg.minimal(configs,4,payload['basePort'])
     #generate wireguard config
-    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'],"default",payload['prefix'])
+    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'],payload['linkType'],payload['prefix'])
     #save
     logging.debug(f"Creating wireguard link {interface}")
     wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
