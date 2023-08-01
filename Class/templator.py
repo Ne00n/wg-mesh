@@ -1,6 +1,6 @@
 class Templator:
 
-    def genServer(self,interface,serverID,serverIP,serverPort,ClientPublicKey,linkType="default",prefix="10.0.",):
+    def genServer(self,interface,serverID,serverIP,serverPort,ClientPublicKey,preSharedKey,linkType="default",prefix="10.0.",):
         mtu = 1412 if "v6" in interface else 1420
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
@@ -15,7 +15,7 @@ else
 fi'''
         return template
 
-    def genClient(self,interface,serverID,serverIP,serverIPExternal,serverPort,serverPublicKey,linkType="default",prefix="10.0.",):
+    def genClient(self,interface,serverID,serverIP,serverIPExternal,serverPort,serverPublicKey,preSharedKey,linkType="default",prefix="10.0.",):
         mtu = 1412 if "v6" in interface else 1420
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then

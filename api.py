@@ -1,4 +1,4 @@
-import ipaddress, threading, socket, random, logging, string, json, time, os, re
+import ipaddress, threading, socket, random, logging, string, secrets, json, time, os, re
 from bottle import HTTPResponse, route, run, request, template
 from logging.handlers import RotatingFileHandler
 from Class.wireguard import Wireguard
@@ -137,11 +137,12 @@ def index():
     mutex.acquire()
     #generate new key pair
     privateKeyServer, publicKeyServer = wg.genKeys()
+    preSharedKey = secrets.token_urlsafe(48)
     #load configs
     configs = wg.getConfigs(False)
     lastbyte,port = wg.minimal(configs,4,payload['basePort'])
     #generate wireguard config
-    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'],payload['linkType'],payload['prefix'])
+    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'],preSharedKey,payload['linkType'],payload['prefix'])
     #save
     logging.debug(f"Creating wireguard link {interface}")
     wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
@@ -157,7 +158,7 @@ def index():
         wg.setInterface("dummy","up")
     mutex.release()
     logging.info(f"{interface} created for {requestIP}")
-    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'id':config['id'],'lastbyte':lastbyte,'port':port,'connectivity':config['connectivity']})
+    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'id':config['id'],'lastbyte':lastbyte,'port':port,'connectivity':config['connectivity']})
 
 @route('/update', method='PATCH')
 def index():
