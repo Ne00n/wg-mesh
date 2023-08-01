@@ -17,6 +17,9 @@ class Wireguard(Base):
         privateKeyServer, publicKeyServer = keys.splitlines()
         return privateKeyServer, publicKeyServer
 
+    def genPreShared(self):
+        return self.cmd('wg genpsk')[0]
+
     def getConfig(self):
         return self.config
 

@@ -137,7 +137,7 @@ def index():
     mutex.acquire()
     #generate new key pair
     privateKeyServer, publicKeyServer = wg.genKeys()
-    preSharedKey = secrets.token_urlsafe(48)
+    preSharedKey = wg.genPreShared()
     wgobfsSharedKey = secrets.token_urlsafe(48)
     #load configs
     configs = wg.getConfigs(False)
