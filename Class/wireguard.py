@@ -59,7 +59,7 @@ class Wireguard(Base):
         #config
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
-        config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"connectivity":connectivity}
+        config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"linkTypes":["default"],"connectivity":connectivity}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
         #load configs
         self.prefix = "pipe"
