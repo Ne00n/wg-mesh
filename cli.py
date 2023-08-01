@@ -28,3 +28,5 @@ elif sys.argv[1] == "up":
     cli.links("up")
 elif sys.argv[1] == "down":
     cli.links("down")
+elif sys.argv[1] == "updateConfig":
+    cli.updateConfig()

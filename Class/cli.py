@@ -34,3 +34,6 @@ class CLI:
             if not file.endswith(".sh"): files.remove(file)
         for file in files:
             subprocess.run(f"bash {self.path}/links/{file} {state}",shell=True)
+
+    def updateConfig(self):
+        self.wg.updateConfig()
