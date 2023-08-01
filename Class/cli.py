@@ -36,4 +36,5 @@ class CLI:
             subprocess.run(f"bash {self.path}/links/{file} {state}",shell=True)
 
     def migrate(self):
+        self.wg = Wireguard(self.path)
         self.wg.updateConfig()
