@@ -138,7 +138,7 @@ def index():
     #generate new key pair
     privateKeyServer, publicKeyServer = wg.genKeys()
     preSharedKey = wg.genPreShared()
-    wgobfsSharedKey = secrets.token_urlsafe(48)
+    wgobfsSharedKey = secrets.token_urlsafe(24)
     #load configs
     configs = wg.getConfigs(False)
     lastbyte,port = wg.minimal(configs,4,payload['basePort'])
