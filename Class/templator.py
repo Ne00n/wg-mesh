@@ -2,8 +2,11 @@ class Templator:
 
     def genServer(self,interface,serverID,serverIP,serverPort,ClientPublicKey,linkType="default",prefix="10.0.",):
         mtu = 1412 if "v6" in interface else 1420
-        template = f'''#!/bin/bash
-if [ "$1" == "up" ];  then
+        template = f'''#!/bin/bash\nif [ "$1" == "up" ];  then'''
+        if linkType == " wgobfs":
+            template .= f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key mysecretkey --unobfs"
+            template .= f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key mysecretkey --obfs"
+        template = f'''
     sudo ip link add dev {interface} type wireguard
     sudo ip address add dev {interface} {prefix}{serverID}.{serverIP}/31
     sudo ip -6 address add dev {interface} fe82:{serverID}::{serverIP}/127
@@ -17,8 +20,11 @@ fi'''
 
     def genClient(self,interface,serverID,serverIP,serverIPExternal,serverPort,serverPublicKey,linkType="default",prefix="10.0.",):
         mtu = 1412 if "v6" in interface else 1420
-        template = f'''#!/bin/bash
-if [ "$1" == "up" ];  then
+        template = f'''#!/bin/bash\nif [ "$1" == "up" ];  then'''
+        if linkType == " wgobfs":
+            template .= f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key mysecretkey --unobfs"
+            template .= f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key mysecretkey --obfs"
+        template = f'''
     sudo ip link add dev {interface} type wireguard
     sudo ip address add dev {interface} {prefix}{serverID}.{int(serverIP)+1}/31
     sudo ip -6 address add dev {interface} fe82:{serverID}::{int(serverIP)+1}/127
