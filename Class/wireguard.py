@@ -156,7 +156,7 @@ class Wireguard(Base):
         data = req.json()
         return data
 
-    def connect(self,dest,token="",linkType="default"):
+    def connect(self,dest,token="",linkType=""):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
@@ -172,6 +172,12 @@ class Wireguard(Base):
         elif data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']: isv6 = True
         #if neither of these are available, leave it
         else: return False
+        #linkType
+        if linkType != "":
+            if self.config['defaultLinkType'] in data['linkTypes']:
+                linkType = self.config['defaultLinkType']
+            else:
+                linkType = "default"
         for run in range(2):
             #call destination
             req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6,"initial":isInitial,"linkType":linkType})
