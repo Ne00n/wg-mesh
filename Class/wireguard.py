@@ -176,7 +176,7 @@ class Wireguard(Base):
                 #interface
                 interface = self.getInterface(interfaceID)
                 #generate config
-                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'],linkType)
+                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'],linkType,resp['wgobfsSharedKey'])
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
@@ -251,7 +251,7 @@ class Wireguard(Base):
                 connectivity = resp['connectivity']['ipv4']
                 interface = self.getInterface(interfaceID,"v4","Ping")
                 #generate config
-                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'],"default","172.16.")
+                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'],"default","","172.16.")
                 #bring up the interface
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")

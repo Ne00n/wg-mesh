@@ -138,11 +138,12 @@ def index():
     #generate new key pair
     privateKeyServer, publicKeyServer = wg.genKeys()
     preSharedKey = secrets.token_urlsafe(48)
+    wgobfsSharedKey = secrets.token_urlsafe(48)
     #load configs
     configs = wg.getConfigs(False)
     lastbyte,port = wg.minimal(configs,4,payload['basePort'])
     #generate wireguard config
-    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'],payload['linkType'],payload['prefix'])
+    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'],payload['linkType'],wgobfsSharedKey,payload['prefix'])
     #save
     logging.debug(f"Creating wireguard link {interface}")
     wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
@@ -159,7 +160,7 @@ def index():
         wg.setInterface("dummy","up")
     mutex.release()
     logging.info(f"{interface} created for {requestIP}")
-    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'id':config['id'],'lastbyte':lastbyte,'port':port,'connectivity':config['connectivity']})
+    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id'],'lastbyte':lastbyte,'port':port,'connectivity':config['connectivity']})
 
 @route('/update', method='PATCH')
 def index():
