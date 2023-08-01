@@ -10,6 +10,7 @@ for i in range(1,100):
 su wg-mesh
 cd
 timeout 10 git pull --ff-only
+python3 cli.py migrate
 exit
 systemctl restart wgmesh
 systemctl restart wgmesh-bird
