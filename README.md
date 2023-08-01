@@ -127,7 +127,7 @@ su wg-mesh -c "/opt/wg-mesh/cli.py down" && bash /opt/wg-mesh/deinstall.sh
 
 **Updating**
 ```
-su wg-mesh -c "cd /opt/wg-mesh/; git pull; python3 cli.py updateConfig" && systemctl restart wgmesh && systemctl restart wgmesh-bird
+su wg-mesh -c "cd /opt/wg-mesh/; git pull; python3 cli.py migrate" && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
 
 **Prevent meshing**<br>

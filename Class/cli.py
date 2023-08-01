@@ -35,5 +35,5 @@ class CLI:
         for file in files:
             subprocess.run(f"bash {self.path}/links/{file} {state}",shell=True)
 
-    def updateConfig(self):
+    def migrate(self):
         self.wg.updateConfig()
