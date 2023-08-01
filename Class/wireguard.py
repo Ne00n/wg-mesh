@@ -175,9 +175,10 @@ class Wireguard(Base):
                 #interface
                 interface = self.getInterface(interfaceID)
                 #generate config
-                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['preSharedKey'],resp['preSharedKey'],linkType)
+                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'],linkType)
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
+                self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
                 self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
                 self.setInterface(interface,"up")
                 #before we try to setup a v4 in v6 wg, we check if booth hosts have IPv6 connectivity
@@ -249,10 +250,11 @@ class Wireguard(Base):
                 connectivity = resp['connectivity']['ipv4']
                 interface = self.getInterface(interfaceID,"v4","Ping")
                 #generate config
-                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'],resp['preSharedKey'],"default","172.16.")
+                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'],"default","172.16.")
                 #bring up the interface
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
+                self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
                 self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
                 self.setInterface(interface,"up")
                 #measure

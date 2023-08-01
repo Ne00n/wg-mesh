@@ -142,10 +142,11 @@ def index():
     configs = wg.getConfigs(False)
     lastbyte,port = wg.minimal(configs,4,payload['basePort'])
     #generate wireguard config
-    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'],preSharedKey,payload['linkType'],payload['prefix'])
+    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'],payload['linkType'],payload['prefix'])
     #save
     logging.debug(f"Creating wireguard link {interface}")
     wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
+    wg.saveFile(preSharedKey,f"{folder}/links/{interface}.pre")
     wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
     logging.debug(f"{interface} up")
     wg.setInterface(interface,"up")
