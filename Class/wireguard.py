@@ -15,7 +15,7 @@ class Wireguard(Base):
     def updateConfig(self):
         if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
-        with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
+        with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(self.config, f ,indent=4)
 
     def genKeys(self):
         keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')[0]
