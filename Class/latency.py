@@ -75,7 +75,6 @@ class Latency(Base):
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = peakLoss
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
-                        if len(row) > 0: self.noWait += 1
 
                     threshold,eventCount,eventScore = 2,0,0
                     for event,lost in list(self.network[entry]['packetloss'].items()):
@@ -97,6 +96,7 @@ class Latency(Base):
                         if self.reloadPeacemaker(hasLoss,eventDiff,node['latency'],node['weight']): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
                             self.reload += 1
+                            self.noWait += 1
                         self.hadLoss += 1
 
                     #Jitter
