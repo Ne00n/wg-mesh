@@ -43,7 +43,7 @@ class Latency(Base):
 
     def reloadPeacemaker(self,ongoing,latency,weight):
         if not ongoing: return False
-        if latency > 60000 and weight > 60000: return False
+        if latency > 60000 and float(weight) > 60000: return False
         diff = latency - float(weight)
         if diff < 50: return False
         return True
