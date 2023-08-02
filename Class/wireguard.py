@@ -173,7 +173,7 @@ class Wireguard(Base):
         #if neither of these are available, leave it
         else: return False
         #linkType
-        if linkType != "":
+        if linkType == "":
             if self.config['defaultLinkType'] in data['linkTypes']:
                 linkType = self.config['defaultLinkType']
             else:
