@@ -41,6 +41,13 @@ class Latency(Base):
             if float(entry[0]) > avrg + grace: return True,float(entry[0]) - (avrg + grace)
         return False,0
 
+    def reloadPeacemaker(self,ongoing,latency,weight):
+        if not ongoing: return False
+        if latency > 60000 and weight > 60000: return False
+        diff = latency - float(weight)
+        if diff < 50: return False
+        return True
+
     def getLatency(self,config,pings=4):
         targets = []
         for row in config: targets.append(row['target'])
@@ -86,9 +93,7 @@ class Latency(Base):
                         self.logger.debug(f"{node['nic']} ({entry}) Ongoing Packetloss")
                         node['latency'] = round(node['latency'] * eventScore)
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
-                        diff = node['latency'] - float(node['weight'])
-                        #Trigger reload on recent loss which exceeded the given threshold and the cost difference is bigger than 10ms
-                        if hasLoss and eventCount < 10 and (diff > 100 or diff < 100): 
+                        if self.reloadPeacemaker(hasLoss,node['latency'],node['weight']): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
                             self.reload += 1
                         self.hadLoss += 1
@@ -116,9 +121,7 @@ class Latency(Base):
                         self.logger.debug(f"{node['nic']} ({entry}) Ongoing Jitter")
                         node['latency'] = round(node['latency'] * eventScore)
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
-                        diff = node['latency'] - float(node['weight'])
-                        #Trigger reload on recent jittar which exceeded the given threshold and the cost difference is bigger than 10ms
-                        if hasJitter and eventCount < 10 and (diff > 100 or diff < 100):
+                        if self.reloadPeacemaker(hasJitter,node['latency'],node['weight']):
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
                             self.reload += 1
                         self.hadJitter += 1
