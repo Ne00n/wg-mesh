@@ -6,7 +6,7 @@ class Templator:
         if linkType == " wgobfs":
             template += f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs"
             template += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs"
-        template = f'''
+        template += f'''
     sudo ip link add dev {interface} type wireguard
     sudo ip address add dev {interface} {prefix}{serverID}.{serverIP}/31
     sudo ip -6 address add dev {interface} fe82:{serverID}::{serverIP}/127
@@ -24,7 +24,7 @@ fi'''
         if linkType == " wgobfs":
             template += f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs"
             template += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs"
-        template = f'''
+        template += f'''
     sudo ip link add dev {interface} type wireguard
     sudo ip address add dev {interface} {prefix}{serverID}.{int(serverIP)+1}/31
     sudo ip -6 address add dev {interface} fe82:{serverID}::{int(serverIP)+1}/127
