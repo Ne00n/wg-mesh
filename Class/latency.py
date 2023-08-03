@@ -153,7 +153,7 @@ class Latency(Base):
         configs = self.cmd('ip addr show')
         #fping
         self.logger.debug("Running fping")
-        result = self.getLatency(config,11)
+        result = self.getLatency(config,10)
         #update
         local = re.findall("inet (10\.0[0-9.]+\.1)\/(32|30) scope global lo",configs[0], re.MULTILINE | re.DOTALL)
         if not local: return False
