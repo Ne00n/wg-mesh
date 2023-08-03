@@ -145,7 +145,7 @@ By default, when a new node joins, it checks which connections it does not have,
 Additional, bird2, by default, takes 30s to distribute the routes, there will be also a delay.<br>
 In total roughtly 60s, depending on the network size, to avoid this issue.<br>
 
-Depending on network conditions, bird will be reloaded, every 5 minutes or as short as every 10 seconds.<br>
+Depending on network conditions, bird will be reloaded, every 5 minutes or as short as every 20 seconds.<br>
 This will drop long lived TCP connections.
 
 **Known Issues**<br>
