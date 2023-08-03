@@ -40,4 +40,4 @@ while True:
             if links: 
                 skip = latency.run(runs)
         else:
-            if skip == 0: time.sleep(20)
+            if skip == 0: time.sleep(10)
