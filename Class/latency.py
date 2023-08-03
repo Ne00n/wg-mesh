@@ -176,4 +176,5 @@ class Latency(Base):
                 self.logger.debug(f"{datetime.now().minute} not in window.")
         #however save any packetloss or jitter detected
         self.save()
+        time.sleep(5)
         return self.noWait
