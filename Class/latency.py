@@ -42,8 +42,12 @@ class Latency(Base):
         return False,0
 
     def reloadPeacemaker(self,ongoing,eventDiff,latency,weight):
+        #needs to be ongoing
         if not ongoing: return False
+        #ignore links dead or nearly dead links
         if latency > 10000 and float(weight) > 10000: return False
+        #ignore eventScore 1
+        if latency == float(weight): return False
         diff = latency - float(weight)
         if eventDiff > 0 and diff < 500: return False
         return True
