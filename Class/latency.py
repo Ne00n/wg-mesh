@@ -49,7 +49,10 @@ class Latency(Base):
         #ignore eventScore 1
         if latency == float(weight): return False
         diff = latency - float(weight)
-        if eventDiff > 0 and diff < 500: return False
+        #ignore any negative changes
+        if diff <= 0: return False
+        percentage = round(latency / float(weight),2)
+        if eventDiff > 0 and percentage < 10: return False
         return True
 
     def getLatency(self,config,pings=4):
