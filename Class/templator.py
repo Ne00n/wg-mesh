@@ -3,7 +3,7 @@ class Templator:
     def genServer(self,interface,serverID,serverIP,serverPort,ClientPublicKey,linkType="default",wgobfsSharedKey="",prefix="10.0.",):
         mtu = 1412 if "v6" in interface else 1420
         template = f'''#!/bin/bash\nif [ "$1" == "up" ];  then'''
-        if linkType == " wgobfs":
+        if linkType == "wgobfs":
             template += f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs"
             template += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs"
         template += f'''
@@ -21,7 +21,7 @@ fi'''
     def genClient(self,interface,serverID,serverIP,serverIPExternal,serverPort,serverPublicKey,linkType="default",wgobfsSharedKey="",prefix="10.0.",):
         mtu = 1412 if "v6" in interface else 1420
         template = f'''#!/bin/bash\nif [ "$1" == "up" ];  then'''
-        if linkType == " wgobfs":
+        if linkType == "wgobfs":
             template += f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs"
             template += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs"
         template += f'''
