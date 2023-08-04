@@ -31,14 +31,19 @@
 - [x] Packet loss detection & rerouting
 - [x] High Jitter detection & rerouting
 - [x] Port Optimizer for lowest Ping
+
+**Requirements**<br>
+- Debian or Ubuntu
+- Python 3.9 or higher
+- Kernel 5.4+ (wg kernel module, no user space support yet)
+
+Keep in mind that some containers such as OVZ or LXC, depending on kernel version and host configuration have issues with bird and/or wireguard.<br>
  
-Tested on Debian 11 with systemd.<br>
 For Debian 12, python packages are externally managed, however, the installer installs all packages via pip3.<br>
 So you have to disable this with, otherwise the installation will fail.<br>
 ```
 apt-get install python3 -y && rm /usr/lib/python3.11/EXTERNALLY-MANAGED
 ```
-Keep in mind that some containers such as OVZ or LXC, depending on kernel version and host configuration have issues with bird and/or wireguard.<br>
 
 **Example 2 nodes**<br>
 The ID needs to be unique, otherwise it will result in collisions.<br>
