@@ -113,7 +113,7 @@ class Wireguard(Base):
         os.remove(f"{self.path}/links/{interface}.sh")
         if deleteKey:
             os.remove(f"{self.path}/links/{interface}.key")
-            os.remove(f"{self.path}/links/{interface}.pre")
+            if os.path.isfile(f"{self.path}/links/{interface}.pre"): os.remove(f"{self.path}/links/{interface}.pre")
 
     def saveFile(self,data,path):
         with open(path, 'w') as file: file.write(data)
