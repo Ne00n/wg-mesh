@@ -23,7 +23,7 @@ fi'''
         template = f'''#!/bin/bash\nif [ "$1" == "up" ];  then'''
         if linkType == "wgobfs":
             template += f"\nsudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs"
-            template += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs"
+            template += f"\nsudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs"
         template += f'''
     sudo ip link add dev {interface} type wireguard
     sudo ip address add dev {interface} {prefix}{serverID}.{int(serverIP)+1}/31
