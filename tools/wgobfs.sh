@@ -8,3 +8,4 @@ cd xt_wgobfs
 make
 sudo make install
 depmod -a && modprobe xt_WGOBFS
+echo 'xt_WGOBFS' > /etc/modules
