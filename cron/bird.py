@@ -30,7 +30,6 @@ while True:
         if links != currentLinks:
             #hold until bird reports success
             if bird.bird():
-                currentLinks = os.listdir(path)
                 bird.mesh()
                 bird.bird()
                 links = currentLinks
