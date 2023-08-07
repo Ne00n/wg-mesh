@@ -357,7 +357,7 @@ class Wireguard(Base):
         result.append("Target\tIP address\tConnected\tLatency")
         result.append("-------\t-------\t-------\t-------")
         for ip,latency in latencyData.items(): 
-            if latency > cutoff: terminate.append(ips[ip])
+            if latency > float(cutoff): terminate.append(ips[ip])
             result.append(f"{ips[ip]}\t{ip}\t{bool(ips[ip] in existing)}\t{latency}ms")
         result = self.formatTable(result)
         if cutoff == 0: 
