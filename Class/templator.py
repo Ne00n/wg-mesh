@@ -97,6 +97,11 @@ protocol direct {
     interface "tunnel*";
 }
 
+protocol static {
+    ipv4;
+    include "static.conf";
+}
+
 protocol kernel {
 	ipv4 {
 	    export filter { '''

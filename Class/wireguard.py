@@ -16,6 +16,7 @@ class Wireguard(Base):
         if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(self.config, f ,indent=4)
+        if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
 
     def genKeys(self):
         keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')[0]
@@ -69,6 +70,7 @@ class Wireguard(Base):
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
         config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
+        self.cmd('touch /etc/bird/static.conf')
         #load configs
         self.prefix = "pipe"
         configs = self.getConfigs(False)
