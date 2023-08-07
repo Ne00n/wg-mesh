@@ -70,7 +70,6 @@ class Wireguard(Base):
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
         config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
-        self.cmd('touch /etc/bird/static.conf')
         #load configs
         self.prefix = "pipe"
         configs = self.getConfigs(False)

@@ -23,6 +23,7 @@ echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/wg set*" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /bin/systemctl reload bird" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload bird" >> /etc/sudoers.d/wg-mesh
 usermod -a -G bird wg-mesh
+touch /etc/bird/static.conf
 chmod -R 770 /etc/bird/
 #sysctl
 echo "net.ipv4.ip_forward=1" >> /etc/sysctl.d/wg-mesh.conf
