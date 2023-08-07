@@ -19,7 +19,8 @@ elif sys.argv[1] == "optimize":
     links = sys.argv[2] if len(sys.argv) == 3 else []
     cli.optimize(links)
 elif sys.argv[1] == "proximity":
-    cli.proximity()
+    cutoff = sys.argv[2] if len(sys.argv) == 3 else 0
+    cli.proximity(cutoff)
 elif sys.argv[1] == "disconnect":
     force = True if len(sys.argv) == 3 and sys.argv[2] == "force" or len(sys.argv) == 4 and sys.argv[3] == "force" else False
     link = sys.argv[2] if len(sys.argv) == 3 and sys.argv[2] != "force" else ""

@@ -330,12 +330,13 @@ class Wireguard(Base):
             else:
                 print("Nothing to optimize")
 
-    def proximity(self):
+    def proximity(self,cutoff=0):
+        fpingTargets, existing = [],[]
+        links = self.getLinks()
+        for link,details in links.items(): existing.append(details['vxlan'])
         print("Getting Routes")
         routes = self.cmd("birdc show route")[0]
         targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
-        configs = self.cmd('ip addr show')[0]
-        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
         print("Getting Connection info")
         ips = {}
         for target in targets:
@@ -344,9 +345,6 @@ class Wireguard(Base):
             if not resp: continue
             ips[resp['connectivity']['ipv4']] = target
             ips[resp['connectivity']['ipv6']] = target
-        existing = []
-        for ip in list(targets): existing.append(ip.replace("0/30","1"))
-        fpingTargets = []
         for ip in ips:
             if ip != None: fpingTargets.append(ip)
         print("Getting Latency")
