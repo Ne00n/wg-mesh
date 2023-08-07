@@ -345,11 +345,7 @@ class Wireguard(Base):
             ips[resp['connectivity']['ipv4']] = target
             ips[resp['connectivity']['ipv6']] = target
         existing = []
-        for ip in list(targets):
-            for link in links:
-                if self.resolve(link[1],ip.replace("/30",""),24):
-                    #multiple links in the same subnet
-                    if ip in targets: existing.append(ip.replace("0/30","1"))
+        for ip in list(targets): existing.append(ip.replace("0/30","1"))
         fpingTargets = []
         for ip in ips:
             if ip != None: fpingTargets.append(ip)
