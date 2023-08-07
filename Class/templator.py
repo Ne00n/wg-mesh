@@ -102,6 +102,8 @@ protocol static {
     include "static.conf";
 }
 
+include "bgp.conf";
+
 protocol kernel {
 	ipv4 {
 	    export filter { '''
