@@ -353,12 +353,28 @@ class Wireguard(Base):
         print("Parsing Results")
         for ip in fping: latencyData[ip] = self.getAvrg(fping[ip])
         latencyData = {k: latencyData[k] for k in sorted(latencyData, key=latencyData.get)}
-        result = []
+        terminate, result = [],[]
         result.append("Target\tIP address\tConnected\tLatency")
         result.append("-------\t-------\t-------\t-------")
-        for ip,latency in latencyData.items(): result.append(f"{ips[ip]}\t{ip}\t{bool(ips[ip] in existing)}\t{latency}ms")
+        for ip,latency in latencyData.items(): 
+            if latency > cutoff: terminate.append(ips[ip])
+            result.append(f"{ips[ip]}\t{ip}\t{bool(ips[ip] in existing)}\t{latency}ms")
         result = self.formatTable(result)
-        print(result)
+        if cutoff == 0: 
+            print(result)
+            return True
+        for link,details in links.items():
+            if not details['vxlan'] in terminate: continue
+                interfaceRemote = self.getInterfaceRemote(link)
+                print(f'Calling http://{details["vxlan"]}:8080/disconnect')
+                req = self.call(f'http://{details["vxlan"]}:8080/disconnect',{"publicKeyServer":details['publicKey'],"interface":interfaceRemote})
+                if req == False and force == False: continue
+                if force or req.status_code == 200:
+                    interface = self.filterInterface(filename)
+                    self.setInterface(interface,"down")
+                    self.cleanInterface(interface)
+                else:
+                    print(f"Got {req.status_code} with {req.text} aborting")
 
     def getLinks(self):
         print("Getting Links")
