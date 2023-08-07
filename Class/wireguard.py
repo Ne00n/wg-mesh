@@ -389,6 +389,7 @@ class Wireguard(Base):
 
     def disconnect(self,force=False,link=""):
         links = self.getLinks()
+        if link != "" and not ".sh" in link: link += ".sh"
         print("Checking Links")
         offline,online = self.checkLinks(links)
         #shutdown the links that are offline first
