@@ -366,17 +366,8 @@ class Wireguard(Base):
             return True
         for link,details in links.items():
             if not details['vxlan'] in terminate: continue
-            interfaceRemote = self.getInterfaceRemote(link)
-            print(f'Calling http://{details["vxlan"]}:8080/disconnect')
-            req = self.call(f'http://{details["vxlan"]}:8080/disconnect',{"publicKeyServer":details['publicKey'],"interface":interfaceRemote})
-            if req == False: continue
-            if req.status_code == 200:
-                interface = self.filterInterface(link)
-                self.setInterface(interface,"down")
-                self.cleanInterface(interface)
-            else:
-                print(f"Got {req.status_code} with {req.text} aborting")
-
+            self.disconnect(False,link)
+            
     def getLinks(self):
         print("Getting Links")
         files = os.listdir(f"{self.path}/links/")
