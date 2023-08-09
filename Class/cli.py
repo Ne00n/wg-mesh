@@ -24,9 +24,9 @@ class CLI:
         self.wg = Wireguard(self.path)
         self.wg.proximity(cutoff)
 
-    def disconnect(self,force=False,link=""):
+    def disconnect(self,links=[],force=False):
         self.wg = Wireguard(self.path)
-        self.wg.disconnect(force,link)
+        self.wg.disconnect(links,force)
 
     def links(self,state):
         files = os.listdir(f'{self.path}/links/')

@@ -22,9 +22,12 @@ elif sys.argv[1] == "proximity":
     cutoff = sys.argv[2] if len(sys.argv) == 3 else 0
     cli.proximity(cutoff)
 elif sys.argv[1] == "disconnect":
-    force = True if len(sys.argv) == 3 and sys.argv[2] == "force" or len(sys.argv) == 4 and sys.argv[3] == "force" else False
-    link = sys.argv[2] if len(sys.argv) == 3 and sys.argv[2] != "force" else ""
-    cli.disconnect(force,link)
+    force,links = False,[]
+    sys.argv = sys.argv[2:]
+    for param in sys.argv:
+        if param.lower() == "force": force = True
+        if param.lower() != "force": links.append(param)
+    cli.disconnect(links,force)
 elif sys.argv[1] == "up":
     cli.links("up")
 elif sys.argv[1] == "down":

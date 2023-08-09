@@ -366,8 +366,8 @@ class Wireguard(Base):
             return True
         for link,details in links.items():
             if not details['vxlan'] in terminate: continue
-            self.disconnect(False,link)
-            
+            self.disconnect([link])
+
     def getLinks(self):
         print("Getting Links")
         files = os.listdir(f"{self.path}/links/")
@@ -389,21 +389,23 @@ class Wireguard(Base):
                 offline.append(filename) if "100%" in row else online.append(filename)
         return offline,online
 
-    def disconnect(self,force=False,link=""):
-        links = self.getLinks()
-        if link != "" and not ".sh" in link: link += ".sh"
+    def disconnect(self,links=[],force=False):
+        currentLinks = self.getLinks()
+        if links:
+            for index, link in enumerate(links):
+                if not link.endswith(".sh"): links[index] += ".sh" 
         print("Checking Links")
-        offline,online = self.checkLinks(links)
+        offline,online = self.checkLinks(currentLinks)
         #shutdown the links that are offline first
         if offline: print(f"Found offline links, disconnecting them first. {offline}")
         targets = offline + online
         print("Disconnecting")
         for filename in targets:
             #if a specific link is given filter out
-            if link and link not in filename: continue
+            if links and filename not in links: continue
             interfaceRemote = self.getInterfaceRemote(filename)
             #call destination
-            data = links[filename]
+            data = currentLinks[filename]
             print(f'Calling http://{data["vxlan"]}:8080/disconnect')
             req = self.call(f'http://{data["vxlan"]}:8080/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
             if req == False and force == False: continue
