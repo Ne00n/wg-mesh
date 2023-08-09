@@ -117,9 +117,9 @@ su wg-mesh -c "/opt/wg-mesh/cli.py up" && systemctl restart wgmesh
 To disconnect all links on a Node
 ```
 su wg-mesh -c "/opt/wg-mesh/cli.py disconnect"
-#shutdown and remove a link despite untable to reach API endpoint
+#disconnect all links despite untable to reach API endpoint
 su wg-mesh -c "/opt/wg-mesh/cli.py disconnect force"
-#disconnect a specific link
+#disconnect a specific link e.g pipe250, pipe250Serv, pipe250v6Serv
 su wg-mesh -c "/opt/wg-mesh/cli.py disconnect pipe250"
 #disconnect a specific link with force
 su wg-mesh -c "/opt/wg-mesh/cli.py disconnect pipe250 force"
