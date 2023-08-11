@@ -11,6 +11,12 @@ useradd wg-mesh -r -d /opt/wg-mesh -s /bin/bash
 #run init
 ./cli.py $@
 chown -R wg-mesh:wg-mesh /opt/wg-mesh/
+#add wgmesh to /usr/local/bin
+cat <<EOF >>/usr/local/bin/wgmesh
+#!/bin/bash
+su wg-mesh -c "/opt/wg-mesh/cli.py \$@"
+EOF
+chmod +x /usr/local/bin/wgmesh
 #sudo permissions
 echo "wg-mesh ALL=(ALL) NOPASSWD: /sbin/ip*" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/ip*" >> /etc/sudoers.d/wg-mesh
