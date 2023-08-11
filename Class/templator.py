@@ -40,6 +40,7 @@ fi'''
         masquerade = ""
         if connectivity['ipv4']: masquerade += "sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
         if connectivity['ipv6']: masquerade += "sudo ip6tables -t nat -A POSTROUTING -o $(ip -6 route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
+        masqueradeReverse = masquerade.replace("-A POSTROUTING","-D POSTROUTING")
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
     {masquerade}
@@ -51,6 +52,7 @@ if [ "$1" == "up" ];  then
     sudo ip addr add 10.0.251.{serverID}/24 dev vxlan1;
     sudo ip -6 addr add fd10:251::{serverID}/64 dev vxlan1v6;
 else
+    {masqueradeReverse}
     sudo ip addr del 10.0.{serverID}.1/30 dev lo;
     sudo ip -6 addr del fd10:0:{serverID}::1/48 dev lo;
     sudo ip link delete vxlan1; sudo ip -6 link delete vxlan1v6;
