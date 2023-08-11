@@ -14,7 +14,9 @@ chown -R wg-mesh:wg-mesh /opt/wg-mesh/
 #add wgmesh to /usr/local/bin
 cat <<EOF >>/usr/local/bin/wgmesh
 #!/bin/bash
-su wg-mesh -c "/opt/wg-mesh/cli.py \$@"
+su wg-mesh <<EOF2
+/opt/wg-mesh/cli.py \$@
+EOF2
 EOF
 chmod +x /usr/local/bin/wgmesh
 #sudo permissions
