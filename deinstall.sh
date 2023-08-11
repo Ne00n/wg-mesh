@@ -10,3 +10,4 @@ userdel -r wg-mesh
 rm /etc/sysctl.d/wg-mesh.conf
 sysctl --system
 rm /etc/sudoers.d/wg-mesh
+rm /usr/local/bin/wgmesh
