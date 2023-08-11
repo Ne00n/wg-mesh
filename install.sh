@@ -14,6 +14,7 @@ chown -R wg-mesh:wg-mesh /opt/wg-mesh/
 #add wgmesh to /usr/local/bin
 cat <<EOF >>/usr/local/bin/wgmesh
 #!/bin/bash
+if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
 su wg-mesh <<EOF2
 /opt/wg-mesh/cli.py \$@
 EOF2
