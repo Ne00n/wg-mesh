@@ -4,6 +4,7 @@ class Templator:
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
+        wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
     {wgobfs}
@@ -14,6 +15,7 @@ if [ "$1" == "up" ];  then
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
 else
+    {wgobfsReverse}
     sudo ip link delete dev {interface}
 fi'''
         return template
@@ -22,6 +24,7 @@ fi'''
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
+        wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
     {wgobfs}
@@ -32,6 +35,7 @@ if [ "$1" == "up" ];  then
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
 else
+    {wgobfsReverse}
     sudo ip link delete dev {interface}
 fi'''
         return template
