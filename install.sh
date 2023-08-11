@@ -14,8 +14,8 @@ chown -R wg-mesh:wg-mesh /opt/wg-mesh/
 #sudo permissions
 echo "wg-mesh ALL=(ALL) NOPASSWD: /sbin/ip*" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/ip*" >> /etc/sudoers.d/wg-mesh
-echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/iptables -t nat -A POSTROUTING*" >> /etc/sudoers.d/wg-mesh
-echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/iptables -t mangle -I*" >> /etc/sudoers.d/wg-mesh
+echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/iptables*" >> /etc/sudoers.d/wg-mesh
+echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/ip6tables*" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /sbin/bridge fdb append *" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/sbin/bridge fdb append *" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/wg set*" >> /etc/sudoers.d/wg-mesh
