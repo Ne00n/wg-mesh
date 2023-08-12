@@ -38,3 +38,10 @@ class CLI:
     def migrate(self):
         self.wg = Wireguard(self.path)
         self.wg.updateConfig()
+
+    def token(self):
+        if os.path.isfile(f"{self.path}/token"):
+            with open(f'{self.path}/token') as f:
+                print(f.read().rstrip())
+        else:
+            print("Unable to load the token file")

@@ -57,7 +57,7 @@ curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.s
 ```
 Grab the Token from Node1<br>
 ```
-cat /opt/wg-mesh/token
+wg-mesh token
 ```
 Connect Node2 to Node1
 ```
@@ -78,7 +78,7 @@ curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.s
 ```
 Grab the Token from Node1 with
 ```
-cat /opt/wg-mesh/token
+wg-mesh token
 ```
 Connect Node2 to Node1
 ```
