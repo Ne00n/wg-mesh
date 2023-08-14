@@ -67,6 +67,14 @@ After connecting successfully, a dummy.sh will be created, which assigns a 10.0.
 This will be picked up by bird, so on booth nodes on 10.0.1.1 and 10.0.2.1 should be reachable after bird ran.<br>
 Regarding NAT or in general behind Firewalls, the "connector" is always a Client, the endpoint the Server.<br>
 
+**Prevent meshing**<br>
+In case you want to stop a client/server from automatically meshing into the network.<br>
+You can simply block it by creating an empty state.json.<br>
+```
+su wg-mesh -c "touch /opt/wg-mesh/configs/state.json"
+```
+This needs to be done before you connecting to the network.<br>
+
 **Example 2+ nodes**<br>
 ```
 #Install wg-mesh and initialize the first node
@@ -76,15 +84,16 @@ curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.s
 #Install wg-mesh and initialize the third node
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 3
 ```
-Grab the Token from Node1 with
+Grab the Token from Node 1 with
 ```
 wg-mesh token
 ```
-Connect Node2 to Node1
+Connect Node 2 to Node 1
 ```
 wg-mesh connect http://<node1IP>:8080 <token>
 ```
-Connect Node3 to Node1
+Before you connect the 3rd node, make sure Node 2 already has fully connected.<br>
+Connect Node 3 to Node 1
 ```
 wg-mesh connect http://<node1IP>:8080 <token>
 ```
@@ -99,12 +108,10 @@ All 3 nodes should be reachable under 10.0.nodeID.1<br>
 
 **API**<br>
 Currently the webservice / API is exposed at ::8080, without TLS, use a reverse proxy for TLS<br>
+Internal requests from 10.0.0.0/8 don't need a token for connectivity, connect and update.<br>
 - /connectivity needs a valid token, otherwise will refuse to provide connectivity info<br>
-Internal requests from 10.0.0.0/8 don't need a token.
 - /connect needs a valid token, otherwise the service will refuse to setup a wg link<br>
-Internal requests from 10.0.0.0/8 don't need a token.
-- /update needs a validate token, otherwise will not update port of wg link<br>
-Internal requests from 10.0.0.0/8 don't need a token.
+- /update needs a validate token, otherwise it will not update the wg link<br>
 - /disconnect needs a valid wg public key and link name, otherwise will refuse to disconnect a specific link<br>
 
 **Shutdown/Startup**
@@ -134,14 +141,6 @@ wg-mesh down && bash /opt/wg-mesh/deinstall.sh
 ```
 su wg-mesh -c "cd /opt/wg-mesh/; git pull; python3 cli.py migrate" && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
-
-**Prevent meshing**<br>
-In case you want to stop a client/server from automatically meshing into the network.<br>
-You can simply block it by creating an empty state.json.<br>
-```
-su wg-mesh -c "touch /opt/wg-mesh/configs/state.json"
-```
-This needs to be done before you connecting to the network.<br>
 
 **Limitations**<br>
 Connecting multiple nodes at once, without waiting for the other node to finish, will result in double links.<br>
