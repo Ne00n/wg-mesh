@@ -57,11 +57,11 @@ curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.s
 ```
 Grab the Token from Node1<br>
 ```
-wg-mesh token
+wgmesh token
 ```
 Connect Node2 to Node1
 ```
-wg-mesh connect http://<node2IP>:8080 <token>
+wgmesh connect http://<node2IP>:8080 <token>
 ```
 After connecting successfully, a dummy.sh will be created, which assigns a 10.0.nodeID.1/30 to lo.<br>
 This will be picked up by bird, so on booth nodes on 10.0.1.1 and 10.0.2.1 should be reachable after bird ran.<br>
@@ -86,16 +86,16 @@ curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.s
 ```
 Grab the Token from Node 1 with
 ```
-wg-mesh token
+wgmesh token
 ```
 Connect Node 2 to Node 1
 ```
-wg-mesh connect http://<node1IP>:8080 <token>
+wgmesh connect http://<node1IP>:8080 <token>
 ```
 Before you connect the 3rd node, make sure Node 2 already has fully connected.<br>
 Connect Node 3 to Node 1
 ```
-wg-mesh connect http://<node1IP>:8080 <token>
+wgmesh connect http://<node1IP>:8080 <token>
 ```
 Wait for bird to pickup all routes + mesh buildup.<br>
 You can check it with<br>
@@ -116,25 +116,25 @@ Internal requests from 10.0.0.0/8 don't need a token for connectivity, connect a
 
 **Shutdown/Startup**
 ```
-wg-mesh down
-wg-mesh up && systemctl restart wgmesh
+wgmesh down
+wgmesh up && systemctl restart wgmesh
 ```
 
 **Disconnect**<br>
 To disconnect all links on a Node
 ```
-wg-mesh disconnect
+wgmesh disconnect
 #disconnect all links despite untable to reach API endpoint
-wg-mesh disconnect force
+wgmesh disconnect force
 #disconnect a specific link e.g pipe250, pipe250Serv, pipe250v6Serv
-wg-mesh disconnect pipe250
+wgmesh disconnect pipe250
 #disconnect a specific link with force
-wg-mesh disconnect pipe250 force
+wgmesh disconnect pipe250 force
 ```
 
 **Removal**
 ```
-wg-mesh down && bash /opt/wg-mesh/deinstall.sh
+wgmesh down && bash /opt/wg-mesh/deinstall.sh
 ```
 
 **Updating**
