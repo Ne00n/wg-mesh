@@ -10,10 +10,6 @@ class Bird(Base):
     def __init__(self,path,logger):
         self.logger = logger
         self.path = path
-
-    def filter(self,entry):
-        if "Ping" in entry: return False
-        return True
     
     def genTargets(self,links):
         result = {}

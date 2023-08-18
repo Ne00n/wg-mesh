@@ -22,6 +22,10 @@ class Base:
         netmaskDecimal = ~ wildcardDecimal
         return ( ( ipDecimal & netmaskDecimal ) == ( rangeDecimal & netmaskDecimal ) )
 
+    def filter(self,entry):
+        if "Ping" in entry: return False
+        return True
+
     def getAvrg(self,row,weight=True):
         result = 0
         if not row: return 65000
