@@ -371,6 +371,7 @@ class Wireguard(Base):
     def getLinks(self):
         print("Getting Links")
         files = os.listdir(f"{self.path}/links/")
+        files = [x for x in files if self.filter(x)]
         links = self.filesToLinks(files)
         if not links: exit("No links found.")
         return links
