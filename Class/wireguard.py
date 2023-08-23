@@ -158,7 +158,7 @@ class Wireguard(Base):
         data = req.json()
         return data
 
-    def connect(self,dest,token="",linkType=""):
+    def connect(self,dest,token="",linkType="",port=51820):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
@@ -182,7 +182,7 @@ class Wireguard(Base):
                 linkType = "default"
         for run in range(2):
             #call destination
-            req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6,"initial":isInitial,"linkType":linkType})
+            req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"port":port,"token":token,"ipv6":isv6,"initial":isInitial,"linkType":linkType})
             if req == False: return False
             if req.status_code == 200:
                 resp = req.json()
