@@ -15,6 +15,10 @@ class Base:
         t = ip_network(target, strict = False).network_address
         return o == t
 
+    def getRoutes(self):
+        routes = self.cmd("birdc show route")[0]
+        return re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+
     def resolve(self,ip,range,netmask):
         rangeDecimal = int(netaddr.IPAddress(range))
         ipDecimal = int(netaddr.IPAddress(ip))

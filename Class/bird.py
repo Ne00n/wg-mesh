@@ -89,8 +89,7 @@ class Bird(Base):
         oldTargets,counter = [],0
         self.logger.info("Waiting for bird routes")
         for run in range(30):
-            routes = self.cmd("birdc show route")[0]
-            targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+            targets = self.getRoutes()
             self.logger.debug(f"Run {run}/30, Counter {counter}, Got {targets} as targets")
             if oldTargets != targets:
                 oldTargets = targets
