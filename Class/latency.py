@@ -8,17 +8,8 @@ class Latency(Base):
         self.logger = logger
         self.path = path
         file = f"{path}/configs/network.json"
-        if os.path.isfile(file):
-            self.logger.info(f"Loading network.json")
-            try:
-                with open(file) as handle:
-                    self.network = json.loads(handle.read())
-            except:
-                self.logger.debug(f"Unable to read network.json")
-                self.network = {"created":int(datetime.now().timestamp()),"updated":0}
-        else:
-            self.logger.debug(f"Creating network.json")
-            self.network = {"created":int(datetime.now().timestamp()),"updated":0}
+        self.network = self.readConfig(file)
+        if not self.network: self.network = {"created":int(datetime.now().timestamp()),"updated":0}
 
     def save(self):
         self.logger.debug(f"Saving network.json")

@@ -15,6 +15,18 @@ class Base:
         t = ip_network(target, strict = False).network_address
         return o == t
 
+    def readConfig(self,file):
+        if os.path.isfile(file):
+            self.logger.info(f"Loading {file}")
+            try:
+                with open(file) as handle: return json.loads(handle.read())
+            except:
+                self.logger.debug(f"Unable to read {file}")
+                return {}
+        else:
+            self.logger.debug(f"Creating {file}")
+            return {}
+
     def getRoutes(self):
         routes = self.cmd("birdc show route")[0]
         return re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
