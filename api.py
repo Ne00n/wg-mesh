@@ -96,23 +96,23 @@ def index():
     #validate id
     if not validateID(payload['id']): 
         logging.info(f"Invalid ID from {requestIP}")
-        return HTTPResponse(status=404, body="Invalid ID")
+        return HTTPResponse(status=400, body="Invalid ID")
     #validate port
     if "port" in payload and not validatePort(payload['port']): 
         logging.info(f"Invalid Port from {requestIP}")
-        return HTTPResponse(status=404, body="Invalid Port")
+        return HTTPResponse(status=400, body="Invalid Port")
     #validate prefix
     if "prefix" in payload and not validatePrefix(payload['prefix']):
         logging.info(f"Invalid Prefix from {requestIP}")
-        return HTTPResponse(status=404, body="Invalid Prefix")
+        return HTTPResponse(status=400, body="Invalid Prefix")
     #validate network
     if "network" in payload and not validateNetwork(payload['network']):
         logging.info(f"Invalid Network from {requestIP}")
-        return HTTPResponse(status=404, body="Invalid Network")
+        return HTTPResponse(status=400, body="Invalid Network")
     #validate linkType
     if "linkType" in payload and not validateLinkType(payload['linkType']):
         logging.info(f"Invalid linkType from {requestIP}")
-        return HTTPResponse(status=404, body="Invalid linkType")
+        return HTTPResponse(status=400, body="Invalid linkType")
     #defaults
     if not "linkType" in payload: payload['linkType'] = "default"
     if not "network" in payload: payload['network'] = ""
