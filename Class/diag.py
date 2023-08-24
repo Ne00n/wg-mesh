@@ -32,8 +32,10 @@ class Diag(Base):
             if current > self.diagnostic[remote]['cooldown']: continue
             self.diagnostic[remote]['cooldown'] = current + 3600
             for event,lost in list(self.network[remote]['packetloss'].items()):
-                if int(event) > int(time.time()) and lost == 4: count += 1 
-            if count < 20: continue
+                if int(event) > int(time.time()) and lost == 4: count += 1
+            if count < 20: 
+                self.logger.info(f"{link} got {count}, 20 are needed for confirmation")
+                continue
             endpoint = f"{parsed[1]}1"
             pings = self.fping([endpoint],3,True)
             if not pings[endpoint]:
