@@ -117,7 +117,7 @@ class Wireguard(Base):
             os.remove(f"{self.path}/links/{interface}.key")
             if os.path.isfile(f"{self.path}/links/{interface}.pre"): os.remove(f"{self.path}/links/{interface}.pre")
 
-    def clean():
+    def clean(self):
         links =  self.getLinks()
         offline,online = self.checkLinks(links)
         for link in offline:
