@@ -141,10 +141,10 @@ class Wireguard(Base):
                 linkID = re.findall(f"pipe.*?([0-9]+)",filename, re.MULTILINE)[0]
                 destination = f"10.0.{linkID}.1"
             #get remote endpoint
-            remote = self.getRemote(config)
+            parsed, remote = self.getRemote(config)
             #grab publickey
             publicKey = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)[0]
-            links[filename] = {"filename":filename,"vxlan":destination,"local":local[0],"remote":remote,'publicKey':publicKey}
+            links[filename] = {"filename":filename,"vxlan":destination,"local":parsed[0],"remote":remote,'publicKey':publicKey}
         return links
 
     def AskProtocol(self,dest,token=""):

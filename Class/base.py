@@ -18,7 +18,7 @@ class Base:
     def getRemote(self,local):
         parsed = re.findall(f'((10\.0\.[0-9]+\.)([0-9]+)\/31)',local, re.MULTILINE)[0]
         lastOctet = int(parsed[2])
-        return f"{parsed[1]}{lastOctet-1}" if self.sameNetwork(f"{parsed[1]}{lastOctet-1}",parsed[0]) else f"{parsed[1]}{lastOctet+1}"
+        return parsed,f"{parsed[1]}{lastOctet-1}" if self.sameNetwork(f"{parsed[1]}{lastOctet-1}",parsed[0]) else f"{parsed[1]}{lastOctet+1}"
 
     def readConfig(self,file):
         if os.path.isfile(file):
