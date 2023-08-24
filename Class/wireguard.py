@@ -154,7 +154,7 @@ class Wireguard(Base):
         data = req.json()
         return data
 
-    def connect(self,dest,token="",linkType="",port=51820):
+    def connect(self,dest,token="",linkType="",port="51820"):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
