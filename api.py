@@ -42,7 +42,7 @@ def validateID(id):
     return True
 
 def validatePort(port):
-    result = re.findall(r"^[0-9]{4,5}$",port,re.MULTILINE | re.DOTALL)
+    result = re.findall(r"^[0-9]{4,5}$",str(port),re.MULTILINE | re.DOTALL)
     if not result: return False
     return True
 
