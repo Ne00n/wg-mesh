@@ -22,7 +22,7 @@ class Base:
 
     def readConfig(self,file):
         if os.path.isfile(file):
-            self.logger.info(f"Loading {file}")
+            self.logger.debug(f"Loading {file}")
             try:
                 with open(file) as handle: return json.loads(handle.read())
             except Exception as e:
