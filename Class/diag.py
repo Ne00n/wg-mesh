@@ -50,7 +50,7 @@ class Diag(Base):
             port = random.randint(1024, 50000)
             status = self.wg.connect(f"http://{endpoint}:8080","dummy","",port)
             if status:
-                self.logger.info(f"Reconnecting {link} ({remote})")
+                self.logger.info(f"Reconnected {link} ({remote}) with Port {port}")
             else:
                 self.logger.info(f"Could not reconnect {link} ({remote})")
         self.saveJson(f"{file}diagnostic.json",self.diagnostic)
