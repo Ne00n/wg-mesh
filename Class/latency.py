@@ -11,11 +11,6 @@ class Latency(Base):
         self.network = self.readConfig(file)
         if not self.network: self.network = {"created":int(datetime.now().timestamp()),"updated":0}
 
-    def save(self):
-        self.logger.debug(f"Saving network.json")
-        with open(f"{self.path}/configs/network.json", 'w') as f:
-            json.dump(self.network, f, indent=4)
-
     def parse(self,configRaw):
         parsed = re.findall('interface "([a-zA-Z0-9]{3,}?)".{50,170}?cost ([0-9.]+);\s#([0-9.]+)',configRaw, re.DOTALL)
         #filter double entries
@@ -173,6 +168,6 @@ class Latency(Base):
             else:
                 self.logger.debug(f"{datetime.now().minute} not in window.")
         #however save any packetloss or jitter detected
-        self.save()
+        self.saveJson(f"{self.path}/configs/network.json",self.network)
         time.sleep(5)
         return self.noWait
