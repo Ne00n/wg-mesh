@@ -117,6 +117,24 @@ class Wireguard(Base):
             os.remove(f"{self.path}/links/{interface}.key")
             if os.path.isfile(f"{self.path}/links/{interface}.pre"): os.remove(f"{self.path}/links/{interface}.pre")
 
+    def clean():
+        links =  self.getLinks()
+        offline,online = self.checkLinks(links)
+        for link in offline:
+            data = links[link]
+            parsed, remote = self.getRemote(data['local'])
+            print(f"Found dead link {link} ({remote})")
+            endpoint = f"{parsed[1]}1"
+            pings = self.fping([endpoint],3,True)
+            if not pings[endpoint]:
+                print(f"Unable to reach endpoint {link} ({endpoint})")
+                print(f"Removing {link} ({endpoint})")
+                interface = self.filterInterface(link)
+                self.setInterface(interface,"down")
+                self.cleanInterface(interface)
+            else:
+                print(f"Endpoint {endpoint} still up, ignoring.")
+
     def getFilename(self,links,remote):
         for filename, row in links.items():
             if row['remote'] == remote: return filename

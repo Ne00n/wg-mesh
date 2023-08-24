@@ -35,6 +35,10 @@ class CLI:
         for file in files:
             subprocess.run(f"bash {self.path}/links/{file} {state}",shell=True)
 
+    def clean(self):
+        self.wg = Wireguard(self.path)
+        self.wg.clean()
+
     def migrate(self):
         self.wg = Wireguard(self.path)
         self.wg.updateConfig()
