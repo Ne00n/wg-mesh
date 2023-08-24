@@ -121,6 +121,7 @@ class Wireguard(Base):
         links =  self.getLinks()
         offline,online = self.checkLinks(links)
         for link in offline:
+            if "Serv" in link: continue
             data = links[link]
             parsed, remote = self.getRemote(data['local'])
             print(f"Found dead link {link} ({remote})")
