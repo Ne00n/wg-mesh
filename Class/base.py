@@ -32,6 +32,9 @@ class Base:
             self.logger.debug(f"Creating {file}")
             return {}
 
+    def saveFile(self,data,path):
+        with open(path, 'w') as file: file.write(data)
+
     def getRoutes(self):
         routes = self.cmd("birdc show route")[0]
         return re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
