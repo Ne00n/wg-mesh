@@ -141,8 +141,7 @@ class Wireguard(Base):
                 linkID = re.findall(f"pipe.*?([0-9]+)",filename, re.MULTILINE)[0]
                 destination = f"10.0.{linkID}.1"
             #get remote endpoint
-            local = re.findall(f'((10\.0\.[0-9]+\.)([0-9]+)\/31)',config, re.MULTILINE)[0]
-            remote = f"{local[1]}{int(local[2])-1}" if self.sameNetwork(f"{local[1]}{int(local[2])-1}",local[0]) else f"{local[1]}{int(local[2])+1}"
+            remote = self.getRemote(config)
             #grab publickey
             publicKey = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)[0]
             links[filename] = {"filename":filename,"vxlan":destination,"local":local[0],"remote":remote,'publicKey':publicKey}

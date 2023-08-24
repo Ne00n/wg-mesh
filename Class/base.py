@@ -1,4 +1,4 @@
-import subprocess, requests, netaddr, time, re
+import subprocess, requests, netaddr, time, json, re, os
 from ipaddress import ip_network
 
 class Base:
@@ -15,13 +15,18 @@ class Base:
         t = ip_network(target, strict = False).network_address
         return o == t
 
+    def getRemote(self,local):
+        parsed = re.findall(f'((10\.0\.[0-9]+\.)([0-9]+)\/31)',local, re.MULTILINE)[0]
+        lastOctet = int(parsed[2])
+        return f"{parsed[1]}{lastOctet-1}" if self.sameNetwork(f"{parsed[1]}{lastOctet-1}",parsed[0]) else f"{parsed[1]}{lastOctet+1}"
+
     def readConfig(self,file):
         if os.path.isfile(file):
             self.logger.info(f"Loading {file}")
             try:
                 with open(file) as handle: return json.loads(handle.read())
-            except:
-                self.logger.debug(f"Unable to read {file}")
+            except Exception as e:
+                self.logger.debug(f"Unable to read {file} got {e}")
                 return {}
         else:
             self.logger.debug(f"Creating {file}")
