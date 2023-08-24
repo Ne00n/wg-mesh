@@ -29,7 +29,7 @@ class Diag(Base):
             parsed, remote = self.getRemote(data['local'])
             self.logger.info(f"Found dead link {link} ({remote})")
             if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0}
-            if current < self.diagnostic[remote]['cooldown']: continue
+            if current > self.diagnostic[remote]['cooldown']: continue
             self.diagnostic[remote]['cooldown'] = current + 3600
             for event,lost in list(self.network[remote]['packetloss'].items()):
                 if int(event) > int(time.time()) and lost == 4: count += 1 
