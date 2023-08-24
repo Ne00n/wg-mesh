@@ -389,7 +389,7 @@ class Wireguard(Base):
         return offline,online
 
     def disconnect(self,links=[],force=False):
-        currentLinks = self.getLinks()
+        currentLinks, status = self.getLinks(),{}
         for index, link in enumerate(links):
             if not link.endswith(".sh"): links[index] += ".sh" 
         print("Checking Links")
@@ -411,8 +411,10 @@ class Wireguard(Base):
                 interface = self.filterInterface(filename)
                 self.setInterface(interface,"down")
                 self.cleanInterface(interface)
+                status[filename] = True
             else:
                 print(f"Got {req.status_code} with {req.text} aborting")
+                status[filename] = False
         #load configs
         configs = self.getConfigs(False)
         #get all links
@@ -423,3 +425,4 @@ class Wireguard(Base):
         #clear state.json if no links left
         if os.path.isfile(f"{self.path}/configs/state.json") and not files:
              os.remove(f"{self.path}/configs/state.json")
+        return status
