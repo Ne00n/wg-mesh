@@ -403,6 +403,9 @@ class Wireguard(Base):
             if links and filename not in links: continue
             interfaceRemote = self.getInterfaceRemote(filename)
             #call destination
+            if not filename in currentLinks: 
+                print(f"Unable to find link {filename}")
+                continue
             data = currentLinks[filename]
             print(f'Calling http://{data["vxlan"]}:8080/disconnect')
             req = self.call(f'http://{data["vxlan"]}:8080/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
