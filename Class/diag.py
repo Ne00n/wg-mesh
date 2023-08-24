@@ -8,9 +8,8 @@ class Diag(Base):
         self.logger = logger
         self.wg = Wireguard(path)
         self.path = path
-        file = f"{path}/configs/"
-        self.diagnostic = self.readConfig(f"{file}diagnostic.json")
-        self.network = self.readConfig(f"{file}network.json")
+        self.diagnostic = self.readConfig(f"{self.path}/configs/diagnostic.json")
+        self.network = self.readConfig(f"{self.path}/configs/network.json")
 
     def run(self):
         self.logger.info("Starting diagnostic")
@@ -53,4 +52,4 @@ class Diag(Base):
                 self.logger.info(f"Reconnected {link} ({remote}) with Port {port}")
             else:
                 self.logger.info(f"Could not reconnect {link} ({remote})")
-        self.saveJson(f"{file}diagnostic.json",self.diagnostic)
+        self.saveJson(f"{self.path}/configs/diagnostic.json")
