@@ -47,6 +47,7 @@ class Diag(Base):
             if not status[link]:
                 self.logger.warning(f"Failed to disconnect {link} ({remote})")
                 continue
+            time.sleep(3)
             self.logger.info(f"Reconnecting {link}")
             port = random.randint(1024, 50000)
             status = self.wg.connect(f"http://{endpoint}:8080","dummy","",port)
