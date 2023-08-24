@@ -26,9 +26,9 @@ class Diag(Base):
         offline,online = self.wg.checkLinks(links)
         for link in offline:
             if "Serv" in link: continue
-            self.logger.info(f"Found dead link {link}")
             count, data, current = 0, links[link], int(time.time())
             parsed, remote = self.getRemote(data['local'])
+            self.logger.info(f"Found dead link {link} ({remote})")
             if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0}
             if current < self.diagnostic[remote]['cooldown']: continue
             self.diagnostic[remote]['cooldown'] = current + 3600
