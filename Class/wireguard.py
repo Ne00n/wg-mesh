@@ -388,12 +388,15 @@ class Wireguard(Base):
     def disconnect(self,links=[],force=False):
         currentLinks, status = self.getLinks(),{}
         for index, link in enumerate(links):
-            if not link.endswith(".sh"): links[index] += ".sh" 
-        print("Checking Links")
-        offline,online = self.checkLinks(currentLinks)
-        #shutdown the links that are offline first
-        if offline: print(f"Found offline links, disconnecting them first. {offline}")
-        targets = offline + online
+            if not link.endswith(".sh"): links[index] += ".sh"
+        if not links:
+            print("Checking Links")
+            offline,online = self.checkLinks(currentLinks)
+            #shutdown the links that are offline first
+            if offline: print(f"Found offline links, disconnecting them first. {offline}")
+            targets = offline + online
+        else:
+            targets = links
         print("Disconnecting")
         for filename in targets:
             #if a specific link is given filter out
