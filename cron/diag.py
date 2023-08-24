@@ -8,7 +8,7 @@ path = os.path.dirname(os.path.realpath(__file__))
 path = path.replace("/cron","")
 
 #logging
-level = "debug"
+level = "info"
 levels = {'critical': logging.CRITICAL,'error': logging.ERROR,'warning': logging.WARNING,'info': logging.INFO,'debug': logging.DEBUG}
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(levels[level])
