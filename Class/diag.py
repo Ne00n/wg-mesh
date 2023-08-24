@@ -25,6 +25,7 @@ class Diag(Base):
         self.logger.info("Checking Links")
         offline,online = self.wg.checkLinks(links)
         for link in offline:
+            if "Serv" in link: continue
             self.logger.info(f"Found dead link {link}")
             count, data, current = 0, links[link], int(time.time())
             parsed, remote = self.getRemote(data['local'])
