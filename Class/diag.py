@@ -38,6 +38,19 @@ class Diag(Base):
             endpoint = f"{parsed[1]}1"
             pings = self.fping([endpoint],3,True)
             if not pings[endpoint]:
-                self.logger.info(f"Unable to reach endpoint {endpoint} for link {link}")
+                self.logger.info(f"Unable to reach endpoint {link} ({endpoint})")
                 continue
-            self.logger.info(f"Dead link confirmed {link}")
+            self.logger.info(f"Dead link confirmed {link} ({remote})")
+            self.logger.info(f"Disconnecting {link}")
+            status = self.wg.disconnect([link])
+            if not status[link]:
+                self.logger.warning(f"Failed to disconnect {link} ({remote})")
+                continue
+            self.logger.info(f"Reconnecting {link}")
+            port = random.randint(1024, 50000)
+            status = self.wg.connect(f"http://{endpoint}:8080","dummy","",port)
+            if status:
+                self.logger.info(f"Reconnecting {link} ({remote})")
+            else:
+                self.logger.info(f"Could not reconnect {link} ({remote})")
+        self.saveJson(f"{file}diagnostic.json",self.diagnostic)
