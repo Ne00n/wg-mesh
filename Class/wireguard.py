@@ -132,7 +132,7 @@ class Wireguard(Base):
                 self.setInterface(interface,"down")
                 self.cleanInterface(interface)
             else:
-                print(f"Endpoint {endpoint} still up, ignoring.")
+                print(f"Endpoint {data['vxlan']} still up, ignoring.")
 
     def getFilename(self,links,remote):
         for filename, row in links.items():
