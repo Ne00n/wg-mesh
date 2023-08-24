@@ -180,7 +180,10 @@ class Wireguard(Base):
             #call destination
             req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"port":port,"token":token,"ipv6":isv6,"initial":isInitial,"linkType":linkType})
             if req == False: return False
-            if req.status_code == 200:
+            if req.status_code == 412:
+                print("Link already exists")
+                continue
+            elif req.status_code == 200:
                 resp = req.json()
                 #check if v6 or v4
                 interfaceID = f"{resp['id']}v6" if isv6 else resp['id']

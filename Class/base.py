@@ -80,13 +80,14 @@ class Base:
         return latency
 
     def call(self,url,payload,method="POST",max=5):
+        allowedCodes = [200,412]
         for run in range(1,max):
             try:
                 if method == "POST":
                     req = requests.post(url, json=payload, timeout=(5,5))
                 else:
                     req = requests.patch(url, json=payload, timeout=(5,5))
-                if req.status_code == 200: return req
+                if req.status_code in allowedCodes: return req
                 print(f"Got {req.text} as response")
             except Exception as ex:
                 print(f"Error {ex}")
