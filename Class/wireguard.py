@@ -121,14 +121,13 @@ class Wireguard(Base):
         links =  self.getLinks()
         offline,online = self.checkLinks(links)
         for link in offline:
-            if "Serv" in link: continue
             data = links[link]
             parsed, remote = self.getRemote(data['local'])
             print(f"Found dead link {link} ({remote})")
             pings = self.fping([data['vxlan']],3,True)
             if not pings[data['vxlan']]:
-                print(f"Unable to reach endpoint {link} ({endpoint})")
-                print(f"Removing {link} ({endpoint})")
+                print(f"Unable to reach endpoint {link} ({data['vxlan']})")
+                print(f"Removing {link} ({data['vxlan']})")
                 interface = self.filterInterface(link)
                 self.setInterface(interface,"down")
                 self.cleanInterface(interface)
