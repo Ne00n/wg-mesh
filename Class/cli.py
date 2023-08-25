@@ -16,10 +16,6 @@ class CLI:
         self.wg = Wireguard(self.path)
         self.wg.connect(dest,token,linkType)
 
-    def optimize(self,links):
-        self.wg = Wireguard(self.path)
-        self.wg.optimize(links)
-
     def proximity(self,cutoff=0):
         self.wg = Wireguard(self.path)
         self.wg.proximity(cutoff)

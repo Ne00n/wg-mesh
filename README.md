@@ -30,7 +30,6 @@
 - [x] Active Latency optimisation
 - [x] Packet loss detection & rerouting
 - [x] High Jitter detection & rerouting
-- [x] Port Optimizer for lowest Ping
 
 **Requirements**<br>
 - Debian or Ubuntu
