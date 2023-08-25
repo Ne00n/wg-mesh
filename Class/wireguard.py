@@ -202,7 +202,6 @@ class Wireguard(Base):
             if req == False: return False
             if req.status_code == 412:
                 print(f"Link already exists to {dest}")
-                continue
             elif req.status_code == 200:
                 resp = req.json()
                 #check if v6 or v4
@@ -217,15 +216,15 @@ class Wireguard(Base):
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
                 self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
                 self.setInterface(interface,"up")
-                #before we try to setup a v4 in v6 wg, we check if booth hosts have IPv6 connectivity
-                if not self.config['connectivity']['ipv6'] or not resp['connectivity']['ipv6']: break
-                if not self.config['connectivity']['ipv4'] or not resp['connectivity']['ipv4']: break
-                #second run going to be IPv6 if available
-                isv6 = True
             else:
                 print(f"Failed to connect to {dest}")
                 print(f"Got {req.text} as response")
                 return False
+            #before we try to setup a v4 in v6 wg, we check if booth hosts have IPv6 connectivity
+            if not self.config['connectivity']['ipv6'] or not resp['connectivity']['ipv6']: break
+            if not self.config['connectivity']['ipv4'] or not resp['connectivity']['ipv4']: break
+            #second run going to be IPv6 if available
+            isv6 = True
         return True
 
     def updateServer(self,link,data):
