@@ -117,6 +117,10 @@ class Wireguard(Base):
             os.remove(f"{self.path}/links/{interface}.key")
             if os.path.isfile(f"{self.path}/links/{interface}.pre"): os.remove(f"{self.path}/links/{interface}.pre")
 
+    def removeInterface(self,interface):
+        self.setInterface(interface,"down")
+        self.cleanInterface(interface)
+
     def clean(self):
         links =  self.getLinks()
         offline,online = self.checkLinks(links)
@@ -129,8 +133,7 @@ class Wireguard(Base):
                 print(f"Unable to reach endpoint {link} ({data['vxlan']})")
                 print(f"Removing {link} ({data['vxlan']})")
                 interface = self.filterInterface(link)
-                self.setInterface(interface,"down")
-                self.cleanInterface(interface)
+                self.removeInterface(interface)
             else:
                 print(f"Endpoint {data['vxlan']} still up, ignoring.")
 
@@ -310,8 +313,7 @@ class Wireguard(Base):
                     print("Failed to terminate link, unable to contact remote")
                     exit()
                 if req.status_code == 200:
-                    self.setInterface(interface,"down")
-                    self.cleanInterface(interface)
+                    self.removeInterface(interface)
                 else:
                     print(f"Failed to terminate link, got {req.status_code} with {req.text} aborting")
                     exit()
@@ -432,8 +434,7 @@ class Wireguard(Base):
             if req == False and force == False: continue
             if force or req.status_code == 200:
                 interface = self.filterInterface(filename)
-                self.setInterface(interface,"down")
-                self.cleanInterface(interface)
+                self.removeInterface(interface)
                 status[filename] = True
             else:
                 print(f"Got {req.status_code} with {req.text} aborting")
