@@ -36,8 +36,7 @@ class Base:
         with open(path, 'w') as file: file.write(data)
 
     def saveJson(self,data,path):
-        with open(path, 'w') as f:
-            json.dump(data, f, indent=4)
+        with open(path, 'w') as f: json.dump(data, f, indent=4)
 
     def getRoutes(self):
         routes = self.cmd("birdc show route")[0]
