@@ -318,6 +318,7 @@ class Wireguard(Base):
             #call destination
             if not filename in currentLinks: 
                 print(f"Unable to find link {filename}")
+                status[filename] = False
                 continue
             data = currentLinks[filename]
             print(f'Calling http://{data["vxlan"]}:8080/disconnect')
