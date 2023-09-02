@@ -2,7 +2,7 @@ from Class.wireguard import Wireguard
 from Class.templator import Templator
 import subprocess, sys, os
 
-class CLI:
+class CLI(Base):
 
     def __init__(self,path):
         self.path = path
