@@ -5,9 +5,10 @@ from Class.base import Base
 
 class Bird(Base):
     Templator = Templator()
-    prefix = "pipe"
 
     def __init__(self,path,logger):
+        with open(f'{path}/configs/config.json') as f: self.config = json.load(f)
+        self.prefix = self.config['prefix']
         self.logger = logger
         self.path = path
     
