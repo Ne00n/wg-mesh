@@ -50,7 +50,7 @@ class CLI:
             print("Unable to load the token file")
 
     def disable(self,option):
-        if option == "mesh":
+        if mesh in option:
             self.wg.saveJson({},f"{self.path}/configs/state.json")
         else:
             print("Invalid Option")
