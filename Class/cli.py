@@ -62,7 +62,7 @@ class CLI(Base):
             if "wgobfs" in config['linkTypes']: config['linkTypes'].remove("wgobfs")
             self.saveJson(config,f"{self.path}/configs/config.json")
         else:
-            print("Valid options: mesh, ospfv3")
+            print("Valid options: mesh, ospfv3, wgobfs")
             
     def enable(self,option):
         if "mesh" in option:
@@ -77,7 +77,7 @@ class CLI(Base):
             self.saveJson(config,f"{self.path}/configs/config.json")
             print("You still need to install wgobfs with: bash /opt/wg-mesh/tools/wgobfs.sh")
         else:
-            print("Valid options: mesh, ospfv3")
+            print("Valid options: mesh, ospfv3, wgobfs")
 
     def setOption(self,options):
         validOptions = ["area","prefix","defaultLinkType"]
