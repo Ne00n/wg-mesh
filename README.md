@@ -70,7 +70,7 @@ Regarding NAT or in general behind Firewalls, the "connector" is always a Client
 In case you want to stop a client/server from automatically meshing into the network.<br>
 You can simply block it by creating an empty state.json.<br>
 ```
-su wg-mesh -c "touch /opt/wg-mesh/configs/state.json"
+wgmesh disable mesh
 ```
 This needs to be done before you connecting to the network.<br>
 
