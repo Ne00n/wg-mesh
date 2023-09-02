@@ -86,6 +86,7 @@ class CLI(Base):
             config = self.readConfig(f"{self.path}/configs/config.json")
             config[key] = value
             self.saveJson(config,f"{self.path}/configs/config.json")
+            print("You should reload the services to apply any config changes")
         else:
             print(f"Valid options: {', '.join(validOptions)}")
         
