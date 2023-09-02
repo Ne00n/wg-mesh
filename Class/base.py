@@ -22,14 +22,11 @@ class Base:
 
     def readConfig(self,file):
         if os.path.isfile(file):
-            self.logger.debug(f"Loading {file}")
             try:
                 with open(file) as handle: return json.loads(handle.read())
             except Exception as e:
-                self.logger.debug(f"Unable to read {file} got {e}")
                 return {}
         else:
-            self.logger.debug(f"Creating {file}")
             return {}
 
     def saveFile(self,data,path):
