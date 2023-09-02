@@ -59,3 +59,13 @@ class CLI(Base):
             self.saveJson(config,f"{self.path}/configs/config.json")
         else:
             print("Valid options: mesh, ospfv3")
+            
+    def enable(self,option):
+        if "mesh" in option:
+            if os.path.isfile(f"{self.path}/configs/state.json"): os.remove(f"{self.path}/configs/state.json")
+        elif "ospfv3" in option:
+            config = self.readConfig(f"{self.path}/configs/config.json")
+            config['ospfv3'] = True
+            self.saveJson(config,f"{self.path}/configs/config.json")
+        else:
+            print("Valid options: mesh, ospfv3")
