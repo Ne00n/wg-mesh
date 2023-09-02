@@ -8,7 +8,7 @@ path = os.path.dirname(os.path.realpath(__file__))
 cli = CLI(path)
 
 if len(sys.argv) == 1:
-    print("init <id>, migrate, connect <http://IP/DOMAIN:8080> <token>, disconnect, up, down, clean, proximity, token, disable, enable")
+    print("init <id>, migrate, connect <http://IP/DOMAIN:8080> <token>, disconnect, up, down, clean, proximity, token, disable, enable, set")
 elif sys.argv[1] == "init":
     state = sys.argv[3] if len(sys.argv) > 3 else "local"
     cli.init(sys.argv[2],state)
@@ -43,3 +43,6 @@ elif sys.argv[1] == "disable":
 elif sys.argv[1] == "enable":
     sys.argv = sys.argv[2:]
     cli.enable(sys.argv)
+elif sys.argv[1] == "set":
+    sys.argv = sys.argv[2:]
+    cli.setOption(sys.argv)

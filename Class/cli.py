@@ -78,3 +78,14 @@ class CLI(Base):
             self.saveJson(config,f"{self.path}/configs/config.json")
         else:
             print("Valid options: mesh, ospfv3")
+
+    def setOption(self,options):
+        validOptions = ["area","defaultLinkType"]
+        key, value = options
+        if key in validOptions:
+            config = self.readConfig(f"{self.path}/configs/config.json")
+            config[key] = value
+            self.saveJson(config,f"{self.path}/configs/config.json")
+        else:
+            print(f"Valid options: {', '.join(validOptions)}")
+        
