@@ -89,6 +89,7 @@ class Wireguard(Base):
 
     def minimal(self,files,lastbyte=4,port=51820):
         ips,ports = [],[]
+        if port == 0: port = random.randint(1500, 55000)
         for file in files:
             with open(f"{self.path}/links/{file}", 'r') as f: config = f.read()
             configPort = re.findall(f"listen-port\s([0-9]+)",config, re.MULTILINE)
