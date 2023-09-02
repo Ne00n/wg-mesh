@@ -168,14 +168,14 @@ protocol ospf v3 {
     };
     area 0 {
         """
-        for target,data in latency.items():
-            template += '''
-                interface "'''+target+'''" {
-                    type ptmp;
-                    cost '''+str(data['latency'])+'''; #'''+data['target']+'''
-                };
-            '''
-        template += """
+            for target,data in latency.items():
+                template += '''
+                    interface "'''+target+'''" {
+                        type ptmp;
+                        cost '''+str(data['latency'])+'''; #'''+data['target']+'''
+                    };
+                '''
+            template += """
     };
 }"""
         return template
