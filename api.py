@@ -1,4 +1,4 @@
-import ipaddress, threading, socket, random, logging, string, json, time, os, re
+import ipaddress, threading, socket, random, logging, string, secrets, json, time, os, re
 from bottle import HTTPResponse, route, run, request, template
 from logging.handlers import RotatingFileHandler
 from Class.wireguard import Wireguard
@@ -42,7 +42,7 @@ def validateID(id):
     return True
 
 def validatePort(port):
-    result = re.findall(r"^[0-9]{4,5}$",port,re.MULTILINE | re.DOTALL)
+    result = re.findall(r"^[0-9]{4,5}$",str(port),re.MULTILINE | re.DOTALL)
     if not result: return False
     return True
 
@@ -50,6 +50,11 @@ def validateNetwork(network):
     result = re.findall(r"^[A-Za-z]{3,6}$",network,re.MULTILINE | re.DOTALL)
     if not result: return False
     return True
+
+def validateLinkType(linkType):
+    linkTypes = ["default","wgobfs"]
+    if linkType in linkTypes: return True
+    return False
 
 def validatePrefix(prefix):
     if prefix == "10.0." or prefix == "172.16.": return True
@@ -77,7 +82,7 @@ def index():
     if not isInternal and not validateToken(payload): 
         logging.info(f"Invalid Token from {requestIP}")
         return HTTPResponse(status=401, body="Invalid Token")
-    return HTTPResponse(status=200, body={'connectivity':config['connectivity']})
+    return HTTPResponse(status=200, body={'connectivity':config['connectivity'],'linkTypes':config['linkTypes']})
 
 @route('/connect', method='POST')
 def index():
@@ -91,20 +96,25 @@ def index():
     #validate id
     if not validateID(payload['id']): 
         logging.info(f"Invalid ID from {requestIP}")
-        return HTTPResponse(status=404, body="Invalid ID")
+        return HTTPResponse(status=400, body="Invalid ID")
     #validate port
     if "port" in payload and not validatePort(payload['port']): 
         logging.info(f"Invalid Port from {requestIP}")
-        return HTTPResponse(status=404, body="Invalid Port")
+        return HTTPResponse(status=400, body="Invalid Port")
     #validate prefix
     if "prefix" in payload and not validatePrefix(payload['prefix']):
         logging.info(f"Invalid Prefix from {requestIP}")
-        return HTTPResponse(status=404, body="Invalid Prefix")
+        return HTTPResponse(status=400, body="Invalid Prefix")
     #validate network
     if "network" in payload and not validateNetwork(payload['network']):
         logging.info(f"Invalid Network from {requestIP}")
-        return HTTPResponse(status=404, body="Invalid Network")
+        return HTTPResponse(status=400, body="Invalid Network")
+    #validate linkType
+    if "linkType" in payload and not validateLinkType(payload['linkType']):
+        logging.info(f"Invalid linkType from {requestIP}")
+        return HTTPResponse(status=400, body="Invalid linkType")
     #defaults
+    if not "linkType" in payload: payload['linkType'] = "default"
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
     if not "prefix" in payload: payload['prefix'] = "10.0."
@@ -127,14 +137,17 @@ def index():
     mutex.acquire()
     #generate new key pair
     privateKeyServer, publicKeyServer = wg.genKeys()
+    preSharedKey = wg.genPreShared()
+    wgobfsSharedKey = secrets.token_urlsafe(24)
     #load configs
     configs = wg.getConfigs(False)
     lastbyte,port = wg.minimal(configs,4,payload['basePort'])
     #generate wireguard config
-    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'],payload['prefix'])
+    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'],payload['linkType'],wgobfsSharedKey,payload['prefix'])
     #save
     logging.debug(f"Creating wireguard link {interface}")
     wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
+    wg.saveFile(preSharedKey,f"{folder}/links/{interface}.pre")
     wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
     logging.debug(f"{interface} up")
     wg.setInterface(interface,"up")
@@ -147,7 +160,7 @@ def index():
         wg.setInterface("dummy","up")
     mutex.release()
     logging.info(f"{interface} created for {requestIP}")
-    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'id':config['id'],'lastbyte':lastbyte,'port':port,'connectivity':config['connectivity']})
+    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id'],'lastbyte':lastbyte,'port':port,'connectivity':config['connectivity']})
 
 @route('/update', method='PATCH')
 def index():

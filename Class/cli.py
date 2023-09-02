@@ -12,21 +12,17 @@ class CLI:
     def init(self,id,listen):
         self.wg.init(id,listen)
 
-    def connect(self,dest,token):
+    def connect(self,dest,token,linkType="default"):
         self.wg = Wireguard(self.path)
-        self.wg.connect(dest,token)
+        self.wg.connect(dest,token,linkType)
 
-    def optimize(self,links):
+    def proximity(self,cutoff=0):
         self.wg = Wireguard(self.path)
-        self.wg.optimize(links)
+        self.wg.proximity(cutoff)
 
-    def proximity(self):
+    def disconnect(self,links=[],force=False):
         self.wg = Wireguard(self.path)
-        self.wg.proximity()
-
-    def disconnect(self,force=False,link=""):
-        self.wg = Wireguard(self.path)
-        self.wg.disconnect(force,link)
+        self.wg.disconnect(links,force)
 
     def links(self,state):
         files = os.listdir(f'{self.path}/links/')
@@ -34,3 +30,27 @@ class CLI:
             if not file.endswith(".sh"): files.remove(file)
         for file in files:
             subprocess.run(f"bash {self.path}/links/{file} {state}",shell=True)
+
+    def update(self):
+        subprocess.run("cd; git pull",shell=True)
+
+    def clean(self):
+        self.wg = Wireguard(self.path)
+        self.wg.clean()
+
+    def migrate(self):
+        self.wg = Wireguard(self.path)
+        self.wg.updateConfig()
+
+    def token(self):
+        if os.path.isfile(f"{self.path}/token"):
+            with open(f'{self.path}/token') as f:
+                print(f.read().rstrip())
+        else:
+            print("Unable to load the token file")
+
+    def disable(self,option):
+        if "mesh" in option:
+            self.wg.saveJson({},f"{self.path}/configs/state.json")
+        else:
+            print("Invalid Option")

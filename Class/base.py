@@ -1,4 +1,4 @@
-import subprocess, requests, netaddr, time, re
+import subprocess, requests, netaddr, time, json, re, os
 from ipaddress import ip_network
 
 class Base:
@@ -15,12 +15,43 @@ class Base:
         t = ip_network(target, strict = False).network_address
         return o == t
 
+    def getRemote(self,local):
+        parsed = re.findall(f'((10\.0\.[0-9]+\.)([0-9]+)\/31)',local, re.MULTILINE)[0]
+        lastOctet = int(parsed[2])
+        return parsed,f"{parsed[1]}{lastOctet-1}" if self.sameNetwork(f"{parsed[1]}{lastOctet-1}",parsed[0]) else f"{parsed[1]}{lastOctet+1}"
+
+    def readConfig(self,file):
+        if os.path.isfile(file):
+            self.logger.debug(f"Loading {file}")
+            try:
+                with open(file) as handle: return json.loads(handle.read())
+            except Exception as e:
+                self.logger.debug(f"Unable to read {file} got {e}")
+                return {}
+        else:
+            self.logger.debug(f"Creating {file}")
+            return {}
+
+    def saveFile(self,data,path):
+        with open(path, 'w') as file: file.write(data)
+
+    def saveJson(self,data,path):
+        with open(path, 'w') as f: json.dump(data, f, indent=4)
+
+    def getRoutes(self):
+        routes = self.cmd("birdc show route")[0]
+        return re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+
     def resolve(self,ip,range,netmask):
         rangeDecimal = int(netaddr.IPAddress(range))
         ipDecimal = int(netaddr.IPAddress(ip))
         wildcardDecimal = pow( 2, ( 32 - int(netmask) ) ) - 1
         netmaskDecimal = ~ wildcardDecimal
         return ( ( ipDecimal & netmaskDecimal ) == ( rangeDecimal & netmaskDecimal ) )
+
+    def filter(self,entry):
+        if "Ping" in entry: return False
+        return True
 
     def getAvrg(self,row,weight=True):
         result = 0
@@ -48,13 +79,14 @@ class Base:
         return latency
 
     def call(self,url,payload,method="POST",max=5):
+        allowedCodes = [200,412]
         for run in range(1,max):
             try:
                 if method == "POST":
                     req = requests.post(url, json=payload, timeout=(5,5))
                 else:
                     req = requests.patch(url, json=payload, timeout=(5,5))
-                if req.status_code == 200: return req
+                if req.status_code in allowedCodes: return req
                 print(f"Got {req.text} as response")
             except Exception as ex:
                 print(f"Error {ex}")

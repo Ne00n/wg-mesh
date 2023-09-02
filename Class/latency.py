@@ -8,22 +8,8 @@ class Latency(Base):
         self.logger = logger
         self.path = path
         file = f"{path}/configs/network.json"
-        if os.path.isfile(file):
-            self.logger.info(f"Loading network.json")
-            try:
-                with open(file) as handle:
-                    self.network = json.loads(handle.read())
-            except:
-                self.logger.debug(f"Unable to read network.json")
-                self.network = {"created":int(datetime.now().timestamp()),"updated":0}
-        else:
-            self.logger.debug(f"Creating network.json")
-            self.network = {"created":int(datetime.now().timestamp()),"updated":0}
-
-    def save(self):
-        self.logger.debug(f"Saving network.json")
-        with open(f"{self.path}/configs/network.json", 'w') as f:
-            json.dump(self.network, f, indent=4)
+        self.network = self.readConfig(file)
+        if not self.network: self.network = {"created":int(datetime.now().timestamp()),"updated":0}
 
     def parse(self,configRaw):
         parsed = re.findall('interface "([a-zA-Z0-9]{3,}?)".{50,170}?cost ([0-9.]+);\s#([0-9.]+)',configRaw, re.DOTALL)
@@ -40,6 +26,20 @@ class Latency(Base):
             if entry[0] == "timed out": continue
             if float(entry[0]) > avrg + grace: return True,float(entry[0]) - (avrg + grace)
         return False,0
+
+    def reloadPeacemaker(self,ongoing,eventDiff,latency,weight):
+        #needs to be ongoing
+        if not ongoing: return False
+        #ignore links dead or nearly dead links
+        if latency > 10000 and float(weight) > 10000: return False
+        #ignore eventScore 1
+        if latency == float(weight): return False
+        diff = latency - float(weight)
+        #ignore any negative changes
+        if diff <= 0: return False
+        percentage = round(latency / float(weight),2)
+        if eventDiff > 0 and percentage < 10: return False
+        return True
 
     def getLatency(self,config,pings=4):
         targets = []
@@ -68,7 +68,6 @@ class Latency(Base):
                         #keep for 15 minutes / 3 runs
                         self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = peakLoss
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
-                        if len(row) > 0: self.noWait += 1
 
                     threshold,eventCount,eventScore = 2,0,0
                     for event,lost in list(self.network[entry]['packetloss'].items()):
@@ -81,15 +80,16 @@ class Latency(Base):
                     
                     if eventCount > 0: eventScore = eventScore / eventCount
                     hadLoss = True if eventCount >= threshold else False
+                    eventDiff = eventCount - threshold
                     if hadLoss:
                         tmpLatency = node['latency']
                         self.logger.debug(f"{node['nic']} ({entry}) Ongoing Packetloss")
                         node['latency'] = round(node['latency'] * eventScore)
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
-                        #Trigger reload on recent loss which is below the given eventCount
-                        if hasLoss and eventCount < 10: 
+                        if self.reloadPeacemaker(hasLoss,eventDiff,node['latency'],node['weight']): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
                             self.reload += 1
+                            self.noWait += 1
                         self.hadLoss += 1
 
                     #Jitter
@@ -110,13 +110,13 @@ class Latency(Base):
                     
                     if eventCount > 0: eventScore = eventScore / eventCount
                     hadJitter = True if eventCount > threshold else False
+                    eventDiff = eventCount - threshold
                     if hadJitter:
                         tmpLatency = node['latency']
                         self.logger.debug(f"{node['nic']} ({entry}) Ongoing Jitter")
                         node['latency'] = round(node['latency'] * eventScore)
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
-                        #Trigger reload on recent jittar which exceeded the given threshold
-                        if hasJitter and eventCount < 10: 
+                        if self.reloadPeacemaker(hasJitter,eventDiff,node['latency'],node['weight']):
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
                             self.reload += 1
                         self.hadJitter += 1
@@ -146,7 +146,7 @@ class Latency(Base):
         configs = self.cmd('ip addr show')
         #fping
         self.logger.debug("Running fping")
-        result = self.getLatency(config,11)
+        result = self.getLatency(config,5)
         #update
         local = re.findall("inet (10\.0[0-9.]+\.1)\/(32|30) scope global lo",configs[0], re.MULTILINE | re.DOTALL)
         if not local: return False
@@ -168,5 +168,6 @@ class Latency(Base):
             else:
                 self.logger.debug(f"{datetime.now().minute} not in window.")
         #however save any packetloss or jitter detected
-        self.save()
+        self.saveJson(self.network,f"{self.path}/configs/network.json")
+        time.sleep(5)
         return self.noWait

@@ -30,10 +30,19 @@
 - [x] Active Latency optimisation
 - [x] Packet loss detection & rerouting
 - [x] High Jitter detection & rerouting
-- [x] Port Optimizer for lowest Ping
+
+**Requirements**<br>
+- Debian or Ubuntu
+- Python 3.9 or higher
+- Kernel 5.4+ (wg kernel module, no user space support yet)
+
+Keep in mind that some containers such as OVZ or LXC, depending on kernel version and host configuration have issues with bird and/or wireguard.<br>
  
-Tested on Debian 11 with systemd.<br>
-Works fine on KVM or Dedis however Containers such as OVZ or LXC have issues with bird and/or wireguard.<br>
+For Debian 12, python packages are externally managed, however, the installer installs all packages via pip3.<br>
+So you have to disable this with, otherwise the installation will fail.<br>
+```
+apt-get install python3 -y && rm /usr/lib/python3.11/EXTERNALLY-MANAGED
+```
 
 **Example 2 nodes**<br>
 The ID needs to be unique, otherwise it will result in collisions.<br>
@@ -41,42 +50,51 @@ Keep in mind, ID's 200 and higher are reserved for clients, they won't get meshe
 Public is used to expose the API to all interfaces, by default it listens only local on 10.0.id.1.<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 1 public
 #Install wg-mesh and initialize the second node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 2
 ```
 Grab the Token from Node1<br>
 ```
-cat /opt/wg-mesh/token
+wgmesh token
 ```
 Connect Node2 to Node1
 ```
-su wg-mesh -c "/opt/wg-mesh/cli.py connect http://<node2IP>:8080 <token>"
+wgmesh connect http://<node2IP>:8080 <token>
 ```
 After connecting successfully, a dummy.sh will be created, which assigns a 10.0.nodeID.1/30 to lo.<br>
 This will be picked up by bird, so on booth nodes on 10.0.1.1 and 10.0.2.1 should be reachable after bird ran.<br>
 Regarding NAT or in general behind Firewalls, the "connector" is always a Client, the endpoint the Server.<br>
 
+**Prevent meshing**<br>
+In case you want to stop a client/server from automatically meshing into the network.<br>
+You can simply block it by creating an empty state.json.<br>
+```
+wgmesh disable mesh
+```
+This needs to be done before you connecting to the network.<br>
+
 **Example 2+ nodes**<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 1 public
 #Install wg-mesh and initialize the second node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 2
 #Install wg-mesh and initialize the third node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 3
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 3
 ```
-Grab the Token from Node1 with
+Grab the Token from Node 1 with
 ```
-cat /opt/wg-mesh/token
+wgmesh token
 ```
-Connect Node2 to Node1
+Connect Node 2 to Node 1
 ```
-su wg-mesh -c "/opt/wg-mesh/cli.py connect http://<node1IP>:8080 <token>"
+wgmesh connect http://<node1IP>:8080 <token>
 ```
-Connect Node3 to Node1
+Before you connect the 3rd node, make sure Node 2 already has fully connected.<br>
+Connect Node 3 to Node 1
 ```
-su wg-mesh -c "/opt/wg-mesh/cli.py connect http://<node1IP>:8080 <token>"
+wgmesh connect http://<node1IP>:8080 <token>
 ```
 Wait for bird to pickup all routes + mesh buildup.<br>
 You can check it with<br>
@@ -89,41 +107,40 @@ All 3 nodes should be reachable under 10.0.nodeID.1<br>
 
 **API**<br>
 Currently the webservice / API is exposed at ::8080, without TLS, use a reverse proxy for TLS<br>
+Internal requests from 10.0.0.0/8 don't need a token (connectivity, connect and update).<br>
 - /connectivity needs a valid token, otherwise will refuse to provide connectivity info<br>
-Internal requests from 10.0.0.0/8 don't need a token.
 - /connect needs a valid token, otherwise the service will refuse to setup a wg link<br>
-Internal requests from 10.0.0.0/8 don't need a token.
-- /update needs a validate token, otherwise will not update port of wg link<br>
-Internal requests from 10.0.0.0/8 don't need a token.
+- /update needs a valid wg public key and link name, otherwise it will not update the wg link<br>
 - /disconnect needs a valid wg public key and link name, otherwise will refuse to disconnect a specific link<br>
 
 **Shutdown/Startup**
 ```
-su wg-mesh -c "/opt/wg-mesh/cli.py down"
-su wg-mesh -c "/opt/wg-mesh/cli.py up" && systemctl restart wgmesh
+wgmesh down
+wgmesh up && systemctl restart wgmesh
 ```
 
 **Disconnect**<br>
 To disconnect all links on a Node
 ```
-su wg-mesh -c "/opt/wg-mesh/cli.py disconnect"
-#shutdown and remove a link despite untable to reach API endpoint
-su wg-mesh -c "/opt/wg-mesh/cli.py disconnect force"
-#disconnect a specific link
-su wg-mesh -c "/opt/wg-mesh/cli.py disconnect pipe250"
+wgmesh disconnect
+#disconnect all links despite untable to reach API endpoint
+wgmesh disconnect force
+#disconnect a specific link e.g pipe250, pipe250Serv, pipe250v6Serv
+wgmesh disconnect pipe250
 #disconnect a specific link with force
-su wg-mesh -c "/opt/wg-mesh/cli.py disconnect pipe250 force"
+wgmesh disconnect pipe250 force
 ```
 
 **Removal**
 ```
-su wg-mesh -c "/opt/wg-mesh/cli.py down" && bash /opt/wg-mesh/deinstall.sh
+wgmesh down && bash /opt/wg-mesh/deinstall.sh
 ```
 
 **Updating**
 ```
-su wg-mesh -c "cd /opt/wg-mesh/; git pull" && systemctl restart wgmesh && systemctl restart wgmesh-bird
+wgmesh update && wgmesh migrate && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
+
 **Limitations**<br>
 Connecting multiple nodes at once, without waiting for the other node to finish, will result in double links.<br>
 By default, when a new node joins, it checks which connections it does not have, which with a new node would be everything.<br>
@@ -131,13 +148,12 @@ By default, when a new node joins, it checks which connections it does not have,
 Additional, bird2, by default, takes 30s to distribute the routes, there will be also a delay.<br>
 In total roughtly 60s, depending on the network size, to avoid this issue.<br>
 
-Depending on network conditions, bird will be reloaded, every 5 minutes or as short as every 10 seconds.<br>
+Depending on network conditions, bird will be reloaded, every 5 minutes or as short as every 20 seconds.<br>
 This will drop long lived TCP connections.
 
 **Known Issues**<br>
-- Remvoing wg-mesh without prior disconnecting active links, will result in broken links until restarted.<br>
 - A client that does not have a direct connection to a newly added server, is stuck with a old outdated vxlan configuration.<br> 
-This can be fixed by reloading wgmesh-bird.<br>
+This can be "fixed" by reloading wgmesh-bird.<br>
 
 **Troubleshooting**
 - You can check the logs/<br>
@@ -147,6 +163,9 @@ sudo requires a resolvable hostname
 bird2 needs to be running / hidepid can block said access to check if bird is running.<br>
 - RTNETLINK answers: Address already in use<br>
 Can also mean the Port wg tries to listen, is already in use. Check your existing wg links.<br>
+- packetloss and/or higher latency inside the wg-mesh network but not on the uplink/network itself
+wireguard needs cpu time, check the load on the machine and check if you see any CPU steal.<br>
+This will likely explain what you see for example on Smokeping, you can try to reduce the links to lower the cpu usage.<br>
 - duplicate vxlan mac address / vxlan mac flapping<br>
 If you are using a virtual machine, check your machine-id if they are the same.<br>
 You can check it with or tools/machine-id.py<br>

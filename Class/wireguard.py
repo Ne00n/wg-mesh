@@ -12,10 +12,20 @@ class Wireguard(Base):
         with open(f'{self.path}/configs/config.json') as f: self.config = json.load(f)
         self.prefix = self.config['prefix']
 
+    def updateConfig(self):
+        if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
+        if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
+        with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(self.config, f ,indent=4)
+        if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
+        if not os.path.isfile("/etc/bird/bgp.conf"): self.cmd('touch /etc/bird/bgp.conf')
+
     def genKeys(self):
         keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')[0]
         privateKeyServer, publicKeyServer = keys.splitlines()
         return privateKeyServer, publicKeyServer
+
+    def genPreShared(self):
+        return self.cmd('wg genpsk')[0]
 
     def getConfig(self):
         return self.config
@@ -59,7 +69,7 @@ class Wireguard(Base):
         #config
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
-        config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"connectivity":connectivity}
+        config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
         #load configs
         self.prefix = "pipe"
@@ -105,9 +115,27 @@ class Wireguard(Base):
         os.remove(f"{self.path}/links/{interface}.sh")
         if deleteKey:
             os.remove(f"{self.path}/links/{interface}.key")
+            if os.path.isfile(f"{self.path}/links/{interface}.pre"): os.remove(f"{self.path}/links/{interface}.pre")
 
-    def saveFile(self,data,path):
-        with open(path, 'w') as file: file.write(data)
+    def removeInterface(self,interface):
+        self.setInterface(interface,"down")
+        self.cleanInterface(interface)
+
+    def clean(self):
+        links =  self.getLinks()
+        offline,online = self.checkLinks(links)
+        for link in offline:
+            data = links[link]
+            parsed, remote = self.getRemote(data['local'])
+            print(f"Found dead link {link} ({remote})")
+            pings = self.fping([data['vxlan']],3,True)
+            if not pings[data['vxlan']]:
+                print(f"Unable to reach endpoint {link} ({data['vxlan']})")
+                print(f"Removing {link} ({data['vxlan']})")
+                interface = self.filterInterface(link)
+                self.removeInterface(interface)
+            else:
+                print(f"Endpoint {data['vxlan']} still up, ignoring.")
 
     def getFilename(self,links,remote):
         for filename, row in links.items():
@@ -130,11 +158,10 @@ class Wireguard(Base):
                 linkID = re.findall(f"pipe.*?([0-9]+)",filename, re.MULTILINE)[0]
                 destination = f"10.0.{linkID}.1"
             #get remote endpoint
-            local = re.findall(f'((10\.0\.[0-9]+\.)([0-9]+)\/31)',config, re.MULTILINE)[0]
-            remote = f"{local[1]}{int(local[2])-1}" if self.sameNetwork(f"{local[1]}{int(local[2])-1}",local[0]) else f"{local[1]}{int(local[2])+1}"
+            parsed, remote = self.getRemote(config)
             #grab publickey
             publicKey = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)[0]
-            links[filename] = {"filename":filename,"vxlan":destination,"local":local[0],"remote":remote,'publicKey':publicKey}
+            links[filename] = {"filename":filename,"vxlan":destination,"local":parsed[0],"remote":remote,'publicKey':publicKey}
         return links
 
     def AskProtocol(self,dest,token=""):
@@ -147,7 +174,7 @@ class Wireguard(Base):
         data = req.json()
         return data
 
-    def connect(self,dest,token=""):
+    def connect(self,dest,token="",linkType="",port=51820):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
@@ -163,11 +190,19 @@ class Wireguard(Base):
         elif data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']: isv6 = True
         #if neither of these are available, leave it
         else: return False
+        #linkType
+        if linkType == "":
+            if self.config['defaultLinkType'] in data['linkTypes']:
+                linkType = self.config['defaultLinkType']
+            else:
+                linkType = "default"
         for run in range(2):
             #call destination
-            req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"ipv6":isv6,"initial":isInitial})
+            req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"port":port,"token":token,"ipv6":isv6,"initial":isInitial,"linkType":linkType})
             if req == False: return False
-            if req.status_code == 200:
+            if req.status_code == 412:
+                print(f"Link already exists to {dest}")
+            elif req.status_code == 200:
                 resp = req.json()
                 #check if v6 or v4
                 interfaceID = f"{resp['id']}v6" if isv6 else resp['id']
@@ -175,20 +210,21 @@ class Wireguard(Base):
                 #interface
                 interface = self.getInterface(interfaceID)
                 #generate config
-                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'])
+                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'],linkType,resp['wgobfsSharedKey'])
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
+                self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
                 self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
                 self.setInterface(interface,"up")
-                #before we try to setup a v4 in v6 wg, we check if booth hosts have IPv6 connectivity
-                if not self.config['connectivity']['ipv6'] or not resp['connectivity']['ipv6']: break
-                if not self.config['connectivity']['ipv4'] or not resp['connectivity']['ipv4']: break
-                #second run going to be IPv6 if available
-                isv6 = True
             else:
                 print(f"Failed to connect to {dest}")
                 print(f"Got {req.text} as response")
                 return False
+            #before we try to setup a v4 in v6 wg, we check if booth hosts have IPv6 connectivity
+            if not self.config['connectivity']['ipv6'] or not resp['connectivity']['ipv6']: break
+            if not self.config['connectivity']['ipv4'] or not resp['connectivity']['ipv4']: break
+            #second run going to be IPv6 if available
+            isv6 = True
         return True
 
     def updateServer(self,link,data):
@@ -204,120 +240,13 @@ class Wireguard(Base):
         config = re.sub(oldEndPoint, newEndPoint, config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
-    def optimize(self,include=[]):
+    def proximity(self,cutoff=0):
+        fpingTargets, existing = [],[]
         links = self.getLinks()
-        print("Checking Links")
-        offline,online = self.checkLinks(links)
-        combined = offline + online
-        for link in combined:
-            #if include given, ignore anything else not in the list
-            if include and link not in include: continue
-            #ignore v6 for now
-            if "v6" in link or "Serv" in link: continue
-            #prepare
-            latency = {}
-            data = links[link]
-            print(f"Measuring {link}")
-            fping = self.fping([data['remote']],5)
-            before = self.getAvrg(fping[data['remote']])
-            print(f"Current latency {before}ms")
-            print(f"Checking {link}")
-            #ask remote about available protocols
-            dest = f'http://{data["vxlan"]}:8080'
-            print(f'Calling {dest}/connectivity')
-            resp = self.AskProtocol(f'{dest}','')
-            if not resp: exit()
-            #ignore v6 for now
-            if not resp['connectivity']['ipv4']: continue
-            #generate new key pair
-            clientPrivateKey, clientPublicKey = self.genKeys()
-            for port in range(1000,65000,2000):
-                print(f"Testing on Port {port}")
-                #setup link
-                print(f'Calling {dest}/connect')
-                req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"prefix":"172.16.","network":"Ping","basePort":port})
-                if req == False: 
-                    print(f"Failed to setup Link for Port {port}, aborting")
-                    continue
-                if req.status_code != 200: 
-                    print(f"Got {req.status_code} with {req.text} aborting")
-                    continue
-                resp = req.json()
-                if resp['port'] != port: print(f"Switched from {port} to {resp['port']}")
-                #prepare
-                interfaceID = resp['id']
-                connectivity = resp['connectivity']['ipv4']
-                interface = self.getInterface(interfaceID,"v4","Ping")
-                #generate config
-                clientConfig = self.Templator.genClient(interface,resp['id'],resp['lastbyte'],connectivity,resp['port'],resp['publicKeyServer'],"172.16.")
-                #bring up the interface
-                print(f"Creating & Starting {interface}")
-                self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
-                self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
-                self.setInterface(interface,"up")
-                #measure
-                print("Measurement...")
-                #Running fping
-                targetIP = f"172.16.{resp['id']}.{resp['lastbyte']}"
-                fping = self.fping([targetIP],4)
-                if not fping: exit("Failed to ping target IP")
-                #drop first ping result
-                del fping[targetIP][0]
-                avg = self.getAvrg(fping[targetIP])
-                if avg == 65000: exit("Failed to parse ping results")
-                latency[resp['port']] = avg
-                print(f"Got {avg}ms")
-                #terminate link
-                interfaceRemote = self.getInterfaceRemote(interface,"Ping")
-                print(f'Calling {dest}/disconnect')
-                req = self.call(f'{dest}/disconnect',{"publicKeyServer":resp['publicKeyServer'],"interface":interfaceRemote,"wait":False})
-                if req == False:
-                    print("Failed to terminate link, unable to contact remote")
-                    exit()
-                if req.status_code == 200:
-                    self.setInterface(interface,"down")
-                    self.cleanInterface(interface)
-                else:
-                    print(f"Failed to terminate link, got {req.status_code} with {req.text} aborting")
-                    exit()
-            latency = sorted(latency.items(), key=lambda x: x[1])
-            lowestPort = latency[0][0]
-            diff = int(float(before) - float(latency[0][1]))
-            if diff >= 10:
-                print(f"Suggested Port {lowestPort} for a reduction of {diff}ms")
-                print(f"Updating Remote Link {link}...")
-                interfaceRemote = self.getInterfaceRemote(link)
-                req = self.call(f'{dest}/update',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote,"port":lowestPort},"PATCH")
-                if req == False:
-                    print("Failed to change remote port")
-                    exit()
-                if req.status_code == 200:
-                    print(f"Updating Local Link {link}...")
-                    interface = self.filterInterface(link)
-                    self.setInterface(interface,"down")
-                    self.updateClient(interface,lowestPort)
-                    print("Waiting 20s before bringing the link back up")
-                    time.sleep(20)
-                    self.setInterface(interface,"up")
-                    print(f"Measuring {link}")
-                    fping = self.fping([data['remote']],5)
-                    del fping[data['remote']][0]
-                    after = self.getAvrg(fping[data['remote']])
-                    print("--- Results ---")
-                    print(f"Before {before}ms")
-                    print(f"Now {after}ms")
-                else:
-                    print(f"Failed to change remote port, got {req.status_code} with {req.text} aborting")
-                    exit()
-            else:
-                print("Nothing to optimize")
-
-    def proximity(self):
+        for link,details in links.items(): existing.append(details['vxlan'])
         print("Getting Routes")
         routes = self.cmd("birdc show route")[0]
         targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
-        configs = self.cmd('ip addr show')[0]
-        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
         print("Getting Connection info")
         ips = {}
         for target in targets:
@@ -326,13 +255,6 @@ class Wireguard(Base):
             if not resp: continue
             ips[resp['connectivity']['ipv4']] = target
             ips[resp['connectivity']['ipv6']] = target
-        existing = []
-        for ip in list(targets):
-            for link in links:
-                if self.resolve(link[1],ip.replace("/30",""),24):
-                    #multiple links in the same subnet
-                    if ip in targets: existing.append(ip.replace("0/30","1"))
-        fpingTargets = []
         for ip in ips:
             if ip != None: fpingTargets.append(ip)
         print("Getting Latency")
@@ -341,16 +263,23 @@ class Wireguard(Base):
         print("Parsing Results")
         for ip in fping: latencyData[ip] = self.getAvrg(fping[ip])
         latencyData = {k: latencyData[k] for k in sorted(latencyData, key=latencyData.get)}
-        result = []
+        terminate, result = [],[]
         result.append("Target\tIP address\tConnected\tLatency")
         result.append("-------\t-------\t-------\t-------")
-        for ip,latency in latencyData.items(): result.append(f"{ips[ip]}\t{ip}\t{bool(ips[ip] in existing)}\t{latency}ms")
+        for ip,latency in latencyData.items(): 
+            if latency > float(cutoff): terminate.append(ips[ip])
+            result.append(f"{ips[ip]}\t{ip}\t{bool(ips[ip] in existing)}\t{latency}ms")
         result = self.formatTable(result)
-        print(result)
+        if cutoff == 0: 
+            print(result)
+            return True
+        for link,details in links.items():
+            if not details['vxlan'] in terminate: continue
+            self.disconnect([link])
 
     def getLinks(self):
-        print("Getting Links")
         files = os.listdir(f"{self.path}/links/")
+        files = [x for x in files if self.filter(x)]
         links = self.filesToLinks(files)
         if not links: exit("No links found.")
         return links
@@ -369,29 +298,39 @@ class Wireguard(Base):
                 offline.append(filename) if "100%" in row else online.append(filename)
         return offline,online
 
-    def disconnect(self,force=False,link=""):
-        links = self.getLinks()
-        print("Checking Links")
-        offline,online = self.checkLinks(links)
-        #shutdown the links that are offline first
-        if offline: print(f"Found offline links, disconnecting them first. {offline}")
-        targets = offline + online
+    def disconnect(self,links=[],force=False):
+        currentLinks, status = self.getLinks(),{}
+        for index, link in enumerate(links):
+            if not link.endswith(".sh"): links[index] += ".sh"
+        if not links:
+            print("Checking Links")
+            offline,online = self.checkLinks(currentLinks)
+            #shutdown the links that are offline first
+            if offline: print(f"Found offline links, disconnecting them first. {offline}")
+            targets = offline + online
+        else:
+            targets = links
         print("Disconnecting")
         for filename in targets:
             #if a specific link is given filter out
-            if link and link not in filename: continue
+            if links and filename not in links: continue
             interfaceRemote = self.getInterfaceRemote(filename)
             #call destination
-            data = links[filename]
+            if not filename in currentLinks: 
+                print(f"Unable to find link {filename}")
+                status[filename] = False
+                continue
+            data = currentLinks[filename]
             print(f'Calling http://{data["vxlan"]}:8080/disconnect')
             req = self.call(f'http://{data["vxlan"]}:8080/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
             if req == False and force == False: continue
             if force or req.status_code == 200:
                 interface = self.filterInterface(filename)
-                self.setInterface(interface,"down")
-                self.cleanInterface(interface)
+                self.removeInterface(interface)
+                status[filename] = True
             else:
                 print(f"Got {req.status_code} with {req.text} aborting")
+                status[filename] = False
         #load configs
         configs = self.getConfigs(False)
         #get all links
@@ -402,3 +341,4 @@ class Wireguard(Base):
         #clear state.json if no links left
         if os.path.isfile(f"{self.path}/configs/state.json") and not files:
              os.remove(f"{self.path}/configs/state.json")
+        return status
