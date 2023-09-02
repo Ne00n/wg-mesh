@@ -52,5 +52,9 @@ class CLI:
     def disable(self,option):
         if "mesh" in option:
             self.wg.saveJson({},f"{self.path}/configs/state.json")
+        elif "ospfv3" in option:
+            config = self.readConfig(f"{self.path}/configs/config.json")
+            config['ospfv3'] = False
+            self.saveJson(config,f"{self.path}/configs/config.json")
         else:
-            print("Invalid Option")
+            print("Valid options: mesh, ospfv3")
