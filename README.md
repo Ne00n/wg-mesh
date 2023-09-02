@@ -152,9 +152,8 @@ Depending on network conditions, bird will be reloaded, every 5 minutes or as sh
 This will drop long lived TCP connections.
 
 **Known Issues**<br>
-- Remvoing wg-mesh without prior disconnecting active links, will result in broken links until restarted.<br>
 - A client that does not have a direct connection to a newly added server, is stuck with a old outdated vxlan configuration.<br> 
-This can be fixed by reloading wgmesh-bird.<br>
+This can be "fixed" by reloading wgmesh-bird.<br>
 
 **Troubleshooting**
 - You can check the logs/<br>
