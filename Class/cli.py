@@ -59,9 +59,8 @@ class CLI(Base):
             self.saveJson(config,f"{self.path}/configs/config.json")
         elif "wgobfs" in option:
             config = self.readConfig(f"{self.path}/configs/config.json")
-            config['linkTypes'].append("wgobfs")
+            if "wgobfs" in config['linkTypes']: config['linkTypes'].remove("wgobfs")
             self.saveJson(config,f"{self.path}/configs/config.json")
-            print("You still need to install wgobfs with: bash /opt/wg-mesh/tools/wgobfs.sh")
         else:
             print("Valid options: mesh, ospfv3")
             
@@ -74,8 +73,9 @@ class CLI(Base):
             self.saveJson(config,f"{self.path}/configs/config.json")
         elif "wgobfs" in option:
             config = self.readConfig(f"{self.path}/configs/config.json")
-            config['linkTypes'].remove("wgobfs")
+            config['linkTypes'].append("wgobfs")
             self.saveJson(config,f"{self.path}/configs/config.json")
+            print("You still need to install wgobfs with: bash /opt/wg-mesh/tools/wgobfs.sh")
         else:
             print("Valid options: mesh, ospfv3")
 
