@@ -31,6 +31,9 @@ class CLI:
         for file in files:
             subprocess.run(f"bash {self.path}/links/{file} {state}",shell=True)
 
+    def update(self):
+        subprocess.run("git pull",shell=True)
+
     def clean(self):
         self.wg = Wireguard(self.path)
         self.wg.clean()

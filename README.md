@@ -138,7 +138,7 @@ wgmesh down && bash /opt/wg-mesh/deinstall.sh
 
 **Updating**
 ```
-su wg-mesh -c "cd /opt/wg-mesh/; git pull; wgmesh migrate" && systemctl restart wgmesh && systemctl restart wgmesh-bird
+wgmesh update && wgmesh migrate && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
 
 **Limitations**<br>

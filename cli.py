@@ -35,3 +35,5 @@ elif sys.argv[1] == "migrate":
     cli.migrate()
 elif sys.argv[1] == "token":
     cli.token()
+elif sys.argv[1] == "update":
+    cli.update()
