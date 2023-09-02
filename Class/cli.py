@@ -80,7 +80,7 @@ class CLI(Base):
             print("Valid options: mesh, ospfv3")
 
     def setOption(self,options):
-        validOptions = ["area","defaultLinkType"]
+        validOptions = ["area","prefix","defaultLinkType"]
         key, value = options
         if key in validOptions:
             config = self.readConfig(f"{self.path}/configs/config.json")
