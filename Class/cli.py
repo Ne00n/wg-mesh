@@ -32,7 +32,7 @@ class CLI:
             subprocess.run(f"bash {self.path}/links/{file} {state}",shell=True)
 
     def update(self):
-        subprocess.run("git pull",shell=True)
+        subprocess.run("cd; git pull",shell=True)
 
     def clean(self):
         self.wg = Wireguard(self.path)
