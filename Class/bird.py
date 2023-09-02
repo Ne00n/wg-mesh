@@ -7,7 +7,7 @@ class Bird(Base):
     Templator = Templator()
 
     def __init__(self,path,logger):
-        with open(f'{path}/configs/config.json') as f: self.config = json.load(f)
+        config = self.readConfig(f'{path}/configs/config.json')
         self.prefix = self.config['prefix']
         self.logger = logger
         self.path = path
