@@ -80,11 +80,14 @@ class CLI(Base):
             print("Valid options: mesh, ospfv3, wgobfs")
 
     def setOption(self,options):
-        validOptions = ["area","prefix","defaultLinkType"]
+        validOptions = ["area","prefix","defaultLinkType","basePort"]
         key, value = options
         if key in validOptions:
             config = self.readConfig(f"{self.path}/configs/config.json")
-            config[key] = value
+            if key in ["basePort","area"]:
+                config[key] = int(value)
+            else:
+                config[key] = value
             self.saveJson(config,f"{self.path}/configs/config.json")
             print("You should reload the services to apply any config changes")
         else:
