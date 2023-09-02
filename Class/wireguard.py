@@ -18,6 +18,7 @@ class Wireguard(Base):
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
         if not os.path.isfile("/etc/bird/bgp.conf"): self.cmd('touch /etc/bird/bgp.conf')
         if not "ospfv3" in self.config: self.config['ospfv3'] = True
+        if not "area" in self.config: self.config['area'] = 0
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(self.config, f ,indent=4)
 
     def genKeys(self):
@@ -71,7 +72,7 @@ class Wireguard(Base):
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
         config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
-        "ospfv3":True}
+        "ospfv3":True,"area":0}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
         #load configs
         self.prefix = "pipe"

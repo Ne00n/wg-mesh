@@ -141,7 +141,7 @@ ipv4 {
         import all;
         export filter export_OSPF;
     };
-	area 0 { '''
+	area '''+str(config["area"])+''' { '''
         for target,data in latency.items():
             template += '''
                 interface "'''+target+'''" {
@@ -166,7 +166,7 @@ protocol ospf v3 {
     ipv6 {
         export filter export_OSPFv3;
     };
-    area 0 {
+    area """+str(config['area'])+""" {
         """
             for target,data in latency.items():
                 template += '''
