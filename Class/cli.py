@@ -1,5 +1,6 @@
 from Class.wireguard import Wireguard
 from Class.templator import Templator
+from Class.base import Base
 import subprocess, sys, os
 
 class CLI(Base):
