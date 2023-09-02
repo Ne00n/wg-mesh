@@ -73,7 +73,7 @@ fi'''
     def getFirst(self,latency):
         for entry in latency: return entry
 
-    def genBird(self,latency,local):
+    def genBird(self,latency,local,config):
         firstNode = self.getFirst(latency)
         if not firstNode: return ""
         if not local:
@@ -154,8 +154,9 @@ ipv4 {
             '''
         template += """
         };
-}
-
+}"""
+        if config['ospfv3']:
+            template += """
 filter export_OSPFv3 {
     if (net.len > 48) then reject;
     if source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;
