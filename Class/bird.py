@@ -70,7 +70,7 @@ class Bird(Base):
         latencyData = self.getLatency(nodes)
         if not latencyData: return False
         self.logger.info("Generating config")
-        bird = self.Templator.genBird(latencyData,local,int(time.time()))
+        bird = self.Templator.genBird(latencyData,local)
         if bird == "": 
             self.logger.warning("No bird config generated")
             return False

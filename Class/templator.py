@@ -1,3 +1,5 @@
+import time
+
 class Templator:
 
     def genServer(self,interface,serverID,serverIP,serverPort,ClientPublicKey,linkType="default",wgobfsSharedKey="",prefix="10.0.",):
@@ -71,7 +73,7 @@ fi'''
     def getFirst(self,latency):
         for entry in latency: return entry
 
-    def genBird(self,latency,local,time):
+    def genBird(self,latency,local):
         firstNode = self.getFirst(latency)
         if not firstNode: return ""
         if not local:
@@ -79,7 +81,7 @@ fi'''
         else:
             routerID = local[0][0]
         template = f'''log syslog all;
-router id {routerID}; #updated '''+str(time)+'''
+router id {routerID}; #updated '''+str(int(time.time()))+'''
 
 protocol device {
     scan time 10;
