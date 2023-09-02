@@ -8,6 +8,7 @@ class Bird(Base):
 
     def __init__(self,path,logger):
         self.config = self.readConfig(f'{path}/configs/config.json')
+        if not self.config: self.config = {"prefix":"pipe","ospfv3":True}
         self.prefix = self.config['prefix']
         self.logger = logger
         self.path = path
