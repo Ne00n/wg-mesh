@@ -167,7 +167,7 @@ class Wireguard(Base):
             publicKey = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)[0]
             #grab area
             area = re.findall(f"Area\s([0-9]+)",config,re.MULTILINE)
-            area = area[0] if area else 1
+            area = area[0] if area else 0
             links[filename] = {"filename":filename,"vxlan":destination,"local":parsed[0],"remote":remote,'publicKey':publicKey,"area":area}
         return links
 
