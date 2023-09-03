@@ -2,7 +2,7 @@ import time
 
 class Templator:
 
-    def genServer(self,interface,serverID,serverIP,serverPort,payload,wgobfsSharedKey=""):
+    def genServer(self,interface,config,payload,serverIP,serverPort,wgobfsSharedKey=""):
         clientPublicKey,linkType,prefix,area = payload['ClientPublicKey'],payload['linkType'],payload['prefix'],payload['area']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
@@ -13,8 +13,8 @@ class Templator:
 if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type wireguard
-    sudo ip address add dev {interface} {prefix}{serverID}.{serverIP}/31
-    sudo ip -6 address add dev {interface} fe82:{serverID}::{serverIP}/127
+    sudo ip address add dev {interface} {prefix}{config["id"]}.{serverIP}/31
+    sudo ip -6 address add dev {interface} fe82:{config["id"]}::{serverIP}/127
     sudo wg set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {ClientPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
@@ -24,14 +24,14 @@ else
 fi'''
         return template
 
-    def genClient(self,interface,resp,config,serverIPExternal,linkType="default",wgobfsSharedKey="",prefix="10.0.",):
+    def genClient(self,interface,config,resp,serverIPExternal,linkType="default",wgobfsSharedKey="",prefix="10.0.",):
         serverID,serverIP,serverPort,serverPublicKey = resp['id'],resp['lastbyte'],resp['port'],resp['publicKeyServer']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
         wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
-#Area {config['area']}
+#Area {config["area"]}
 if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type wireguard

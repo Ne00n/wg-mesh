@@ -215,7 +215,7 @@ class Wireguard(Base):
                 #interface
                 interface = self.getInterface(interfaceID)
                 #generate config
-                clientConfig = self.Templator.genClient(interface,resp,self.config,connectivity,linkType)
+                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType)
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
