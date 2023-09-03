@@ -92,11 +92,12 @@ protocol device {
 }
 '''
         localPTP = ""
-        for target,data in latency.items():
-            if localPTP != "":
-                localPTP += ","
-            localPTP += data['target']+"/32-"
-        template += '''
+        for area,latencyData in latency.items():
+            for target,data in latencyData.items():
+                if localPTP != "":
+                    localPTP += ","
+                localPTP += data['target']+"/32-"
+            template += '''
 function avoid_local_ptp() {
 ### Avoid fucking around with direct peers
 return net ~ [ '''+localPTP+''' ];
@@ -144,20 +145,22 @@ protocol ospf {
 ipv4 {
         import all;
         export filter export_OSPF;
-    };
-	area '''+str(config["area"])+''' { '''
-        for target,data in latency.items():
-            template += '''
-                interface "'''+target+'''" {
-                        type ptmp;
-                        neighbors {
-                        '''+data['target']+''';
-                        };
-                        cost '''+str(data['latency'])+'''; #'''+data['target']+'''
+    };'''
+        for area,latencyData in latency.items():
+            template += """
+    area """+str(area)+""" {"""
+            for target,data in latencyData.items():
+                template += '''
+        interface "'''+target+'''" {
+                type ptmp;
+                neighbors {
+                '''+data['target']+''';
                 };
-            '''
-        template += """
+                cost '''+str(data['latency'])+'''; #'''+data['target']+'''
         };
+            '''
+            template += """
+    };
 }"""
         if config['ospfv3']:
             template += """
@@ -169,16 +172,17 @@ filter export_OSPFv3 {
 protocol ospf v3 {
     ipv6 {
         export filter export_OSPFv3;
-    };
-    area """+str(config['area'])+""" {
-        """
-            for target,data in latency.items():
+    };"""
+        for area,latencyData in latency.items():
+            template += """
+    area """+str(area)+""" {"""
+            for target,data in latencyData.items():
                 template += '''
-                    interface "'''+target+'''" {
-                        type ptmp;
-                        cost '''+str(data['latency'])+'''; #'''+data['target']+'''
-                    };
-                '''
+        interface "'''+target+'''" {
+            type ptmp;
+            cost '''+str(data["latency"])+'''; #'''+data["target"]+'''
+        };
+            '''
             template += """
     };
 }"""
