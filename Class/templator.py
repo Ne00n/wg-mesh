@@ -98,7 +98,7 @@ protocol device {
                 if localPTP != "":
                     localPTP += ","
                 localPTP += data['target']+"/32-"
-            template += '''
+        template += '''
 function avoid_local_ptp() {
 ### Avoid fucking around with direct peers
 return net ~ [ '''+localPTP+''' ];
