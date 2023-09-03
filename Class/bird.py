@@ -55,6 +55,7 @@ class Bird(Base):
         results = {}
         wgLinks = self.wg.getLinks()
         for target,data in latencyData.items():
+            if not f"{target}.sh" in wgLinks: continue
             current = wgLinks[f"{target}.sh"]
             if not current['area'] in results: results[current['area']] = {}
             results[current['area']][target] = data
