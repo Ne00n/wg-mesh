@@ -187,7 +187,7 @@ protocol ospf v3 {
             '''
             template += """
     };"""
-        template += """
+            template += """
 }"""
         
         return template
