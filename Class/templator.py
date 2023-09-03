@@ -75,7 +75,8 @@ fi'''
         return template
     
     def getFirst(self,latency):
-        for entry in latency: return entry
+        for area,latencyData in latency.items():
+            for entry in latencyData: return entry
 
     def genBird(self,latency,local,config):
         firstNode = self.getFirst(latency)
@@ -186,4 +187,5 @@ protocol ospf v3 {
             template += """
     };
 }"""
+        
         return template
