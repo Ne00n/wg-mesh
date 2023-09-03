@@ -31,7 +31,7 @@ fi'''
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
         wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
-#Area {config["area"]}
+#Area {config['bird']["area"]}
 if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type wireguard
@@ -164,7 +164,7 @@ ipv4 {
     };"""
         template += """
 }"""
-        if config['ospfv3']:
+        if config['bird']['ospfv3']:
             template += """
 filter export_OSPFv3 {
     if (net.len > 48) then reject;

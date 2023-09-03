@@ -17,8 +17,9 @@ class Wireguard(Base):
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
         if not os.path.isfile("/etc/bird/bgp.conf"): self.cmd('touch /etc/bird/bgp.conf')
-        if not "ospfv3" in self.config: self.config['ospfv3'] = True
-        if not "area" in self.config: self.config['area'] = 0
+        if not "bird" in self.config: self.config['bird'] = {}
+        if not "ospfv3" in self.config['bird']: self.config['bird']['ospfv3'] = True
+        if not "area" in self.config['bird']: self.config['bird']['area'] = 0
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(self.config, f ,indent=4)
 
     def genKeys(self):
@@ -72,7 +73,7 @@ class Wireguard(Base):
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
         config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
-        "ospfv3":True,"area":0}
+        "bird":{"ospfv3":True,"area":0}}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
         #load configs
         self.prefix = "pipe"
@@ -206,7 +207,7 @@ class Wireguard(Base):
         for run in range(2):
             #call destination
             req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"port":port,
-            "token":token,"ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['area']})
+            "token":token,"ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['bird']['area']})
             if req == False: return False
             if req.status_code == 412:
                 print(f"Link already exists to {dest}")
