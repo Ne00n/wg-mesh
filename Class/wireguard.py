@@ -202,7 +202,8 @@ class Wireguard(Base):
                 linkType = "default"
         for run in range(2):
             #call destination
-            req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"port":port,"token":token,"ipv6":isv6,"initial":isInitial,"linkType":linkType})
+            req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"port":port,
+            "token":token,"ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['area']})
             if req == False: return False
             if req.status_code == 412:
                 print(f"Link already exists to {dest}")
