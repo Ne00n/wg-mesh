@@ -15,7 +15,7 @@ if [ "$1" == "up" ];  then
     sudo ip link add dev {interface} type wireguard
     sudo ip address add dev {interface} {prefix}{config["id"]}.{serverIP}/31
     sudo ip -6 address add dev {interface} fe82:{config["id"]}::{serverIP}/127
-    sudo wg set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {ClientPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0
+    sudo wg set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {clientPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
 else
