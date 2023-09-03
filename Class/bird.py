@@ -71,7 +71,7 @@ class Bird(Base):
         self.logger.info("Latency messurement")
         latencyData = self.getLatency(nodes)
         if not latencyData: return False
-        links = self.wg.getLinks()
+        wgLinks = self.wg.getLinks()
         self.logger.info("Generating config")
         bird = self.Templator.genBird(latencyData,local,self.config)
         if bird == "": 
