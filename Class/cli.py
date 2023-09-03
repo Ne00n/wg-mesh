@@ -84,8 +84,10 @@ class CLI(Base):
         key, value = options
         if key in validOptions:
             config = self.readConfig(f"{self.path}/configs/config.json")
-            if key in ["basePort","area"]:
+            if key == "basePort"
                 config[key] = int(value)
+            elif key == "area":
+                config['bird'][key] = int(value)
             else:
                 config[key] = value
             self.saveJson(config,f"{self.path}/configs/config.json")
