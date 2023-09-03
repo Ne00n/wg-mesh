@@ -37,7 +37,7 @@ def validateToken(payload):
     return True
 
 def validateID(id):
-    result = re.findall(r"^[0-9]{1,4}$",id,re.MULTILINE | re.DOTALL)
+    result = re.findall(r"^[0-9]{1,4}$",str(id),re.MULTILINE | re.DOTALL)
     if not result: return False
     return True
 
