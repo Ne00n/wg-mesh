@@ -51,6 +51,15 @@ class Bird(Base):
         if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
         return targets
 
+    def groupByArea(self,latencyData):
+        results = {}
+        wgLinks = self.wg.getLinks()
+        for target,data in latencyData.items():
+            current = wgLinks[f"{target}.sh"]
+            if not current['area'] in results: results[current['area']] = {}
+            results[current['area']][target] = data
+        return results
+
     def bird(self):
         #check if bird is running
         proc = self.cmd("pgrep bird")[0]
@@ -71,7 +80,7 @@ class Bird(Base):
         self.logger.info("Latency messurement")
         latencyData = self.getLatency(nodes)
         if not latencyData: return False
-        wgLinks = self.wg.getLinks()
+        latencyData = self.groupByArea(latencyData)
         self.logger.info("Generating config")
         bird = self.Templator.genBird(latencyData,local,self.config)
         if bird == "": 
