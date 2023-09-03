@@ -113,11 +113,16 @@ def index():
     if "linkType" in payload and not validateLinkType(payload['linkType']):
         logging.info(f"Invalid linkType from {requestIP}")
         return HTTPResponse(status=400, body="Invalid linkType")
+    #validate area
+    if "area" in payload and not validateID(payload['area']):
+        logging.info(f"Invalid Area from {requestIP}")
+        return HTTPResponse(status=400, body="Invalid Area")
     #defaults
     if not "linkType" in payload: payload['linkType'] = "default"
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
     if not "prefix" in payload: payload['prefix'] = "10.0."
+    if not "area" in payload: payload['area'] = 0
     payload['basePort'] = config['basePort'] if not "port" in payload else payload['port']
     if not "ipv6" in payload: payload['ipv6'] = False
     #initial
@@ -143,7 +148,7 @@ def index():
     configs = wg.getConfigs(False)
     lastbyte,port = wg.minimal(configs,4,payload['basePort'])
     #generate wireguard config
-    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload['clientPublicKey'],payload['linkType'],wgobfsSharedKey,payload['prefix'])
+    serverConfig = templator.genServer(interface,config['id'],lastbyte,port,payload,wgobfsSharedKey)
     #save
     logging.debug(f"Creating wireguard link {interface}")
     wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")

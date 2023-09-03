@@ -2,7 +2,8 @@ import time
 
 class Templator:
 
-    def genServer(self,interface,serverID,serverIP,serverPort,ClientPublicKey,linkType="default",wgobfsSharedKey="",prefix="10.0.",):
+    def genServer(self,interface,serverID,serverIP,serverPort,payload,wgobfsSharedKey=""):
+        clientPublicKey,linkType,prefix = payload['ClientPublicKey'],payload['linkType'],payload['prefix']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
