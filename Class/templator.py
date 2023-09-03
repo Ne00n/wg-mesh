@@ -175,11 +175,11 @@ protocol ospf v3 {
     ipv6 {
         export filter export_OSPFv3;
     };"""
-        for area,latencyData in latency.items():
-            template += """
+            for area,latencyData in latency.items():
+                template += """
     area """+str(area)+""" {"""
-            for target,data in latencyData.items():
-                template += '''
+                for target,data in latencyData.items():
+                    template += '''
         interface "'''+target+'''" {
             type ptmp;
             cost '''+str(data["latency"])+'''; #'''+data["target"]+'''
