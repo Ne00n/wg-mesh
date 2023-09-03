@@ -161,7 +161,8 @@ ipv4 {
         };
             '''
             template += """
-    };
+    };"""
+        template += """
 }"""
         if config['ospfv3']:
             template += """
@@ -185,7 +186,8 @@ protocol ospf v3 {
         };
             '''
             template += """
-    };
+    };"""
+        template += """
 }"""
         
         return template
