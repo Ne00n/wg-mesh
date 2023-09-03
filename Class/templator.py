@@ -185,7 +185,7 @@ protocol ospf v3 {
             cost '''+str(data["latency"])+'''; #'''+data["target"]+'''
         };
             '''
-            template += """
+                template += """
     };"""
             template += """
 }"""
