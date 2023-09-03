@@ -230,8 +230,8 @@ class Wireguard(Base):
                 print(f"Got {req.text} as response")
                 return False
             #before we try to setup a v4 in v6 wg, we check if booth hosts have IPv6 connectivity
-            if not self.config['connectivity']['ipv6'] or not resp['connectivity']['ipv6']: break
-            if not self.config['connectivity']['ipv4'] or not resp['connectivity']['ipv4']: break
+            if not self.config['connectivity']['ipv6'] or not data['connectivity']['ipv6']: break
+            if not self.config['connectivity']['ipv4'] or not data['connectivity']['ipv4']: break
             #second run going to be IPv6 if available
             isv6 = True
         return True
