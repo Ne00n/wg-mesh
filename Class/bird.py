@@ -10,6 +10,7 @@ class Bird(Base):
         self.config = self.readConfig(f'{path}/configs/config.json')
         if not self.config: self.config = {"prefix":"pipe","ospfv3":True}
         self.prefix = self.config['prefix']
+        self.wg = Wireguard(path)
         self.logger = logger
         self.path = path
     
@@ -70,6 +71,7 @@ class Bird(Base):
         self.logger.info("Latency messurement")
         latencyData = self.getLatency(nodes)
         if not latencyData: return False
+        links = self.wg.getLinks()
         self.logger.info("Generating config")
         bird = self.Templator.genBird(latencyData,local,self.config)
         if bird == "": 
@@ -142,7 +144,6 @@ class Bird(Base):
             self.logger.debug("state.json already exist, skipping")
         else:
             #wireguard
-            wg = Wireguard(self.path)
             self.logger.info("meshing")
             results = {}
             for target in targets:
@@ -152,7 +153,7 @@ class Bird(Base):
                 dest = target.replace(".0/30",".1")
                 #no token needed but external IP for the client
                 self.logger.info(f"Setting up link to {dest}")
-                resp = wg.connect(f"http://{dest}:8080")
+                resp = self.wg.connect(f"http://{dest}:8080")
                 if resp:
                     results[target] = True
                     self.logger.info(f"Link established to http://{dest}:8080")
