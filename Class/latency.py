@@ -131,7 +131,7 @@ class Latency(Base):
                     if node['latency'] > 65535: node['latency'] = 65535
 
         #clear out old peers
-        for entry in self.network:
+        for entry in list(self.network):
             if entry not in peers: del self.network[entry]
         self.logger.info(f"Total {self.total}, Jitter {self.hadJitter}, Packetloss {self.hadLoss}")
         self.network['updated'] = int(datetime.now().timestamp())
