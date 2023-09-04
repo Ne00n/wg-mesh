@@ -31,8 +31,8 @@ class Latency(Base):
         #ignore links dead or nearly dead links
         if latency > 10000 and float(weight) > 10000: return False
         #ignore any negative changes
-        if latency <= weight: return False
-        percentage = 100 - (100 / weight) * latency
+        if latency <= float(weight): return False
+        percentage = 100 - (100 / float(weight)) * latency
         #needs to be higher than 10% or first event
         if eventCount >= 0 and percentage < 10: return False
         return True
