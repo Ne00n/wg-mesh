@@ -67,7 +67,7 @@ class Latency(Base):
             for entry,row in latency.items():
                 if entry == node['target']:
                     peers.append(entry)
-                    node['current'] = self.getAvrg(row,False)
+                    node['latency'] = node['current'] = self.getAvrg(row,False)
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
 
                     #Packetloss
