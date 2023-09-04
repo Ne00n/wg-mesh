@@ -68,11 +68,12 @@ class Latency(Base):
                 del row[0]
                 row.sort()
             #del row[len(row) -1] #drop the highest ping result
-        current = int(datetime.now().timestamp())
         self.total,self.hadLoss,self.hadJitter,self.reload,self.noWait = 0,0,0,0,0
         for node in list(config):
+            peers = []
             for entry,row in latency.items():
                 if entry == node['target']:
+                    peers.append(entry)
                     node['latency'] = self.getAvrg(row,False)
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
 
@@ -129,6 +130,9 @@ class Latency(Base):
                     #make sure we stay below max int
                     if node['latency'] > 65535: node['latency'] = 65535
 
+        #clear out old peers
+        for entry in self.network:
+            if entry not in peers: del self.network[entry]
         self.logger.info(f"Total {self.total}, Jitter {self.hadJitter}, Packetloss {self.hadLoss}")
         self.network['updated'] = int(datetime.now().timestamp())
         return config
