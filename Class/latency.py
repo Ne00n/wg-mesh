@@ -80,7 +80,7 @@ class Latency(Base):
                     hasLoss,peakLoss = len(row) < pings -1,(pings -1) - len(row)
                     if hasLoss:
                         #keep event for 15 minutes
-                        self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = {"peak":peakLoss}
+                        self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = {"peak":peakLoss,"latency":node['weight']}
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
 
                     eventCount,eventScore = self.countEvents(entry,'packetloss')
@@ -104,7 +104,7 @@ class Latency(Base):
                     hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
                     if hasJitter:
                         #keep event for 15 minutes
-                        self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = {"peak":peakJitter}
+                        self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = {"peak":peakJitter,"latency":node['weight']}
                         self.logger.info(f"{node['nic']} ({entry}) High Jitter dectected")
 
                     eventCount,eventScore = self.countEvents(entry,'jitter')
