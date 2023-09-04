@@ -68,9 +68,8 @@ class Latency(Base):
                 del row[0]
                 row.sort()
             #del row[len(row) -1] #drop the highest ping result
-        self.total,self.hadLoss,self.hadJitter,self.reload,self.noWait = 0,0,0,0,0
+        total,self.hadLoss,self.hadJitter,self.reload,self.noWait,peers = 0,0,0,0,0,[]
         for node in list(config):
-            peers = []
             for entry,row in latency.items():
                 if entry == node['target']:
                     peers.append(entry)
@@ -124,7 +123,7 @@ class Latency(Base):
                             self.reload += 1
                         self.hadJitter += 1
 
-                    self.total += 1
+                    total += 1
                     #make sure its always int
                     node['latency'] = int(node['latency'])
                     #make sure we stay below max int
@@ -133,7 +132,7 @@ class Latency(Base):
         #clear out old peers
         for entry in list(self.network):
             if entry not in peers: del self.network[entry]
-        self.logger.info(f"Total {self.total}, Jitter {self.hadJitter}, Packetloss {self.hadLoss}")
+        self.logger.info(f"Total {total}, Jitter {self.hadJitter}, Packetloss {self.hadLoss}")
         self.network['updated'] = int(datetime.now().timestamp())
         return config
 
