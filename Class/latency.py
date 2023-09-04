@@ -24,7 +24,7 @@ class Latency(Base):
         grace = 20
         for entry in row:
             if entry[0] == "timed out": continue
-            if float(entry[0]) > avrg + grace: return True,float(entry[0]) - (avrg + grace)
+            if float(entry[0]) > avrg + grace: return True,round(float(entry[0]) - (avrg + grace),2)
         return False,0
 
     def reloadPeacemaker(self,ongoing,eventDiff,latency,weight):
