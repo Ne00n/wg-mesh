@@ -41,6 +41,17 @@ class Latency(Base):
         if eventDiff > 0 and percentage < 10: return False
         return True
 
+    def countEvents(self,entry,eventType):
+        eventCount,eventScore = 0,0
+        for event,lost in list(self.network[entry][eventType].items()):
+            if int(event) > int(datetime.now().timestamp()): 
+                eventCount += 1
+                eventScore += lost
+            #delete events after 60 minutes
+            elif (int(datetime.now().timestamp()) - 3600) > int(event):
+                del self.network[entry][eventType][event]
+        return eventCount,eventScore
+
     def getLatency(self,config,pings=4):
         targets = []
         for row in config: targets.append(row['target'])
@@ -65,18 +76,12 @@ class Latency(Base):
                     #Packetloss
                     hasLoss,peakLoss = len(row) < pings -1,(pings -1) - len(row)
                     if hasLoss:
-                        #keep for 15 minutes / 3 runs
+                        #keep event for 15 minutes
                         self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = peakLoss
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
 
-                    threshold,eventCount,eventScore = 2,0,0
-                    for event,lost in list(self.network[entry]['packetloss'].items()):
-                        if int(event) > int(datetime.now().timestamp()): 
-                            eventCount += 1
-                            eventScore += lost
-                        #delete events after 60 minutes
-                        elif (int(datetime.now().timestamp()) - 3600) > int(event):
-                            del self.network[entry]['packetloss'][event]
+                    eventCount,eventScore = self.countEvents(entry,'packetloss')
+                    threshold = 2
                     
                     if eventCount > 0: eventScore = eventScore / eventCount
                     hadLoss = True if eventCount >= threshold else False
@@ -95,18 +100,12 @@ class Latency(Base):
                     #Jitter
                     hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
                     if hasJitter:
-                        #keep for 15 minutes / 3 runs
+                        #keep event for 15 minutes
                         self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = peakJitter
                         self.logger.info(f"{node['nic']} ({entry}) High Jitter dectected")
 
-                    threshold,eventCount,eventScore = 4,0,0
-                    for event,peak in list(self.network[entry]['jitter'].items()):
-                        if int(event) > int(datetime.now().timestamp()): 
-                            eventCount += 1
-                            eventScore += peak
-                        #delete events after 60 minutes
-                        elif (int(datetime.now().timestamp()) - 3600) > int(event):
-                            del self.network[entry]['jitter'][event]
+                    eventCount,eventScore = self.countEvents(entry,'jitter')
+                    threshold = 4
                     
                     if eventCount > 0: eventScore = eventScore / eventCount
                     hadJitter = True if eventCount > threshold else False
