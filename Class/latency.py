@@ -47,8 +47,8 @@ class Latency(Base):
             if int(event) > int(datetime.now().timestamp()): 
                 eventCount += 1
                 eventScore += lost
-            #delete events after 60 minutes
-            elif (int(datetime.now().timestamp()) - 3600) > int(event):
+            #delete events after 15 minutes
+            elif (int(datetime.now().timestamp()) - 900) > int(event):
                 del self.network[entry][eventType][event]
         return eventCount,eventScore
 
