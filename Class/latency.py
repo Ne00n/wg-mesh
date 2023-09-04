@@ -73,7 +73,7 @@ class Latency(Base):
             for entry,row in latency.items():
                 if entry == node['target']:
                     peers.append(entry)
-                    node['latency'] = self.getAvrg(row,False)
+                    node['current'] = self.getAvrg(row,False)
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
 
                     #Packetloss
@@ -90,10 +90,9 @@ class Latency(Base):
                     hadLoss = True if eventCount >= threshold else False
                     eventDiff = eventCount - threshold
                     if hadLoss:
-                        tmpLatency = node['latency']
                         self.logger.debug(f"{node['nic']} ({entry}) Ongoing Packetloss")
-                        node['latency'] = round(node['latency'] * eventScore)
-                        self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
+                        node['latency'] = round(node['current'] * eventScore)
+                        self.logger.debug(f"{node['nic']} ({entry}) Latency: {node['current']}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
                         if self.reloadPeacemaker(hasLoss,eventDiff,node['latency'],node['weight']): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
                             self.reload += 1
@@ -114,10 +113,9 @@ class Latency(Base):
                     hadJitter = True if eventCount > threshold else False
                     eventDiff = eventCount - threshold
                     if hadJitter:
-                        tmpLatency = node['latency']
                         self.logger.debug(f"{node['nic']} ({entry}) Ongoing Jitter")
-                        node['latency'] = round(node['latency'] * eventScore)
-                        self.logger.debug(f"{node['nic']} ({entry}) Latency: {tmpLatency}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
+                        node['latency'] = round(node['current'] * eventScore)
+                        self.logger.debug(f"{node['nic']} ({entry}) Latency: {node['current']}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
                         if self.reloadPeacemaker(hasJitter,eventDiff,node['latency'],node['weight']):
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
                             self.reload += 1
