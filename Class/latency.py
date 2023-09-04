@@ -43,10 +43,13 @@ class Latency(Base):
 
     def countEvents(self,entry,eventType):
         eventCount,eventScore = 0,0
-        for event,lost in list(self.network[entry][eventType].items()):
+        for event,details in list(self.network[entry][eventType].items()):
             if int(event) > int(datetime.now().timestamp()): 
                 eventCount += 1
-                eventScore += lost
+                if type(details) == dict:
+                    eventScore = details['peak']
+                else:
+                    eventScore += details
             #delete events after 15 minutes
             elif (int(datetime.now().timestamp()) - 900) > int(event):
                 del self.network[entry][eventType][event]
@@ -77,7 +80,7 @@ class Latency(Base):
                     hasLoss,peakLoss = len(row) < pings -1,(pings -1) - len(row)
                     if hasLoss:
                         #keep event for 15 minutes
-                        self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = peakLoss
+                        self.network[entry]['packetloss'][int(datetime.now().timestamp()) + 900] = {"peak":peakLoss}
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
 
                     eventCount,eventScore = self.countEvents(entry,'packetloss')
@@ -101,7 +104,7 @@ class Latency(Base):
                     hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
                     if hasJitter:
                         #keep event for 15 minutes
-                        self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = peakJitter
+                        self.network[entry]['jitter'][int(datetime.now().timestamp()) + 900] = {"peak":peakJitter}
                         self.logger.info(f"{node['nic']} ({entry}) High Jitter dectected")
 
                     eventCount,eventScore = self.countEvents(entry,'jitter')
