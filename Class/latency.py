@@ -58,6 +58,7 @@ class Latency(Base):
     def getLatency(self,config,pings=4):
         targets = []
         for row in config: targets.append(row['target'])
+        targets = list(set(targets))
         latency =  self.fping(targets,pings,True)
         if not latency:
             self.logger.warning("No pingable links found.")
