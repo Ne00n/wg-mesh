@@ -58,7 +58,7 @@ class Latency(Base):
         if not latency:
             self.logger.warning("No pingable links found.")
             return False
-        total,self.hadLoss,ongoingJitter,self.reload,self.noWait,peers = 0,0,0,0,0,[]
+        total,ongoingLoss,ongoingJitter,self.reload,self.noWait,peers = 0,0,0,0,0,[]
         for node in list(config):
             for entry,row in latency.items():
                 if entry == node['target']:
@@ -74,19 +74,14 @@ class Latency(Base):
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
 
                     eventCount,eventScore = self.countEvents(entry,'packetloss')
-                    threshold = 2
-                    
-                    if eventCount > 0: eventScore = eventScore / eventCount
-                    hadLoss = True if eventCount >= threshold else False
-                    if hadLoss:
-                        self.logger.debug(f"{node['nic']} ({entry}) Ongoing Packetloss")
-                        node['latency'] = round(node['current'] * eventScore)
+                    if eventCount > 0:
+                        node['latency'] = round(node['current'] + (eventScore * 10))
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {node['current']}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
                         if self.reloadPeacemaker(hasLoss,eventCount,node['latency'],node['weight']): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
                             self.reload += 1
                             self.noWait += 1
-                        self.hadLoss += 1
+                        ongoingLoss += 1
 
                     #Jitter
                     hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
@@ -113,7 +108,7 @@ class Latency(Base):
         #clear out old peers
         for entry in list(self.network):
             if entry not in peers: del self.network[entry]
-        self.logger.info(f"Total {total}, Jitter {ongoingJitter}, Packetloss {self.hadLoss}")
+        self.logger.info(f"Total {total}, Jitter {ongoingJitter}, Packetloss {ongoingLoss}")
         self.network['updated'] = int(datetime.now().timestamp())
         return config
 
