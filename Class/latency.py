@@ -12,9 +12,7 @@ class Latency(Base):
         if not self.network: self.network = {"created":int(datetime.now().timestamp()),"updated":0}
 
     def parse(self,configRaw):
-        parsed = re.findall('interface "([a-zA-Z0-9]{3,}?)".{50,170}?cost ([0-9.]+);\s#([0-9.]+)',configRaw, re.DOTALL)
-        #filter double entries
-        parsed = list(set(parsed))
+        parsed = re.findall('interface "([a-zA-Z0-9]*)".{50,130}?cost ([0-9.]+);\s#([0-9.]+)',configRaw, re.DOTALL)
         data = []
         for nic,weight,target in parsed:
             data.append({'nic':nic,'target':target,'weight':weight})
@@ -58,7 +56,6 @@ class Latency(Base):
     def getLatency(self,config,pings=4):
         targets = []
         for row in config: targets.append(row['target'])
-        targets = list(set(targets))
         latency =  self.fping(targets,pings,True)
         if not latency:
             self.logger.warning("No pingable links found.")
