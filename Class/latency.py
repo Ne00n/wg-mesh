@@ -62,12 +62,6 @@ class Latency(Base):
         if not latency:
             self.logger.warning("No pingable links found.")
             return False
-        for entry,row in latency.items():
-            #drop the first ping result
-            if row: 
-                del row[0]
-                row.sort()
-            #del row[len(row) -1] #drop the highest ping result
         total,self.hadLoss,self.hadJitter,self.reload,self.noWait,peers = 0,0,0,0,0,[]
         for node in list(config):
             for entry,row in latency.items():
