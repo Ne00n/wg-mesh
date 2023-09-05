@@ -38,7 +38,7 @@ class Bird(Base):
         for ip in result: latencyData[ip] = self.getAvrg(result[ip])
         latencyData = {k: latencyData[k] for k in sorted(latencyData, key=latencyData.get)}
         first = list(latencyData.keys())[0]
-        lowest = latencyData[first]
+        lowest = round(latencyData[first] * 10,1)
         multiplicator = round(lowest / 10,1)
         if multiplicator < 1: multiplicator = 1
         return multiplicator
