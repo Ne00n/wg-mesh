@@ -25,6 +25,10 @@ class Latency(Base):
             if float(entry[0]) > avrg + grace: return True,round(float(entry[0]) - (avrg + grace),2)
         return False,0
 
+    def setMultiplicator(self,multiplicator):
+        self.logger.info(f"Setting Multiplicator to {multiplicator}")
+        self.multiplicator = multiplicator
+
     def reloadPeacemaker(self,ongoing,eventCount,latency,weight):
         #needs to be ongoing
         if not ongoing: return False
@@ -75,7 +79,7 @@ class Latency(Base):
 
                     eventCount,eventScore = self.countEvents(entry,'packetloss')
                     if eventCount > 0:
-                        node['latency'] = round(node['current'] + (eventScore * 25))
+                        node['latency'] = round(node['current'] + (eventScore * self.multiplicator))
                         self.logger.debug(f"{node['nic']} ({entry}) Latency: {node['current']}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
                         if self.reloadPeacemaker(hasLoss,eventCount,node['latency'],node['weight']): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")

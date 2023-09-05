@@ -19,6 +19,9 @@ logger = logging.getLogger()
 latency = Latency(path,logger)
 bird = Bird(path,logger)
 
+multiplicator = bird.getMultiplicator()
+latency.setMultiplicator(multiplicator)
+
 path,links = f'{path}/links/',[]
 
 skip = 0

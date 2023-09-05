@@ -28,6 +28,20 @@ class Bird(Base):
             result[nic] = {"target":targetIP,"origin":origin}
         return result
 
+    def getMultiplicator(self):
+        self.logger.info(f"Getting Multiplicator")
+        links = self.wg.getLinks()
+
+        targets,latencyData,linkMap = [],{},{}
+        for link,details in links.items(): targets.append(details['remote'])
+        result = self.fping(targets,3,False)
+        for ip in result: latencyData[ip] = self.getAvrg(result[ip])
+        latencyData = {k: latencyData[k] for k in sorted(latencyData, key=latencyData.get)}
+        first = list(latencyData.keys())[0]
+        lowest = latencyData[first]
+        multiplicator = round(lowest / 10,1)
+        return multiplicator
+
     def getLatency(self,targets):
         ips = []
         for nic,data in targets.items(): ips.append(data['target'])
