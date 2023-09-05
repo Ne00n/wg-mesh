@@ -40,6 +40,7 @@ class Bird(Base):
         first = list(latencyData.keys())[0]
         lowest = latencyData[first]
         multiplicator = round(lowest / 10,1)
+        if multiplicator < 10: multiplicator = 10
         return multiplicator
 
     def getLatency(self,targets):
