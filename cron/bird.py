@@ -31,6 +31,9 @@ while True:
         #filter out specific links
         currentLinks = [x for x in currentLinks if bird.filter(x)]
         if links != currentLinks:
+            logger.info(f"Found difference in files, triggering reload")
+            difference = list(set(links) - set(currentLinks))
+            logger.info(f"Difference {difference}")
             #hold until bird reports success
             if bird.bird():
                 bird.mesh()
