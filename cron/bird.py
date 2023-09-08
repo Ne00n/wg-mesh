@@ -19,9 +19,6 @@ logger = logging.getLogger()
 latency = Latency(path,logger)
 bird = Bird(path,logger)
 
-multiplicator = bird.getMultiplicator()
-latency.setMultiplicator(multiplicator)
-
 path,links = f'{path}/links/',[]
 
 skip = 0
@@ -39,6 +36,8 @@ while True:
                 bird.mesh()
                 bird.bird()
                 links = currentLinks
+                multiplicator = bird.getMultiplicator()
+                latency.setMultiplicator(multiplicator)
         #every 30s
         run = [0,3]
         if runs in run:

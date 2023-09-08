@@ -9,6 +9,7 @@ class Latency(Base):
         self.path = path
         file = f"{path}/configs/network.json"
         self.network = self.readConfig(file)
+        self.multiplicator = 1
         if not self.network: self.network = {"created":int(datetime.now().timestamp()),"updated":0}
 
     def parse(self,configRaw):
