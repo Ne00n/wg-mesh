@@ -161,6 +161,8 @@ This can be "fixed" by reloading wgmesh-bird.<br>
 sudo requires a resolvable hostname
 - wg-mesh is not meshing<br>
 bird2 needs to be running / hidepid can block said access to check if bird is running.<br>
+- sudo is asking for authentication<br>
+reinstall sudo, likely old config file (debian 10)<br>
 - RTNETLINK answers: Address already in use<br>
 Can also mean the Port wg tries to listen, is already in use. Check your existing wg links.<br>
 - packetloss and/or higher latency inside the wg-mesh network but not on the uplink/network itself
