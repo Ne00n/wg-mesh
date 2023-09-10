@@ -13,9 +13,9 @@ class CLI(Base):
     def init(self,id,listen):
         self.wg.init(id,listen)
 
-    def connect(self,dest,token,linkType="default"):
+    def connect(self,dest,token,linkType="default",port=51820):
         self.wg = Wireguard(self.path)
-        self.wg.connect(dest,token,linkType)
+        self.wg.connect(dest,token,linkType,port)
 
     def proximity(self,cutoff=0):
         self.wg = Wireguard(self.path)
