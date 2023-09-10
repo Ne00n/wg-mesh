@@ -206,8 +206,10 @@ class Wireguard(Base):
                 linkType = "default"
         for run in range(2):
             #call destination
-            req = self.call(f'{dest}/connect',{"clientPublicKey":clientPublicKey,"id":self.config['id'],"port":port,
-            "token":token,"ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['bird']['area']})
+            payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
+            "ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['bird']['area']}
+            if port != 51820: payload["port"] = port
+            req = self.call(f'{dest}/connect',payload)
             if req == False: return False
             if req.status_code == 412:
                 print(f"Link already exists to {dest}")
