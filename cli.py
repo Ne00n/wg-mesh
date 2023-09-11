@@ -13,9 +13,11 @@ elif sys.argv[1] == "init":
     state = sys.argv[3] if len(sys.argv) > 3 else "local"
     cli.init(sys.argv[2],state)
 elif sys.argv[1] == "connect":
-    linkType = "default" if len(sys.argv) == 4 else sys.argv[4]
-    port = 51820 if len(sys.argv) == 5 else sys.argv[5]
-    cli.connect(sys.argv[2],sys.argv[3],linkType,port)
+    if len(sys.argv) <= 2: exit("URL is missing.")
+    token = "dummy" if len(sys.argv) <= 3 else sys.argv[3]
+    linkType = "default" if len(sys.argv) <= 4 else sys.argv[4]
+    port = 51820 if len(sys.argv) <= 5 else sys.argv[5]
+    cli.connect(sys.argv[2],token,linkType,port)
 elif sys.argv[1] == "proximity":
     cutoff = sys.argv[2] if len(sys.argv) == 3 else 0
     cli.proximity(cutoff)
