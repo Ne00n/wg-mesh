@@ -109,6 +109,9 @@ class Latency(Base):
                     node['latency'] = int(node['latency'])
                     #make sure we stay below max int
                     if node['latency'] > 65535: node['latency'] = 65535
+                    #make sure we always stay over zero
+                    #in case of a typo and you connect to itself, it may cause a weight to be measured at zero
+                    if node['latency'] < 0: node['latency'] = 1
 
         #clear out old peers
         for entry in list(self.network):
