@@ -152,7 +152,7 @@ protocol ospf {
         for area,latencyData in latency.items():
             template += """
     area """+str(area)+""" {"""
-            if area != 0: template += "\n\tstub yes;\n"
+            #if area != 0: template += "\n\tstub yes;\n"
             for target,data in latencyData.items():
                 template += '''
         interface "'''+target+'''" {
@@ -183,7 +183,7 @@ protocol ospf v3 {
             for area,latencyData in latency.items():
                 template += """
     area """+str(area)+""" {"""
-                if area != 0: template += "\n\tstub yes;\n"
+                #if area != 0: template += "\n\tstub yes;\n"
                 for target,data in latencyData.items():
                     template += '''
         interface "'''+target+'''" {
