@@ -144,7 +144,7 @@ filter export_OSPF {
 
 protocol ospf {
     tick '''+str(config['bird']['tick'])+''';
-    graceful restart switch;
+    graceful restart yes;
     ipv4 {
         import all;
         export filter export_OSPF;
@@ -176,7 +176,7 @@ filter export_OSPFv3 {
 }
 protocol ospf v3 {
     tick """+str(config['bird']['tick'])+""";
-    graceful restart switch;
+    graceful restart yes;
     ipv6 {
         export filter export_OSPFv3;
     };"""
