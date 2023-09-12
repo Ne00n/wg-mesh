@@ -51,33 +51,33 @@ class CLI(Base):
             print("Unable to load the token file")
 
     def disable(self,option):
+        config = self.readConfig(f"{self.path}/configs/config.json")
         if "mesh" in option:
             self.wg.saveJson({},f"{self.path}/configs/state.json")
         elif "ospfv3" in option:
-            config = self.readConfig(f"{self.path}/configs/config.json")
             config['bird']['ospfv3'] = False
-            self.saveJson(config,f"{self.path}/configs/config.json")
+        elif "client" in option:
+            config['bird']['client'] = False
         elif "wgobfs" in option:
-            config = self.readConfig(f"{self.path}/configs/config.json")
             if "wgobfs" in config['linkTypes']: config['linkTypes'].remove("wgobfs")
-            self.saveJson(config,f"{self.path}/configs/config.json")
         else:
-            print("Valid options: mesh, ospfv3, wgobfs")
+            print("Valid options: mesh, ospfv3, wgobfs, client")
+        self.saveJson(config,f"{self.path}/configs/config.json")
             
     def enable(self,option):
+        config = self.readConfig(f"{self.path}/configs/config.json")
         if "mesh" in option:
             if os.path.isfile(f"{self.path}/configs/state.json"): os.remove(f"{self.path}/configs/state.json")
         elif "ospfv3" in option:
-            config = self.readConfig(f"{self.path}/configs/config.json")
             config['bird']['ospfv3'] = True
-            self.saveJson(config,f"{self.path}/configs/config.json")
+        elif "client" in option:
+            config['bird']['client'] = True
         elif "wgobfs" in option:
-            config = self.readConfig(f"{self.path}/configs/config.json")
             if not "wgobfs" in config['linkTypes']: config['linkTypes'].append("wgobfs")
-            self.saveJson(config,f"{self.path}/configs/config.json")
             print("You still need to install wgobfs with: bash /opt/wg-mesh/tools/wgobfs.sh")
         else:
-            print("Valid options: mesh, ospfv3, wgobfs")
+            print("Valid options: mesh, ospfv3, wgobfs, client")
+        self.saveJson(config,f"{self.path}/configs/config.json")
 
     def setOption(self,options):
         validOptions = ["area","prefix","defaultLinkType","basePort","tick"]
