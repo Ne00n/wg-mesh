@@ -177,7 +177,7 @@ filter export_OSPFv3 {
 protocol ospf v3 {
     tick """+str(config['bird']['tick'])+""";
     graceful restart yes;
-    stub router """+"yes;" if config['bird']['client'] else "no;"+"""
+    """+"stub router yes;" if config['bird']['client'] else "stub router no;"+"""
     ipv6 {
         export filter export_OSPFv3;
     };"""
