@@ -145,6 +145,7 @@ filter export_OSPF {
 protocol ospf {
     tick '''+str(config['bird']['tick'])+''';
     graceful restart yes;
+    stub router '''+"yes" if config['bird']['client'] else "no"+''';
     ipv4 {
         import all;
         export filter export_OSPF;
@@ -152,7 +153,6 @@ protocol ospf {
         for area,latencyData in latency.items():
             template += """
     area """+str(area)+""" {"""
-            if config['bird']['client']: template += "\n\tstub router;\n"
             for target,data in latencyData.items():
                 template += '''
         interface "'''+target+'''" {
@@ -177,6 +177,7 @@ filter export_OSPFv3 {
 protocol ospf v3 {
     tick """+str(config['bird']['tick'])+""";
     graceful restart yes;
+    stub router """+"yes" if config['bird']['client'] else "no"+""";
     ipv6 {
         export filter export_OSPFv3;
     };"""
