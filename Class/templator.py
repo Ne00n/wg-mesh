@@ -145,7 +145,7 @@ filter export_OSPF {
 protocol ospf {
     tick '''+str(config['bird']['tick'])+''';
     graceful restart yes;
-    stub router '''+"yes;" if config['bird']['client'] else "no;"+'''
+    '''+"stub router yes;" if config['bird']['client'] else "stub router no;"+'''
     ipv4 {
         import all;
         export filter export_OSPF;
