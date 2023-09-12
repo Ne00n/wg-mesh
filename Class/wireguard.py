@@ -20,6 +20,7 @@ class Wireguard(Base):
         if not "bird" in self.config: self.config['bird'] = {}
         if not "ospfv3" in self.config['bird']: self.config['bird']['ospfv3'] = True
         if not "area" in self.config['bird']: self.config['bird']['area'] = 0
+        if not "tick" in self.config['bird']: self.config['bird']['tick'] = 1
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(self.config, f ,indent=4)
 
     def genKeys(self):
@@ -73,7 +74,7 @@ class Wireguard(Base):
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
         config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
-        "bird":{"ospfv3":True,"area":0}}
+        "bird":{"ospfv3":True,"area":0,"tick":1}}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
         #load configs
         self.prefix = "pipe"

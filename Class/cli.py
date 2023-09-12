@@ -80,13 +80,13 @@ class CLI(Base):
             print("Valid options: mesh, ospfv3, wgobfs")
 
     def setOption(self,options):
-        validOptions = ["area","prefix","defaultLinkType","basePort"]
+        validOptions = ["area","prefix","defaultLinkType","basePort","tick"]
         key, value = options
         if key in validOptions:
             config = self.readConfig(f"{self.path}/configs/config.json")
             if key == "basePort":
                 config[key] = int(value)
-            elif key == "area":
+            elif key == "area" or key == "tick":
                 config['bird'][key] = int(value)
             else:
                 config[key] = value
