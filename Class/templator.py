@@ -80,6 +80,7 @@ fi'''
 
     def genBird(self,latency,local,config):
         firstNode = self.getFirst(latency)
+        isRouter = "yes" if config['bird']['client'] else "no"
         if not firstNode: return ""
         if not local:
             routerID = latency[firstNode]["origin"]
@@ -145,6 +146,7 @@ filter export_OSPF {
 protocol ospf {
     tick '''+str(config['bird']['tick'])+''';
     graceful restart yes;
+    stub router '''+isRouter+''';
     '''+"stub router yes;" if config['bird']['client'] else "stub router no;"+'''
     ipv4 {
         import all;
@@ -177,7 +179,7 @@ filter export_OSPFv3 {
 protocol ospf v3 {
     tick """+str(config['bird']['tick'])+""";
     graceful restart yes;
-    """+"stub router yes;" if config['bird']['client'] else "stub router no;"+"""
+    stub router """+isRouter+""";
     ipv6 {
         export filter export_OSPFv3;
     };"""
