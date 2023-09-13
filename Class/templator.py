@@ -155,7 +155,7 @@ protocol ospf {
             template += """
     area """+str(area)+""" {"""
             for target,data in latencyData.items():
-                modifiedLatency = 65536 - data['latency'] if config['bird']['client'] else data['latency']
+                modifiedLatency = 65535 - data['latency'] if config['bird']['client'] else data['latency']
                 template += '''
         interface "'''+target+'''" {
                 type ptmp;
@@ -187,7 +187,7 @@ protocol ospf v3 {
                 template += """
     area """+str(area)+""" {"""
                 for target,data in latencyData.items():
-                    modifiedLatency = 65536 - data['latency'] if config['bird']['client'] else data['latency']
+                    modifiedLatency = 65535 - data['latency'] if config['bird']['client'] else data['latency']
                     template += '''
         interface "'''+target+'''" {
             type ptmp;
