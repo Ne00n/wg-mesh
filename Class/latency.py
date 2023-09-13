@@ -106,7 +106,7 @@ class Latency(Base):
 
                     total += 1
                     #adjust weight if client
-                    node['latency'] = 65536 - node['latency'] if config['bird']['client'] else node['latency']
+                    node['latency'] = 65536 - node['latency'] if self.config['bird']['client'] else node['latency']
                     #make sure its always int
                     node['latency'] = int(node['latency'])
                     #make sure we stay below max int
