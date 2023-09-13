@@ -105,8 +105,9 @@ class Latency(Base):
                         ongoingJitter += 1
 
                     total += 1
-                    #if client adjust base latency to avoid transit
-                    if self.config['bird']['client'] and (node['latency'] + 10000) < 65535: node['latency'] += 10000
+                    #if within 200-255 range (client) adjust base cost/weight to avoid transit
+                    linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",node['nic'], re.MULTILINE)[0]
+                    if int(linkID) >= 200 and (node['latency'] + 10000) < 65535: node['latency'] += 10000
                     #make sure its always int
                     node['latency'] = int(node['latency'])
                     #make sure we stay below max int
