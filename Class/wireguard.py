@@ -162,7 +162,7 @@ class Wireguard(Base):
                 destination = f"{destination[0]}1"
             elif "listen-port" in config:
                 #grab ID from filename
-                linkID = re.findall(f"pipe.*?([0-9]+)",filename, re.MULTILINE)[0]
+                linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
                 destination = f"10.0.{linkID}.1"
             #get remote endpoint
             parsed, remote = self.getRemote(config)
