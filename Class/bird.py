@@ -98,7 +98,7 @@ class Bird(Base):
         #if client adjust base latency to avoid transit
         for target,data in latencyData.items():
             linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",target, re.MULTILINE)[0]
-            if int(linkID) >= 200 and (node['latency'] + 10000) < 65535: node['latency'] += 10000
+            if int(linkID) >= 200 and (data['latency'] + 10000) < 65535: data['latency'] += 10000
         latencyData = self.groupByArea(latencyData)
         self.logger.info("Generating config")
         bird = self.Templator.genBird(latencyData,local,self.config)
