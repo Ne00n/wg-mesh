@@ -155,13 +155,14 @@ protocol ospf {
             template += """
     area """+str(area)+""" {"""
             for target,data in latencyData.items():
+                modifiedLatency = 65536 - data['latency'] if config['bird']['client'] else data['latency']
                 template += '''
         interface "'''+target+'''" {
                 type ptmp;
                 neighbors {
                 '''+data['target']+''';
                 };
-                cost '''+str(data['latency'])+'''; #'''+data['target']+'''
+                cost '''+str(modifiedLatency)+'''; #'''+data['target']+'''
         };
             '''
             template += """
@@ -186,10 +187,11 @@ protocol ospf v3 {
                 template += """
     area """+str(area)+""" {"""
                 for target,data in latencyData.items():
+                    modifiedLatency = 65536 - data['latency'] if config['bird']['client'] else data['latency']
                     template += '''
         interface "'''+target+'''" {
             type ptmp;
-            cost '''+str(data["latency"])+'''; #'''+data["target"]+'''
+            cost '''+str(modifiedLatency)+'''; #'''+data["target"]+'''
         };
             '''
                 template += """
