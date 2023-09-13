@@ -94,9 +94,6 @@ class Bird(Base):
         nodes = self.genTargets(links)
         self.logger.info("Latency messurement")
         latencyData = self.getLatency(nodes)
-        #if client adjust base latency to avoid transit
-        for target,data in latencyData.items():
-            if self.config['bird']['client'] and (data['latency'] + 10000) < 65535: data['latency'] += 10000
         if not latencyData: return False
         latencyData = self.groupByArea(latencyData)
         self.logger.info("Generating config")
