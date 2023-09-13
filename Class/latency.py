@@ -7,8 +7,8 @@ class Latency(Base):
     def __init__(self,path,logger):
         self.logger = logger
         self.path = path
-        file = f"{path}/configs/network.json"
-        self.network = self.readConfig(file)
+        self.config = self.readConfig(f'{path}/configs/config.json')
+        self.network = self.readConfig(f"{path}/configs/network.json")
         self.multiplicator = 1
         if not self.network: self.network = {"created":int(datetime.now().timestamp()),"updated":0}
 
@@ -105,6 +105,8 @@ class Latency(Base):
                         ongoingJitter += 1
 
                     total += 1
+                    #adjust weight if client
+                    node['latency'] = 65536 - node['latency'] if config['bird']['client'] else node['latency']
                     #make sure its always int
                     node['latency'] = int(node['latency'])
                     #make sure we stay below max int
