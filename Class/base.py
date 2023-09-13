@@ -52,13 +52,13 @@ class Base:
 
     def getAvrg(self,row,weight=True):
         result = 0
-        if not row: return 65536
+        if not row: return 65535
         for entry in row:
             #ignore timed out
             if entry[0] == "timed out": continue
             result += float(entry[0])
         #do not return 0, never, ever
-        if result == 0: return 65536
+        if result == 0: return 65535
         if weight: return int(float(result / len(row)))
         else: return int(float(result / len(row)) * 10)
 
