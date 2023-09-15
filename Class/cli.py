@@ -16,6 +16,9 @@ class CLI(Base):
     def used(self):
         self.wg.used()
 
+    def bender(self):
+        self.wg.bender()
+
     def connect(self,dest,token,linkType="default",port=51820):
         self.wg = Wireguard(self.path)
         self.wg.connect(dest,token,linkType,port)

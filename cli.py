@@ -8,12 +8,14 @@ path = os.path.dirname(os.path.realpath(__file__))
 cli = CLI(path)
 
 if len(sys.argv) == 1:
-    print("init <id>, used, migrate, connect <http://IP/DOMAIN:8080> <token>, disconnect, up, down, clean, proximity, token, disable, enable, set")
+    print("init <id>, used, bender, migrate, connect <http://IP/DOMAIN:8080> <token>, disconnect, up, down, clean, proximity, token, disable, enable, set")
 elif sys.argv[1] == "init":
     state = sys.argv[3] if len(sys.argv) > 3 else "local"
     cli.init(sys.argv[2],state)
 elif sys.argv[1] == "used":
     cli.used()
+elif sys.argv[1] == "bender":
+    cli.bender()
 elif sys.argv[1] == "connect":
     if len(sys.argv) <= 2: exit("URL is missing.")
     token = "dummy" if len(sys.argv) <= 3 else sys.argv[3]
