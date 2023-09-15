@@ -372,5 +372,6 @@ class Wireguard(Base):
         if ".gitignore" in files: files.remove(".gitignore")
         #clear state.json if no links left
         if os.path.isfile(f"{self.path}/configs/state.json") and not files:
-             os.remove(f"{self.path}/configs/state.json")
+            print("state.json has been reset!")
+            os.remove(f"{self.path}/configs/state.json")
         return status
