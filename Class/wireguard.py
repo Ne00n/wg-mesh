@@ -253,6 +253,15 @@ class Wireguard(Base):
         config = re.sub(oldEndPoint, newEndPoint, config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
+    def used(self):
+        print("Getting Routes")
+        routes = self.cmd("birdc show route")[0]
+        targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+        parsed = re.findall(f"([0-9]+).0\/30",", ".join(targets), re.MULTILINE)
+        parsed.sort(key = int)
+        print("Already used ID's")
+        print(parsed)
+
     def proximity(self,cutoff=0):
         fpingTargets, existing = [],[]
         links = self.getLinks()

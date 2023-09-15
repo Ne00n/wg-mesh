@@ -13,6 +13,9 @@ class CLI(Base):
     def init(self,id,listen):
         self.wg.init(id,listen)
 
+    def used(self):
+        self.wg.used()
+
     def connect(self,dest,token,linkType="default",port=51820):
         self.wg = Wireguard(self.path)
         self.wg.connect(dest,token,linkType,port)
