@@ -94,7 +94,7 @@ def index():
         logging.info(f"Invalid Token from {requestIP}")
         return HTTPResponse(status=401, body="Invalid Token")
     #validate id
-    if not validateID(payload['id']): 
+    if not 'id' in payload or not validateID(payload['id']): 
         logging.info(f"Invalid ID from {requestIP}")
         return HTTPResponse(status=400, body="Invalid ID")
     #validate port
