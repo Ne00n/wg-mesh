@@ -21,7 +21,7 @@ bird = Bird(path,logger)
 
 path,links = f'{path}/links/',[]
 
-skip = 0
+skip,skipUntil = 0,0
 while True:
     for runs in range(6):
         currentLinks = os.listdir(path)
@@ -43,5 +43,8 @@ while True:
         if runs in run:
             if links: 
                 skip = latency.run(runs)
+                if skip > 0: 
+                    skipUntil = time.time() + 60
+                    logger.info(f"Skipping 10s wait until {skipUntil}")
         else:
-            if skip == 0: time.sleep(10)
+            if skipUntil < time.time(): time.sleep(10)
