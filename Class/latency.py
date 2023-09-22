@@ -47,10 +47,7 @@ class Latency(Base):
         for event,details in list(self.network[entry][eventType].items()):
             if int(event) > int(datetime.now().timestamp()): 
                 eventCount += 1
-                if type(details) == dict:
-                    eventScore = details['peak']
-                else:
-                    eventScore += details
+                eventScore += details['peak']
             #delete events after 15 minutes
             elif (int(datetime.now().timestamp()) - 900) > int(event):
                 del self.network[entry][eventType][event]
