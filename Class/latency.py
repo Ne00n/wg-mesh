@@ -34,7 +34,7 @@ class Latency(Base):
         #needs to be ongoing
         if not ongoing: return False
         #ignore links dead or nearly dead links
-        if latency > 10000 and float(weight) > 10000: return False
+        if latency > 20000 and float(weight) > 20000: return False
         #ignore any negative changes
         if latency <= float(weight): return False
         percentage = 100 - (100 / float(weight)) * latency
