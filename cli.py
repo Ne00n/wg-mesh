@@ -3,12 +3,13 @@
 from Class.cli import CLI
 import sys, os
 
+options = "init <id>, used, bender, migrate, connect <http://IP/DOMAIN:8080> <token>, disconnect, up, down, clean, proximity, token, disable, enable, set"
 #path
 path = os.path.dirname(os.path.realpath(__file__))
 cli = CLI(path)
 
 if len(sys.argv) == 1:
-    print("init <id>, used, bender, migrate, connect <http://IP/DOMAIN:8080> <token>, disconnect, up, down, clean, proximity, token, disable, enable, set")
+    print(options)
 elif sys.argv[1] == "init":
     state = sys.argv[3] if len(sys.argv) > 3 else "local"
     cli.init(sys.argv[2],state)
@@ -32,10 +33,8 @@ elif sys.argv[1] == "disconnect":
         if param.lower() == "force": force = True
         if param.lower() != "force": links.append(param)
     cli.disconnect(links,force)
-elif sys.argv[1] == "up":
-    cli.links("up")
-elif sys.argv[1] == "down":
-    cli.links("down")
+elif sys.argv[1] == "up" or sys.argv[1] == "down"::
+    cli.links(sys.argv[1])
 elif sys.argv[1] == "clean":
     cli.clean()
 elif sys.argv[1] == "migrate":
@@ -53,3 +52,5 @@ elif sys.argv[1] == "enable":
 elif sys.argv[1] == "set":
     sys.argv = sys.argv[2:]
     cli.setOption(sys.argv)
+else:
+    print(options)
