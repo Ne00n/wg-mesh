@@ -80,7 +80,7 @@ class Latency(Base):
 
                     eventCount,eventScore = self.countEvents(entry,'packetloss')
                     if eventCount > 0:
-                        node['latency'] = round(node['current'] + (eventScore * self.multiplicator))
+                        node['latency'] += round((eventScore * self.multiplicator))
                         self.logger.debug(f"Loss {node['nic']} ({entry}) Latency: {node['current']}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
                         if self.reloadPeacemaker(hasLoss,eventCount,node['latency'],node['weight']): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
