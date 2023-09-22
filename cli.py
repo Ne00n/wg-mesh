@@ -33,7 +33,7 @@ elif sys.argv[1] == "disconnect":
         if param.lower() == "force": force = True
         if param.lower() != "force": links.append(param)
     cli.disconnect(links,force)
-elif sys.argv[1] == "up" or sys.argv[1] == "down"::
+elif sys.argv[1] == "up" or sys.argv[1] == "down":
     cli.links(sys.argv[1])
 elif sys.argv[1] == "clean":
     cli.clean()
