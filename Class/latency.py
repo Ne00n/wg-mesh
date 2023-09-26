@@ -39,7 +39,7 @@ class Latency(Base):
         if latency <= float(weight): return False
         percentage = round((abs(float(weight) - latency) / latency) * 100.0,1)
         #needs to be higher than 10% or first event
-        if eventCount >= 1 and percentage < 10: 
+        if percentage < 10: 
             self.logger.debug(f"Current percentage: {percentage}%, needed 10% (latency {latency}, weight {weight})")
             return False
         return True
