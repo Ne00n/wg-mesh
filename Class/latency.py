@@ -79,7 +79,6 @@ class Latency(Base):
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
 
                     eventCount,eventScore = self.countEvents(entry,'packetloss')
-                    eventScore = round(eventScore * 10)
                     if eventCount > 0:
                         node['latency'] += round((eventScore * self.multiplicator))
                         self.logger.debug(f"Loss {node['nic']} ({entry}) Latency: {node['current']}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
