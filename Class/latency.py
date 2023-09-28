@@ -149,7 +149,8 @@ class Latency(Base):
             self.logger.warning("Nothing todo")
         else:
             #reload bird with updates only every 10 minutes or if reload is greater than 1
-            if (datetime.now().minute % 10 == 0 and runs == 0) or self.reload > 0:
+            restart = [0,10,20,30,40,50]
+            if (datetime.now().minute in restart and runs == 0) or self.reload > 0:
                 #write
                 self.logger.info("Writing config")
                 self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
