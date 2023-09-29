@@ -36,8 +36,6 @@ while True:
                 bird.mesh()
                 bird.bird()
                 links = currentLinks
-                multiplicator = bird.getMultiplicator()
-                latency.setMultiplicator(multiplicator)
         #every 30s
         run = [0,3]
         if runs in run:

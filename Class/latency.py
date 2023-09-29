@@ -9,7 +9,6 @@ class Latency(Base):
         self.path = path
         self.config = self.readConfig(f'{path}/configs/config.json')
         self.network = self.readConfig(f"{path}/configs/network.json")
-        self.multiplicator = 1
         if not self.network: self.network = {"created":int(datetime.now().timestamp()),"updated":0}
 
     def parse(self,configRaw):
@@ -25,10 +24,6 @@ class Latency(Base):
             if entry[0] == "timed out": continue
             if float(entry[0]) > avrg + grace: return True,round(float(entry[0]) - (avrg + grace),2)
         return False,0
-
-    def setMultiplicator(self,multiplicator):
-        self.logger.info(f"Setting Multiplicator to {multiplicator}")
-        self.multiplicator = multiplicator
 
     def reloadPeacemaker(self,nic,ongoing,eventCount,latency,weight):
         #needs to be ongoing
@@ -81,7 +76,7 @@ class Latency(Base):
                     #multiply by 10 otherwise small package loss may not result in routing changes
                     eventScore = round(eventScore * 10)
                     if eventCount > 0:
-                        node['latency'] += round((eventScore * self.multiplicator))
+                        node['latency'] += eventScore
                         self.logger.debug(f"Loss {node['nic']} ({entry}) Latency: {node['weight']}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
                         if self.reloadPeacemaker(node['nic'],hasLoss,eventCount,node['latency'],node['weight']): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
