@@ -87,7 +87,7 @@ class Wireguard(Base):
             self.setInterface("dummy","up")
 
     def findLowest(self,min,list):
-        for i in range(min,min + 200):
+        for i in range(min,min + 400):
             if i not in list and i % 2 == 0: return i
 
     def minimal(self,files,lastbyte=4,port=51820):
