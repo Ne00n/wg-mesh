@@ -142,7 +142,7 @@ wgmesh down && bash /opt/wg-mesh/deinstall.sh
 wgmesh update && wgmesh migrate && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
 
-**wgobfs**
+**wgobfs**<br>
 To enable wgobfs connections run.<br>
 ```
 wgmesh enable wgobfs && systemctl restart wgmesh
