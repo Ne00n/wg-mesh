@@ -30,6 +30,7 @@
 - [x] Active Latency optimisation
 - [x] Packet loss detection & rerouting
 - [x] High Jitter detection & rerouting
+- [x] Support for wgobfs (obfuscated wireguard)
 
 **Requirements**<br>
 - Debian or Ubuntu
@@ -140,6 +141,18 @@ wgmesh down && bash /opt/wg-mesh/deinstall.sh
 ```
 wgmesh update && wgmesh migrate && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
+
+**wgobfs**
+To enable wgobfs connections run.<br>
+```
+wgmesh enable wgobfs && systemctl restart wgmesh
+```
+and install wgbofs with
+```
+bash /opt/wg-mesh/tools/wgobfs.sh
+```
+To override the defaultLinkType you have to edit the config file by hand and restart wgmesh afterwards.<br>
+If the remote has wgbofs not in linkeTypes, default will be used.<br>
 
 **Limitations**<br>
 Connecting multiple nodes at once, without waiting for the other node to finish, will result in double links.<br>
