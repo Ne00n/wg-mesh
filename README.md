@@ -67,6 +67,14 @@ After connecting successfully, a dummy.sh will be created, which assigns a 10.0.
 This will be picked up by bird, so on booth nodes on 10.0.1.1 and 10.0.2.1 should be reachable after bird ran.<br>
 Regarding NAT or in general behind Firewalls, the "connector" is always a Client, the endpoint the Server.<br>
 
+**Wireguard Port**
+If you like to change the default wireguard port.
+```
+wgmesh set basePort 4000
+#or 0 for random
+wgmesh set basePort 0
+```
+
 **Prevent meshing**<br>
 In case you want to stop a client/server from automatically meshing into the network.<br>
 You can simply block it by creating an empty state.json.<br>
