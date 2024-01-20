@@ -87,17 +87,20 @@ class CLI(Base):
 
     def setOption(self,options):
         validOptions = ["area","prefix","defaultLinkType","basePort","tick"]
-        key, value = options
-        if key in validOptions:
-            config = self.readConfig(f"{self.path}/configs/config.json")
-            if key == "basePort":
-                config[key] = int(value)
-            elif key == "area" or key == "tick":
-                config['bird'][key] = int(value)
-            else:
-                config[key] = value
-            self.saveJson(config,f"{self.path}/configs/config.json")
-            print("You should reload the services to apply any config changes")
-        else:
+        if len(sys.argv) == 0:
             print(f"Valid options: {', '.join(validOptions)}")
+        else:
+            key, value = options
+            if key in validOptions:
+                config = self.readConfig(f"{self.path}/configs/config.json")
+                if key == "basePort":
+                    config[key] = int(value)
+                elif key == "area" or key == "tick":
+                    config['bird'][key] = int(value)
+                else:
+                    config[key] = value
+                self.saveJson(config,f"{self.path}/configs/config.json")
+                print("You should reload the services to apply any config changes")
+            else:
+                print(f"Valid options: {', '.join(validOptions)}")
         
