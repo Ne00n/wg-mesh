@@ -146,7 +146,6 @@ filter export_OSPF {
 protocol ospf {
     tick '''+str(config['bird']['tick'])+''';
     graceful restart yes;
-    merge external yes;
     stub router '''+isRouter+''';
     ipv4 {
         import all;
