@@ -64,16 +64,16 @@ Regarding NAT or in general behind Firewalls, the "connector" is always a Client
 **Wireguard Port**<br>
 If you like to change the default wireguard port.
 ```
-wgmesh set basePort 4000
+wgmesh set basePort 4000 && systemctl restart wgmesh
 #or 0 for random
-wgmesh set basePort 0
+wgmesh set basePort 0 && systemctl restart wgmesh
 ```
 
 **Prevent meshing**<br>
 In case you want to stop a client/server from automatically meshing into the network.<br>
 You can simply block it by creating an empty state.json.<br>
 ```
-wgmesh disable mesh
+wgmesh disable mesh && systemctl restart wgmesh
 ```
 This needs to be done before you connecting to the network.<br>
 
