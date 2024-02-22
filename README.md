@@ -145,20 +145,19 @@ wgmesh update && wgmesh migrate && systemctl restart wgmesh && systemctl restart
 ```
 
 **wgobfs**<br>
-To enable wgobfs connections run.<br>
-```
-wgmesh enable wgobfs && systemctl restart wgmesh
-```
-and install wgbofs with
+Install wgbofs with
 ```
 bash /opt/wg-mesh/tools/wgobfs.sh
 ```
-To override the defaultLinkType, if you want to prefer wgobfs over normal wg.
+To enable wgobfs connections run.<br>
 ```
-wgmesh set defaultLinkType wgobfs && systemctl restart wgmesh
+#add wgobfs to linkTypes
+wgmesh enable wgobfs 
+#To override the defaultLinkType, if you want to prefer wgobfs over normal wg.
+wgmesh set defaultLinkType wgobfs
+systemctl restart wgmesh
 ```
 
-Don't forget to restart wgmesh to apply the changes, for automatic meshing, manual/cli reads the config every time.<br>
 If the remote has wgbofs not in linkeTypes, default will be used.<br>
 
 **Limitations**<br>
