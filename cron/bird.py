@@ -40,6 +40,7 @@ while True:
         run = [0,3]
         if runs in run:
             if links: 
+                logger.info("Running latency")
                 skip = latency.run(runs)
                 if skip > 0: 
                     skipUntil = time.time() + 60
