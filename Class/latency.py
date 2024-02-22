@@ -131,6 +131,9 @@ class Latency(Base):
         configRaw = self.cmd("cat /etc/bird/bird.conf")[0].rstrip()
         #Parsing
         config = self.parse(configRaw)
+        if not config:
+            self.logger.warning("Parsed bird config is empty")
+            return False
         configs = self.cmd('ip addr show')
         #fping
         self.logger.debug("Running fping")
