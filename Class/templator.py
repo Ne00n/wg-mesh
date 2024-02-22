@@ -158,7 +158,6 @@ protocol ospf {
                 template += '''
         interface "'''+target+'''" {
                 type ptmp;
-                rx buffer large;
                 neighbors {
                 '''+data['target']+''';
                 };
