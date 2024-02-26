@@ -14,6 +14,7 @@ class Wireguard(Base):
 
     def updateConfig(self):
         if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
+        if not "listenPort" in self.config: self.config['listenPort'] = 8080
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
         if not os.path.isfile("/etc/bird/bgp.conf"): self.cmd('touch /etc/bird/bgp.conf')
@@ -74,7 +75,7 @@ class Wireguard(Base):
         #config
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
-        config = {"listen":listen,"basePort":51820,"prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
+        config = {"listen":listen,"listenPort":8080,"basePort":51820,"prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv3":True,"area":0,"tick":1,"client":False}}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
         #load configs
@@ -285,7 +286,7 @@ class Wireguard(Base):
         ips = {}
         for target in targets:
             target = target.replace("0/30","1")
-            resp = self.AskProtocol(f'http://{target}:8080','')
+            resp = self.AskProtocol(f'http://{target}:{self.config["listenPort"]}','')
             if not resp: continue
             ips[resp['connectivity']['ipv4']] = target
             ips[resp['connectivity']['ipv6']] = target
@@ -355,8 +356,8 @@ class Wireguard(Base):
                 status[filename] = False
                 continue
             data = currentLinks[filename]
-            print(f'Calling http://{data["vxlan"]}:8080/disconnect')
-            req = self.call(f'http://{data["vxlan"]}:8080/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
+            print(f'Calling http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect')
+            req = self.call(f'http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
             if req == False and force == False: continue
             if force or req.status_code == 200:
                 interface = self.filterInterface(filename)
