@@ -68,11 +68,6 @@ else
     sudo ip link delete vxlan1; sudo ip -6 link delete vxlan1v6;
 fi'''
         return template
-
-    def genVXLAN(self,targets,prefix="10.0"):
-        template = ""
-        for node in targets: template += f'bridge fdb append 00:00:00:00:00:00 dev vxlan251 dst {prefix}.{node}.1;'
-        return template
     
     def getFirst(self,latency):
         for area,latencyData in latency.items():
