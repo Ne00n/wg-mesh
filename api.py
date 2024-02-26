@@ -218,13 +218,13 @@ def index():
         logging.info(f"Invalid public key from {reqIP}")
         return HTTPResponse(status=400, body="invalid public key")
     #terminate the link
-    logging.debug(f"starting termination thread")
     if "wait" in payload and payload['wait'] == False:
         terminateLink(folder,payload['interface'],False)
+        logging.info(f"{payload['interface']} terminated")
     else:
         termination = Thread(target=terminateLink, args=([folder,payload['interface']]))
         termination.start()
-    logging.info(f"{payload['interface']} terminated")
+        logging.info(f"{payload['interface']} started termination thread")
     return HTTPResponse(status=200, body="link terminated")
 
 listen = '::' if config['listen'] == "public" else f"10.0.{config['id']}.1"
