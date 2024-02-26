@@ -206,6 +206,7 @@ class Wireguard(Base):
                 linkType = self.config['defaultLinkType']
             else:
                 linkType = "default"
+        status = {"v4":False,"v6":False}
         for run in range(2):
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
@@ -229,16 +230,17 @@ class Wireguard(Base):
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
                 self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
                 self.setInterface(interface,"up")
+                status["v6" if isv6 else "v4"] = True
             else:
                 print(f"Failed to connect to {dest}")
                 print(f"Got {req.text} as response")
-                return False
+                return status
             #before we try to setup a v4 in v6 wg, we check if booth hosts have IPv6 connectivity
             if not self.config['connectivity']['ipv6'] or not data['connectivity']['ipv6']: break
             if not self.config['connectivity']['ipv4'] or not data['connectivity']['ipv4']: break
             #second run going to be IPv6 if available
             isv6 = True
-        return True
+        return status
 
     def updateServer(self,link,data):
         with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
