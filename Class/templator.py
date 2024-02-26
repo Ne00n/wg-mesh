@@ -24,7 +24,7 @@ else
 fi'''
         return template
 
-    def genClient(self,interface,config,resp,serverIPExternal,linkType="default",wgobfsSharedKey="",prefix="10.0.",):
+    def genClient(self,interface,config,resp,serverIPExternal,linkType="default",wgobfsSharedKey="",prefix="10.0",):
         serverID,serverIP,serverPort,serverPublicKey = resp['id'],resp['lastbyte'],resp['port'],resp['publicKeyServer']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
@@ -35,7 +35,7 @@ fi'''
 if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type wireguard
-    sudo ip address add dev {interface} {prefix}{serverID}.{int(serverIP)+1}/31
+    sudo ip address add dev {interface} {prefix}.{serverID}.{int(serverIP)+1}/31
     sudo ip -6 address add dev {interface} fe82:{serverID}::{int(serverIP)+1}/127
     sudo wg set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0 endpoint {serverIPExternal}:{serverPort}
     sudo ip link set {interface} mtu {mtu}
@@ -46,7 +46,7 @@ else
 fi'''
         return template
 
-    def genDummy(self,serverID,connectivity):
+    def genDummy(self,serverID,connectivity,prefix="10.0"):
         masquerade = ""
         if connectivity['ipv4']: masquerade += "sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
         if connectivity['ipv6']: masquerade += "sudo ip6tables -t nat -A POSTROUTING -o $(ip -6 route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
@@ -54,24 +54,24 @@ fi'''
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
     {masquerade}
-    sudo ip addr add 10.0.{serverID}.1/30 dev lo;
+    sudo ip addr add {prefix}.{serverID}.1/30 dev lo;
     sudo ip -6 addr add fd10:0:{serverID}::1/48 dev lo;
-    sudo ip link add vxlan1 type vxlan id 1 dstport 1789 local 10.0.{serverID}.1;
+    sudo ip link add vxlan1 type vxlan id 1 dstport 1789 local {prefix}.{serverID}.1;
     sudo ip -6 link add vxlan1v6 type vxlan id 2 dstport 1790 local fd10:0:{serverID}::1;
     sudo ip link set vxlan1 up; sudo ip -6 link set vxlan1v6 up;
-    sudo ip addr add 10.0.251.{serverID}/24 dev vxlan1;
+    sudo ip addr add {prefix}.251.{serverID}/24 dev vxlan1;
     sudo ip -6 addr add fd10:251::{serverID}/64 dev vxlan1v6;
 else
     {masqueradeReverse}
-    sudo ip addr del 10.0.{serverID}.1/30 dev lo;
+    sudo ip addr del {prefix}.{serverID}.1/30 dev lo;
     sudo ip -6 addr del fd10:0:{serverID}::1/48 dev lo;
     sudo ip link delete vxlan1; sudo ip -6 link delete vxlan1v6;
 fi'''
         return template
 
-    def genVXLAN(self,targets):
+    def genVXLAN(self,targets,prefix="10.0"):
         template = ""
-        for node in targets: template += f'bridge fdb append 00:00:00:00:00:00 dev vxlan251 dst 10.0.{node}.1;'
+        for node in targets: template += f'bridge fdb append 00:00:00:00:00:00 dev vxlan251 dst {prefix}.{node}.1;'
         return template
     
     def getFirst(self,latency):
