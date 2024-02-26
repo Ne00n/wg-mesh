@@ -121,7 +121,7 @@ def index():
     if not "linkType" in payload: payload['linkType'] = "default"
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
-    if not "prefix" in payload: payload['prefix'] = "10.0."
+    if not "prefix" in payload: payload['prefix'] = f"{self.config['subnetPrefix']}."
     if not "area" in payload: payload['area'] = 0
     payload['basePort'] = config['basePort'] if not "port" in payload else payload['port']
     if not "ipv6" in payload: payload['ipv6'] = False
@@ -129,7 +129,7 @@ def index():
     if payload['initial']:
         routes = wg.cmd("birdc show route")[0]
         targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
-        if f"10.0.{payload['id']}.0/30" in targets: 
+        if f"{self.config['subnetPrefix']}.{payload['id']}.0/30" in targets: 
             logging.info(f"ID Collision from {requestIP}")
             return HTTPResponse(status=416, body="Collision")
     #generate interface name
@@ -227,5 +227,5 @@ def index():
         logging.info(f"{payload['interface']} started termination thread")
     return HTTPResponse(status=200, body="link terminated")
 
-listen = '::' if config['listen'] == "public" else f"10.0.{config['id']}.1"
+listen = '::' if config['listen'] == "public" else f"{self.config['subnetPrefix']}.{config['id']}.1"
 run(host=listen, port=config['listenPort'], server='paste')
