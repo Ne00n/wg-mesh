@@ -166,8 +166,8 @@ class Bird(Base):
                 dest = target.replace(".0/30",".1")
                 #no token needed but external IP for the client
                 self.logger.info(f"Setting up link to {dest}")
-                resp = self.wg.connect(f"http://{dest}:8080")
-                if resp:
+                status = self.wg.connect(f"http://{dest}:8080")
+                if status['v4'] or status['v6']:
                     results[target] = True
                     self.logger.info(f"Link established to http://{dest}:8080")
                 else:
