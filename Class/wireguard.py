@@ -17,7 +17,7 @@ class Wireguard(Base):
     def updateConfig(self):
         if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
         if not "listenPort" in self.config: self.config['listenPort'] = 8080
-        if not "subnet" in self.config: self.config['subnet'] "10.0.0.0/8"
+        if not "subnet" in self.config: self.config['subnet'] = "10.0.0.0/8"
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
         if not os.path.isfile("/etc/bird/bgp.conf"): self.cmd('touch /etc/bird/bgp.conf')
