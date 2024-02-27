@@ -11,11 +11,12 @@ class Wireguard(Base):
         if not os.path.isfile(f"{self.path}/configs/config.json"): exit("Config missing")
         with open(f'{self.path}/configs/config.json') as f: self.config = json.load(f)
         self.prefix = self.config['prefix']
+        self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
 
     def updateConfig(self):
         if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
         if not "listenPort" in self.config: self.config['listenPort'] = 8080
-        if not "subnetPrefix" in self.config: self.config['subnetPrefix'] "10.0"
+        if not "subnet" in self.config: self.config['subnet'] "10.0.0.0/8"
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
         if not os.path.isfile("/etc/bird/bgp.conf"): self.cmd('touch /etc/bird/bgp.conf')
@@ -76,7 +77,7 @@ class Wireguard(Base):
         #config
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
-        config = {"listen":listen,"listenPort":8080,"basePort":51820,"subnetPrefix":"10.0","prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
+        config = {"listen":listen,"listenPort":8080,"basePort":51820,"subnet":"10.0.0.0/8","prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv3":True,"area":0,"tick":1,"client":False}}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
         #load configs
@@ -165,7 +166,7 @@ class Wireguard(Base):
             elif "listen-port" in config:
                 #grab ID from filename
                 linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
-                destination = f"{self.config["subnetPrefix"]}.{linkID}.1"
+                destination = f"{self.subnetPrefix}.{linkID}.1"
             #get remote endpoint
             parsed, remote = self.getRemote(config)
             #grab publickey
@@ -212,7 +213,7 @@ class Wireguard(Base):
         for run in range(2):
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
-            "ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":self.config["subnetPrefix"]}
+            "ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":self.subnetPrefix}
             if port != 51820: payload["port"] = port
             req = self.call(f'{dest}/connect',payload)
             if req == False: return False
@@ -226,7 +227,7 @@ class Wireguard(Base):
                 #interface
                 interface = self.getInterface(interfaceID)
                 #generate config
-                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,"",self.config["subnetPrefix"])
+                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,"",self.subnetPrefix)
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
@@ -268,7 +269,7 @@ class Wireguard(Base):
         print("Getting Routes")
         parsed = self.getUsedIDs()
         print("Route Bender nodes.json")
-        for id in parsed: print(f'"{self.config["subnetPrefix"]}.252.{id}",')
+        for id in parsed: print(f'"{self.subnetPrefix}.252.{id}",')
 
     def used(self):
         print("Getting Routes")

@@ -12,6 +12,8 @@ folder = os.path.dirname(os.path.realpath(__file__))
 #wireguard
 wg = Wireguard(folder)
 config = wg.getConfig()
+#pull subnetPrefix
+subnetPrefix = ".".join(config['subnet'].split(".")[:2])
 #templator
 templator = Templator()
 #logging
@@ -76,8 +78,7 @@ def getReqIP():
 @route('/connectivity',method='POST')
 def index():
     requestIP = getReqIP()
-    connectivity =  config[''] if config[] else resp['connectivity']['ipv4']
-    isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network('10.0.0.0/8')
+    isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnet'])
     payload = json.load(request.body)
     #validate token
     if not isInternal and not validateToken(payload): 
@@ -88,7 +89,7 @@ def index():
 @route('/connect', method='POST')
 def index():
     requestIP = getReqIP()
-    isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network('10.0.0.0/8')
+    isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnet'])
     payload = json.load(request.body)
     #validate token
     if not isInternal and not validateToken(payload): 
@@ -122,7 +123,7 @@ def index():
     if not "linkType" in payload: payload['linkType'] = "default"
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
-    if not "prefix" in payload: payload['prefix'] = f"{config['subnetPrefix']}."
+    if not "prefix" in payload: payload['prefix'] = f"{subnetPrefix}."
     if not "area" in payload: payload['area'] = 0
     payload['basePort'] = config['basePort'] if not "port" in payload else payload['port']
     if not "ipv6" in payload: payload['ipv6'] = False
@@ -130,7 +131,7 @@ def index():
     if payload['initial']:
         routes = wg.cmd("birdc show route")[0]
         targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
-        if f"{config['subnetPrefix']}.{payload['id']}.0/30" in targets: 
+        if f"{subnetPrefix}.{payload['id']}.0/30" in targets: 
             logging.info(f"ID Collision from {requestIP}")
             return HTTPResponse(status=416, body="Collision")
     #generate interface name
@@ -160,7 +161,7 @@ def index():
     #check for dummy
     if not "dummy" in configs:
         logging.debug(f"Creating dummy")
-        dummyConfig = templator.genDummy(config['id'],config['connectivity'],config['subnetPrefix'])
+        dummyConfig = templator.genDummy(config['id'],config['connectivity'],subnetPrefix)
         wg.saveFile(dummyConfig,f"{folder}/links/dummy.sh")
         logging.debug(f"dummy up")
         wg.setInterface("dummy","up")
@@ -228,5 +229,5 @@ def index():
         logging.info(f"{payload['interface']} started termination thread")
     return HTTPResponse(status=200, body="link terminated")
 
-listen = '::' if config['listen'] == "public" else f"{config['subnetPrefix']}.{config['id']}.1"
+listen = '::' if config['listen'] == "public" else f"{subnetPrefix}.{config['id']}.1"
 run(host=listen, port=config['listenPort'], server='paste')
