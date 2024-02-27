@@ -60,8 +60,9 @@ def validateLinkType(linkType):
     return False
 
 def validatePrefix(prefix):
-    if prefix == "10.0" or prefix == "172.16": return True
-    return False
+    result = re.findall(r"^[0-9]{0,3}\.[0-9]{0,3}\.[0-9]{0,3}\.[0-9]\/[0-9]{0,2}$",prefix,re.MULTILINE | re.DOTALL)
+    if not result: return False
+    return True
 
 def terminateLink(folder,interface,wait=True):
     wg = Wireguard(folder)
