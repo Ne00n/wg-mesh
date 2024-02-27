@@ -8,6 +8,7 @@ class Bird(Base):
 
     def __init__(self,path,logger):
         self.config = self.readConfig(f'{path}/configs/config.json')
+        self.subnetPrefixSplitted = self.config['subnet'].split(".")
         self.prefix = self.config['prefix']
         self.wg = Wireguard(path)
         self.logger = logger
@@ -68,10 +69,10 @@ class Bird(Base):
             return False
         self.logger.info("Collecting Network data")
         configs = self.cmd('ip addr show')[0]
-        links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet ({self.subnetPrefixSplitted[0]}[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
         #filter out specific links
         links = [x for x in links if self.filter(x[0])]
-        local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/(32|30) scope global lo",configs, re.MULTILINE | re.DOTALL)
+        local = re.findall(f"inet ({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.(?!252)[0-9.]+\.1)\/(32|30) scope global lo",configs, re.MULTILINE | re.DOTALL)
         if not links: 
             self.logger.warning("No wireguard interfaces found") 
             return False
@@ -117,8 +118,8 @@ class Bird(Base):
             time.sleep(5)
         #fetch network interfaces and parse
         configs = self.cmd('ip addr show')[0]
-        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
-        local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/30 scope global lo",configs, re.MULTILINE | re.DOTALL)
+        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet ({self.subnetPrefixSplitted[0]}[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        local = re.findall(f"inet ({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.(?!252)[0-9.]+\.1)\/30 scope global lo",configs, re.MULTILINE | re.DOTALL)
         if not links or not local: 
             self.logger.warning("No wireguard interfaces found") 
             return False

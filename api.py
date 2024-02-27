@@ -14,6 +14,7 @@ wg = Wireguard(folder)
 config = wg.getConfig()
 #pull subnetPrefix
 subnetPrefix = ".".join(config['subnet'].split(".")[:2])
+subnetPrefixSplitted = config['subnet'].split(".")
 #templator
 templator = Templator()
 #logging
@@ -130,7 +131,7 @@ def index():
     #initial
     if payload['initial']:
         routes = wg.cmd("birdc show route")[0]
-        targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+        targets = re.findall(f"({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
         if f"{subnetPrefix}.{payload['id']}.0/30" in targets: 
             logging.info(f"ID Collision from {requestIP}")
             return HTTPResponse(status=416, body="Collision")

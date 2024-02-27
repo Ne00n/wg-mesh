@@ -8,6 +8,7 @@ class Latency(Base):
         self.logger = logger
         self.path = path
         self.config = self.readConfig(f'{path}/configs/config.json')
+        self.subnetPrefixSplitted = self.config['subnet'].split(".")
         self.network = self.readConfig(f"{path}/configs/network.json")
         if not self.network: self.network = {"created":int(datetime.now().timestamp()),"updated":0}
 
@@ -139,7 +140,7 @@ class Latency(Base):
         self.logger.debug("Running fping")
         result = self.getLatency(config,5)
         #update
-        local = re.findall("inet (10\.0[0-9.]+\.1)\/(32|30) scope global lo",configs[0], re.MULTILINE | re.DOTALL)
+        local = re.findall(f"inet ({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}[0-9.]+\.1)\/(32|30) scope global lo",configs[0], re.MULTILINE | re.DOTALL)
         if not local: return False
         configRaw = re.sub(local[0][0]+"; #updated [0-9]+", local[0][0]+"; #updated "+str(int(time.time())), configRaw, 0, re.MULTILINE)
         for entry in result:

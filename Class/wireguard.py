@@ -12,6 +12,7 @@ class Wireguard(Base):
         with open(f'{self.path}/configs/config.json') as f: self.config = json.load(f)
         self.prefix = self.config['prefix']
         self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
+        self.subnetPrefixSplitted = self.config['subnet'].split(".")
 
     def updateConfig(self):
         if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
@@ -158,7 +159,7 @@ class Wireguard(Base):
             with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
             #grab wg server ip from client wg config
             if "endpoint" in config:
-                destination = re.findall(f'(10\.0\.[0-9]+\.)',config, re.MULTILINE)
+                destination = re.findall(f'({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.[0-9]+\.)',config, re.MULTILINE)
                 if not destination:
                     print(f"Ignoring {filename}")
                     continue
@@ -193,7 +194,7 @@ class Wireguard(Base):
         clientPrivateKey, clientPublicKey = self.genKeys()
         #initial check
         configs = self.cmd('ip addr show')[0]
-        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet ({self.subnetPrefixSplitted[0]}[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
         isInitial = False if links else True
         #ask remote about available protocols
         data = self.AskProtocol(dest,token)
@@ -260,7 +261,7 @@ class Wireguard(Base):
 
     def getUsedIDs(self):
         routes = self.cmd("birdc show route")[0]
-        targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+        targets = re.findall(f"({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
         parsed = re.findall(f"([0-9]+).0\/30",", ".join(targets), re.MULTILINE)
         parsed.sort(key = int)
         return parsed
@@ -283,7 +284,7 @@ class Wireguard(Base):
         for link,details in links.items(): existing.append(details['vxlan'])
         print("Getting Routes")
         routes = self.cmd("birdc show route")[0]
-        targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+        targets = re.findall(f"({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
         print("Getting Connection info")
         ips = {}
         for target in targets:
