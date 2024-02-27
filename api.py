@@ -57,7 +57,7 @@ def validateLinkType(linkType):
     return False
 
 def validatePrefix(prefix):
-    if prefix == "10.0." or prefix == "172.16.": return True
+    if prefix == "10.0" or prefix == "172.16": return True
     return False
 
 def terminateLink(folder,interface,wait=True):
@@ -76,6 +76,7 @@ def getReqIP():
 @route('/connectivity',method='POST')
 def index():
     requestIP = getReqIP()
+    connectivity =  config[''] if config[] else resp['connectivity']['ipv4']
     isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network('10.0.0.0/8')
     payload = json.load(request.body)
     #validate token
