@@ -13,9 +13,10 @@ class Wireguard(Base):
         self.prefix = self.config['prefix']
         if "subnet" in self.config:
             self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
+            self.subnetPrefixSplitted = self.config['subnet'].split(".")
         else:
             self.subnetPrefix = "10.0"
-        self.subnetPrefixSplitted = self.config['subnet'].split(".")
+            self.subnetPrefixSplitted = [10,0]
 
     def updateConfig(self):
         if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
