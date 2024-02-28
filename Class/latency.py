@@ -49,7 +49,7 @@ class Latency(Base):
             #delete events after 60 minutes
             elif (int(datetime.now().timestamp()) - 3600) > int(event):
                 del self.network[entry][eventType][event]
-        return eventCount,eventScore
+        return eventCount,round(eventScore)
 
     def getLatency(self,config,pings=4):
         targets = []
