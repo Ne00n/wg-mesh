@@ -78,7 +78,7 @@ class Latency(Base):
                     eventScore = round(eventScore * 10)
                     if eventCount > 0:
                         node['latency'] += eventScore
-                        self.logger.debug(f"Loss {node['nic']} ({entry}) Latency: {node['weight']}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
+                        self.logger.debug(f"Loss {node['nic']} ({entry}) Latency: {node['weight']}, Modified: +{node['latency']}, Score: {eventScore}, Count: {eventCount}")
                         if self.reloadPeacemaker(node['nic'],hasLoss,eventCount,node['latency'],node['weight']): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
                             self.reload += 1
@@ -95,7 +95,7 @@ class Latency(Base):
                     eventCount,eventScore = self.countEvents(entry,'jitter')
                     if eventCount > 0:
                         node['latency'] += round(eventScore)
-                        self.logger.debug(f"Jitter {node['nic']} ({entry}) Latency: {node['weight']}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
+                        self.logger.debug(f"Jitter {node['nic']} ({entry}) Latency: {node['weight']}, Modified: +{node['latency']}, Score: {eventScore}, Count: {eventCount}")
                         if self.reloadPeacemaker(node['nic'],hasJitter,eventCount,node['latency'],node['weight']):
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
                             self.reload += 1
@@ -143,7 +143,7 @@ class Latency(Base):
         local = re.findall(f"inet ({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}[0-9.]+\.1)\/(32|30) scope global lo",configs[0], re.MULTILINE | re.DOTALL)
         if not local: return False
         configRaw = re.sub(local[0][0]+"; #updated [0-9]+", local[0][0]+"; #updated "+str(int(time.time())), configRaw, 0, re.MULTILINE)
-        self.logger.debug(f"Got {len(entry)} changes")
+        self.logger.debug(f"Got {len(result)} changes")
         for entry in result:
             if "latency" not in entry: continue
             configRaw = re.sub(f"cost {entry['weight']}; #{entry['target']}", f"cost {entry['latency']}; #{entry['target']}", configRaw, 0, re.MULTILINE)
