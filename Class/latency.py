@@ -89,7 +89,7 @@ class Latency(Base):
                     hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
                     if hasJitter:
                         #keep jitter events for 30 minutes
-                        self.network[entry]['jitter'][int(datetime.now().timestamp()) + 1800] = {"peak":peakJitter,"latency":node['current']}
+                        self.network[entry]['jitter'][int(datetime.now().timestamp()) + randint(1700,2100)] = {"peak":peakJitter,"latency":node['current']}
                         self.logger.info(f"{node['nic']} ({entry}) High Jitter dectected")
 
                     eventCount,eventScore = self.countEvents(entry,'jitter')
