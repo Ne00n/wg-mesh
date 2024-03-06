@@ -60,6 +60,8 @@ class CLI(Base):
         config = self.readConfig(f"{self.path}/configs/config.json")
         if "mesh" in option:
             self.wg.saveJson({},f"{self.path}/configs/state.json")
+        elif "ospfv2" in option:
+            config['bird']['ospfv2'] = False
         elif "ospfv3" in option:
             config['bird']['ospfv3'] = False
         elif "client" in option:
@@ -67,13 +69,15 @@ class CLI(Base):
         elif "wgobfs" in option:
             if "wgobfs" in config['linkTypes']: config['linkTypes'].remove("wgobfs")
         else:
-            print("Valid options: mesh, ospfv3, wgobfs, client")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, client")
         self.saveJson(config,f"{self.path}/configs/config.json")
             
     def enable(self,option):
         config = self.readConfig(f"{self.path}/configs/config.json")
         if "mesh" in option:
             if os.path.isfile(f"{self.path}/configs/state.json"): os.remove(f"{self.path}/configs/state.json")
+        elif "ospfv2" in option:
+            config['bird']['ospfv2'] = True
         elif "ospfv3" in option:
             config['bird']['ospfv3'] = True
         elif "client" in option:
@@ -82,7 +86,7 @@ class CLI(Base):
             if not "wgobfs" in config['linkTypes']: config['linkTypes'].append("wgobfs")
             print("You still need to install wgobfs with: bash /opt/wg-mesh/tools/wgobfs.sh")
         else:
-            print("Valid options: mesh, ospfv3, wgobfs, client")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, client")
         self.saveJson(config,f"{self.path}/configs/config.json")
 
     def setOption(self,options):

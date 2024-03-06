@@ -128,8 +128,10 @@ protocol kernel {
 
 protocol kernel {
     ipv6 { export all; };
-}
+}'''
 
+        if config['bird']['ospfv3']:
+            template += '''
 filter export_OSPF {
     if net ~ [ 10.0.252.0/24+ ] then reject; #Source based Routing for Clients
     if net ~ [ 172.16.0.0/24+ ] then reject; #Wireguard VPN
@@ -146,11 +148,11 @@ protocol ospf {
         import all;
         export filter export_OSPF;
     };'''
-        for area,latencyData in latency.items():
-            template += """
+            for area,latencyData in latency.items():
+                template += """
     area """+str(area)+""" {"""
-            for target,data in latencyData.items():
-                template += '''
+                for target,data in latencyData.items():
+                    template += '''
         interface "'''+target+'''" {
                 type ptmp;
                 neighbors {
@@ -161,7 +163,7 @@ protocol ospf {
             '''
             template += """
     };"""
-        template += """
+            template += """
 }"""
         if config['bird']['ospfv3']:
             template += """
