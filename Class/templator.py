@@ -130,7 +130,7 @@ protocol kernel {
     ipv6 { export all; };
 }'''
 
-        if config['bird']['ospfv3']:
+        if config['bird']['ospfv2']:
             template += '''
 filter export_OSPF {
     if net ~ [ 10.0.252.0/24+ ] then reject; #Source based Routing for Clients
