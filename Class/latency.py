@@ -13,7 +13,10 @@ class Latency(Base):
         if not self.network: self.network = {"created":int(datetime.now().timestamp()),"updated":0}
 
     def parse(self,configRaw):
-        parsed = re.findall('interface "([a-zA-Z0-9]*)".{50,130}?cost ([0-9.]+);\s#([0-9.]+)',configRaw, re.DOTALL)
+        if self.config['bird']['ospfv2']:
+            parsed = re.findall('interface "([a-zA-Z0-9]*)".{50,130}?cost ([0-9.]+);\s#([0-9.]+)',configRaw, re.DOTALL)
+        else:
+            parsed = re.findall('interface "([a-zA-Z0-9]*)".{35,130}?cost ([0-9.]+);\s#([0-9.]+)',configRaw, re.DOTALL)
         data = []
         for nic,weight,target in parsed:
             data.append({'nic':nic,'target':target,'weight':weight})
