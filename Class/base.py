@@ -30,10 +30,18 @@ class Base:
             return {}
 
     def saveFile(self,data,path):
-        with open(path, 'w') as file: file.write(data)
+        try:
+            with open(path, 'w') as file: file.write(data)
+        except:
+            return False
+        return True
 
     def saveJson(self,data,path):
-        with open(path, 'w') as f: json.dump(data, f, indent=4)
+        try:
+            with open(path, 'w') as f: json.dump(data, f, indent=4)
+        except:
+            return False
+        return True
 
     def getRoutes(self):
         routes = self.cmd("birdc show route")[0]
