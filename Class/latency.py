@@ -162,7 +162,7 @@ class Latency(Base):
             if (datetime.now().minute in restart and runs == 0) or self.reload > 0:
                 #write
                 self.logger.info("Writing config")
-                self.cmd("echo '"+configRaw+"' > /etc/bird/bird.conf")
+                self.saveFile(configRaw,'/etc/bird/bird.conf')
                 #reload
                 self.logger.info("Reloading bird")
                 self.cmd('sudo systemctl reload bird')

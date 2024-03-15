@@ -92,7 +92,7 @@ class Bird(Base):
             self.logger.warning("No bird config generated")
             return False
         self.logger.info("Writing config")
-        self.cmd(f"echo '{bird}' > /etc/bird/bird.conf")
+        self.saveFile(bird,'/etc/bird/bird.conf')
         self.logger.info("Reloading bird")
         self.cmd("sudo systemctl reload bird")
         return True
