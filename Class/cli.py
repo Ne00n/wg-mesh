@@ -59,9 +59,9 @@ class CLI(Base):
     def status(self):
         print("--- Services ----")
         proc = self.cmd("systemctl status bird")[0]
-        birdRunning = "Bird2 is not running." if proc == "" else "Bird2 is running."
+        birdRunning = "Bird2 is not running." if not "running" in proc else "Bird2 is running."
         proc = self.cmd("systemctl status wgmesh")[0]
-        wgmeshRunning = "wg-mesh is not running." if proc == "" else "wg-mesh is running."
+        wgmeshRunning = "wg-mesh is not running." if not "running" in proc else "wg-mesh is running."
         print(f"{birdRunning}\t{wgmeshRunning}")
         print("--- Wireguard ---")
         network = self.readConfig(f"{self.path}/configs/network.json")
@@ -77,7 +77,7 @@ class CLI(Base):
                 hasJitter = "Yes"
                 jittar += 1
             print(f"{dest}\t{hasLoss}\t\t{hasJitter}")
-        print(f"{len(network) -1}\t{loss}\t{jittar}")
+        print(f"{len(network) -1}\t\t{loss}\t\t{jittar}")
 
 
     def disable(self,option):
