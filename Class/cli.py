@@ -66,11 +66,18 @@ class CLI(Base):
         print("--- Wireguard ---")
         network = self.readConfig(f"{self.path}/configs/network.json")
         print("Destination\tPacketloss\tJitter")
+        jittar,loss = 0,0
         for dest,data in network.items():
+            hasLoss,hasJitter = "No","No"
             if dest == "updated": continue
-            hasLoss = "Yes" if data['packetloss'] else "No"
-            hasJitter = "Yes" if data['jitter'] else "No"
+            if data['packetloss']:
+                hasLoss = "Yes"
+                loss += 1
+            if data['jitter']:
+                hasJitter = "Yes"
+                jittar += 1
             print(f"{dest}\t{hasLoss}\t\t{hasJitter}")
+        print(f"{len(network) -1}\t{loss}\t{jittar}")
 
 
     def disable(self,option):
