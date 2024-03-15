@@ -1,7 +1,7 @@
 [Unit]
 Description=wgmesh-bird service
-Wants=network-online.target wgmesh-pipe.service
-After=network-online.target wgmesh-pipe.service
+Wants=network-online.target wgmesh-pipe.service bird.service
+After=network-online.target wgmesh-pipe.service bird.service
 [Service]
 User=wg-mesh
 Group=wg-mesh
