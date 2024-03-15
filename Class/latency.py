@@ -126,8 +126,8 @@ class Latency(Base):
     def run(self,runs):
         #Check if bird is running
         self.logger.debug("Checking bird status")
-        bird = self.cmd("pgrep bird")
-        if bird[0] == "":
+        bird = self.cmd("systemctl status bird")[0]
+        if not "running" in bird:
             self.logger.warning("bird not running")
             return False
         #Getting config

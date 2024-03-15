@@ -63,8 +63,8 @@ class Bird(Base):
 
     def bird(self):
         #check if bird is running
-        proc = self.cmd("pgrep bird")[0]
-        if proc == "": 
+        bird = self.cmd("systemctl status bird")[0]
+        if not "running" in bird:
             self.logger.warning("bird not running")
             return False
         self.logger.info("Collecting Network data")
@@ -99,8 +99,8 @@ class Bird(Base):
 
     def mesh(self):
         #check if bird is running
-        proc = self.cmd("pgrep bird")[0]
-        if proc == "": 
+        bird = self.cmd("systemctl status bird")[0]
+        if not "running" in bird:
             self.logger.warning("bird not running")
             return False
         #wait for bird to fully bootstrap
