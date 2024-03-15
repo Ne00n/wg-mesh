@@ -3,7 +3,7 @@
 from Class.cli import CLI
 import sys, os
 
-options = "init <id>, used, bender, migrate, connect <http://IP/DOMAIN:8080> <token>, disconnect, up, down, clean, proximity, token, disable, enable, set"
+options = "init <id>, status, used, bender, migrate, connect <http://IP/DOMAIN:8080> <token>, disconnect, up, down, clean, proximity, token, disable, enable, set"
 #path
 path = os.path.dirname(os.path.realpath(__file__))
 cli = CLI(path)
@@ -15,6 +15,8 @@ elif sys.argv[1] == "init":
     cli.init(sys.argv[2],state)
 elif sys.argv[1] == "used":
     cli.used()
+elif sys.argv[1] == "status":
+    cli.status()
 elif sys.argv[1] == "bender":
     cli.bender()
 elif sys.argv[1] == "connect":

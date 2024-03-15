@@ -56,6 +56,22 @@ class CLI(Base):
         else:
             print("Unable to load the token file")
 
+    def status(self):
+        print("--- Services ----")
+        proc = self.cmd("systemctl status bird")[0]
+        birdRunning = "Bird2 is not running." if proc == "" else "Bird2 is running."
+        proc = self.cmd("systemctl status wgmesh")[0]
+        wgmeshRunning = "wg-mesh is not running." if proc == "" else "wg-mesh is running."
+        print(f"{birdRunning}\t{wgmeshRunning}")
+        print("--- Wireguard ---")
+        network = self.readConfig(f"{self.path}/configs/network.json")
+        print("Destination\tPacketloss\tJitter")
+        for dest,data in network.items():
+            hasLoss = "Yes" if data['packetloss'] else "No"
+            hasJitter = "Yes" if data['jitter'] else "No"
+            print(f"{dest}\t{hasLoss}\t\t{hasJitter}")
+
+
     def disable(self,option):
         config = self.readConfig(f"{self.path}/configs/config.json")
         if "mesh" in option:
