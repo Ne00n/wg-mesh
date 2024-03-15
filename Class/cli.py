@@ -67,6 +67,7 @@ class CLI(Base):
         network = self.readConfig(f"{self.path}/configs/network.json")
         print("Destination\tPacketloss\tJitter")
         for dest,data in network.items():
+            if dest == "updated": continue
             hasLoss = "Yes" if data['packetloss'] else "No"
             hasJitter = "Yes" if data['jitter'] else "No"
             print(f"{dest}\t{hasLoss}\t\t{hasJitter}")
