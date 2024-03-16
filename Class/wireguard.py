@@ -318,6 +318,9 @@ class Wireguard(Base):
             return True
         for ip,latency in latencyData.items():
             if latency > float(cutoff): continue 
+            targetSplit = ips[ip].split(".")
+            #reserve 10.0.200+ for clients, don't mesh
+            if int(targetSplit[2]) >= 200: continue
             self.connect(f"http://{ips[ip]}:{self.config['listenPort']}")
         for link,details in links.items():
             if not details['vxlan'] in terminate: continue
