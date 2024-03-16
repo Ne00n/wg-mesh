@@ -22,6 +22,8 @@ bird = Bird(path,logger)
 path,links = f'{path}/links/',[]
 
 skip,skipUntil = 0,0
+regenCooldown = int(datetime.now().timestamp()) + 1800
+
 while True:
     for runs in range(6):
         currentLinks = os.listdir(path)
@@ -45,5 +47,9 @@ while True:
                 if skip > 0: 
                     skipUntil = time.time() + 60
                     logger.info(f"Skipping 10s wait until {skipUntil}")
+                elif skip == -2 and int(datetime.now().timestamp()) > regenCooldown:
+                    logger.info(f"Triggering bird config regenerate")
+                    links.append("dummy")
+                    regenCooldown = int(datetime.now().timestamp()) + 1800
         else:
             if skipUntil < time.time(): time.sleep(10)
