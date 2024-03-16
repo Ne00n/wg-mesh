@@ -60,7 +60,7 @@ def validateLinkType(linkType):
     return False
 
 def validatePrefix(prefix):
-    result = re.findall(r"^[0-9]{0,3}\.[0-9]{0,3}\.[0-9]{0,3}\.[0-9]\/[0-9]{0,2}$",prefix,re.MULTILINE | re.DOTALL)
+    result = re.findall(r"^[0-9.]{4,6}$",prefix,re.MULTILINE | re.DOTALL)
     if not result: return False
     return True
 
