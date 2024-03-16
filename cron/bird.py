@@ -22,7 +22,7 @@ bird = Bird(path,logger)
 path,links = f'{path}/links/',[]
 
 skip,skipUntil = 0,0
-restartCooldown = regenCooldown = int(datetime.now().timestamp()) + 1800
+restartCooldown = regenCooldown = int(time.time()) + 1800
 
 while True:
     for runs in range(6):
@@ -47,13 +47,13 @@ while True:
                 if skip > 0: 
                     skipUntil = time.time() + 60
                     logger.info(f"Skipping 10s wait until {skipUntil}")
-                elif skip == -1 and int(datetime.now().timestamp()) > restartCooldown:
+                elif skip == -1 and int(time.time()) > restartCooldown:
                     logger.info(f"Triggering bird restart")
                     os.system("sudo systemctl restart bird")
-                    restartCooldown = int(datetime.now().timestamp()) + 1800
-                elif skip == -2 and int(datetime.now().timestamp()) > regenCooldown:
+                    restartCooldown = int(time.time()) + 1800
+                elif skip == -2 and int(time.time()) > regenCooldown:
                     logger.info(f"Triggering bird config regenerate")
                     links.append("dummy")
-                    regenCooldown = int(datetime.now().timestamp()) + 1800
+                    regenCooldown = int(time.time()) + 1800
         else:
             if skipUntil < time.time(): time.sleep(10)
