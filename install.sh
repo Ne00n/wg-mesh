@@ -30,6 +30,8 @@ echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/wg set*" >> /etc/sudoers.d/wg-mesh
 #bird permissions
 echo "wg-mesh ALL=(ALL) NOPASSWD: /bin/systemctl reload bird" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload bird" >> /etc/sudoers.d/wg-mesh
+echo "wg-mesh ALL=(ALL) NOPASSWD: /bin/systemctl restart bird" >> /etc/sudoers.d/wg-mesh
+echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart bird" >> /etc/sudoers.d/wg-mesh
 usermod -a -G bird wg-mesh
 touch /etc/bird/static.conf
 chown bird:bird /etc/bird/static.conf
