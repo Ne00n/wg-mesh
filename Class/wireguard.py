@@ -222,7 +222,7 @@ class Wireguard(Base):
             "ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":self.subnetPrefix}
             if port != 51820: payload["port"] = port
             req = self.call(f'{dest}/connect',payload)
-            if req == False: return False
+            if req == False: return status
             if req.status_code == 412:
                 print(f"Link already exists to {dest}")
             elif req.status_code == 200:
