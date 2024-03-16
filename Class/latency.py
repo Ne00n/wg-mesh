@@ -129,7 +129,7 @@ class Latency(Base):
         bird = self.cmd("systemctl status bird")[0]
         if not "running" in bird:
             self.logger.warning("bird not running")
-            return False
+            return -1
         #Getting config
         self.logger.debug("Reading bird config")
         configRaw = self.cmd("cat /etc/bird/bird.conf")[0].rstrip()
@@ -137,7 +137,7 @@ class Latency(Base):
         config = self.parse(configRaw)
         if not config:
             self.logger.warning("Parsed bird config is empty")
-            return False
+            return -2
         configs = self.cmd('ip addr show')
         #fping
         self.logger.debug("Running fping")
