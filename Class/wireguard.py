@@ -318,7 +318,7 @@ class Wireguard(Base):
             return True
         for ip,latency in latencyData.items():
             if latency > float(cutoff): continue 
-            self.connect(f"http://{ip}:{self.config['listenPort']}")
+            self.connect(f"http://{ips[ip]}:{self.config['listenPort']}")
         for link,details in links.items():
             if not details['vxlan'] in terminate: continue
             self.disconnect([link])
