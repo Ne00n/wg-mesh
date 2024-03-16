@@ -306,16 +306,20 @@ class Wireguard(Base):
         print("Parsing Results")
         for ip in fping: latencyData[ip] = self.getAvrg(fping[ip])
         latencyData = {k: latencyData[k] for k in sorted(latencyData, key=latencyData.get)}
-        terminate, result = [],[]
+        terminate, create, result = [],[],[]
         result.append("Target\tIP address\tConnected\tLatency")
         result.append("-------\t-------\t-------\t-------")
         for ip,latency in latencyData.items(): 
             if latency > float(cutoff): terminate.append(ips[ip])
+            if latency < float(cutoff) and bool(ips[ip] not in existing): create.append(ips[ip])
             result.append(f"{ips[ip]}\t{ip}\t{bool(ips[ip] in existing)}\t{latency}ms")
         result = self.formatTable(result)
         if cutoff == 0: 
             print(result)
             return True
+        for link,details in links.items():
+            if not details['vxlan'] in create: continue
+            self.connect([link])
         for link,details in links.items():
             if not details['vxlan'] in terminate: continue
             self.disconnect([link])
