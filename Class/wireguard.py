@@ -306,20 +306,19 @@ class Wireguard(Base):
         print("Parsing Results")
         for ip in fping: latencyData[ip] = self.getAvrg(fping[ip])
         latencyData = {k: latencyData[k] for k in sorted(latencyData, key=latencyData.get)}
-        terminate, create, result = [],[],[]
+        terminate, result = [], []
         result.append("Target\tIP address\tConnected\tLatency")
         result.append("-------\t-------\t-------\t-------")
         for ip,latency in latencyData.items(): 
             if latency > float(cutoff): terminate.append(ips[ip])
-            if latency < float(cutoff) and bool(ips[ip] not in existing): create.append(ips[ip])
             result.append(f"{ips[ip]}\t{ip}\t{bool(ips[ip] in existing)}\t{latency}ms")
         result = self.formatTable(result)
         if cutoff == 0: 
             print(result)
             return True
-        for link,details in links.items():
-            if not details['vxlan'] in create: continue
-            self.connect([link])
+        for ip,latency in latencyData.items():
+            if latency > float(cutoff): continue 
+            self.connect(f"http://{ip}:{self.config['listenPort']}")
         for link,details in links.items():
             if not details['vxlan'] in terminate: continue
             self.disconnect([link])
@@ -389,4 +388,4 @@ class Wireguard(Base):
         if os.path.isfile(f"{self.path}/configs/state.json") and not files:
             print("state.json has been reset!")
             os.remove(f"{self.path}/configs/state.json")
-        return status
+        return status['10.0.79.1', '10.0.3.1', '10.0.99.1', '10.0.73.1', '10.0.69.1', '10.0.4.1', '10.0.63.1', '10.0.10.1', '10.0.61.1', '10.0.41.1', '10.0.21.1', '10.0.18.1', '10.0.210.1', '10.0.27.1', '10.0.19.1', '10.0.22.1', '10.0.23.1', '10.0.47.1', '10.0.25.1', '10.0.17.1', '10.0.39.1', '10.0.32.1', '10.0.75.1', '10.0.82.1', '10.0.20.1', '10.0.28.1', '10.0.14.1', '10.0.13.1', '10.0.16.1', '10.0.24.1', '10.0.70.1', '10.0.30.1', '10.0.71.1', '10.0.240.1']
