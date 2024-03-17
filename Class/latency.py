@@ -150,9 +150,9 @@ class Latency(Base):
         for entry in result:
             if "latency" not in entry: continue
             self.logger.debug(f"Replacing {entry['weight']} with {entry['latency']} on {entry['target']}")
-            configRaw = re.sub(f"cost {entry['weight']}; #({entry['target']})", f"cost {entry['latency']}; #({entry['target']})", configRaw, 0, re.MULTILINE)
+            configRaw = re.sub(f"cost {entry['weight']}; #\({entry['target']}\)", f"cost {entry['latency']}; #\({entry['target']}\)", configRaw, 0, re.MULTILINE)
             #checking
-            search = re.findall( f"cost {entry['latency']}; #({entry['target']})", configRaw)
+            search = re.findall( f"cost {entry['latency']}; #\({entry['target']}\)", configRaw)
             if not search or len(search) > 2: self.logger.warning(f"Anomaly detected in bird.conf for {entry['target']}")
         if not result:
             self.logger.warning("Nothing todo")
