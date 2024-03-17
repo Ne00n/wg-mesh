@@ -14,9 +14,9 @@ class Latency(Base):
 
     def parse(self,configRaw):
         if self.config['bird']['ospfv2']:
-            parsed = re.findall('interface "([a-zA-Z0-9]*)".{50,130}?cost ([0-9.]+);\s#\(([0-9.]+)\)',configRaw, re.DOTALL)
+            parsed = re.findall('interface "([a-zA-Z0-9]*)".{50,130}?cost ([0-9.]+);\s#([0-9.]+)E',configRaw, re.DOTALL)
         else:
-            parsed = re.findall('interface "([a-zA-Z0-9]*)".{35,130}?cost ([0-9.]+);\s#\(([0-9.]+)\)',configRaw, re.DOTALL)
+            parsed = re.findall('interface "([a-zA-Z0-9]*)".{35,130}?cost ([0-9.]+);\s#([0-9.]+)E',configRaw, re.DOTALL)
         data = []
         for nic,weight,target in parsed:
             data.append({'nic':nic,'target':target,'weight':weight})
@@ -150,9 +150,9 @@ class Latency(Base):
         for entry in result:
             if "latency" not in entry: continue
             self.logger.debug(f"Replacing {entry['weight']} with {entry['latency']} on {entry['target']}")
-            configRaw = re.sub(f"cost {entry['weight']}; #\({entry['target']}\)", f"cost {entry['latency']}; #\({entry['target']}\)", configRaw, 0, re.MULTILINE)
+            configRaw = re.sub(f"cost {entry['weight']}; #{entry['target']}E", f"cost {entry['latency']}; #{entry['target']}E", configRaw, 0, re.MULTILINE)
             #checking
-            search = re.findall( f"cost {entry['latency']}; #\({entry['target']}\)", configRaw)
+            search = re.findall( f"cost {entry['latency']}; #{entry['target']}E", configRaw)
             if not search or len(search) > 2: self.logger.warning(f"Anomaly detected in bird.conf for {entry['target']}")
         if not result:
             self.logger.warning("Nothing todo")
