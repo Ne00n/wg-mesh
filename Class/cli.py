@@ -63,8 +63,10 @@ class CLI(Base):
         proc = self.cmd("systemctl status bird")[0]
         birdRunning = "Bird2 is not running." if not "running" in proc else "Bird2 is running."
         proc = self.cmd("systemctl status wgmesh")[0]
-        wgmeshRunning = "wg-mesh is not running." if not "running" in proc else "wg-mesh is running."
-        print(f"{birdRunning}\t{wgmeshRunning}")
+        wgmeshRunning = "wgmesh is not running." if not "running" in proc else "wgmesh is running."
+        proc = self.cmd("systemctl status wgmesh-bird")[0]
+        wgmeshBirdRunning = "wgmesh-bird is not running." if not "running" in proc else "wgmesh-bird is running."
+        print(f"{birdRunning}\t{wgmeshRunning}\t{wgmeshBirdRunning}")
         print("--- Wireguard ---")
         network = self.readConfig(f"{self.path}/configs/network.json")
         print("Destination\tPacketloss\tJitter")
