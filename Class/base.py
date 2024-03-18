@@ -68,8 +68,8 @@ class Base:
             actual += 1
         #do not return 0, never, ever
         if result == 0: return 65535
-        if weight: return int(float(result / len(actual)))
-        else: return int(float(result / len(actual)) * 10)
+        if weight: return int(float(result / actual))
+        else: return int(float(result / actual) * 10)
 
     def fping(self,targets,pings=3,dropTimeout = False):
         fping = f"fping -c {pings} "
