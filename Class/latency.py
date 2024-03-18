@@ -78,7 +78,7 @@ class Latency(Base):
 
                     eventCount,eventScore = self.countEvents(entry,'packetloss')
                     #multiply by 10 otherwise small package loss may not result in routing changes
-                    eventScore = eventScore * 10
+                    eventScore = (eventScore * eventCount) * 10
                     if eventCount > 0:
                         node['latency'] += eventScore
                         self.logger.debug(f"Loss {node['nic']} ({entry}) Weight: {node['weight']}, Latency: {node['current']}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
