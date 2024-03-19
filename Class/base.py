@@ -55,7 +55,7 @@ class Base:
         return ( ( ipDecimal & netmaskDecimal ) == ( rangeDecimal & netmaskDecimal ) )
 
     def genTargets(self,links):
-        result = {}
+        result = []
         for link in links:
             nic,ip,lastByte = link[0],link[2],link[3]
             origin = ip+lastByte
@@ -65,7 +65,7 @@ class Base:
                 targetIP = f"{ip}{int(lastByte)+1}"
             else:
                 targetIP = f"{ip}{int(lastByte)-1}"
-            result[nic] = {"target":targetIP,"origin":origin}
+            result.append({'nic':nic,'target':targetIP,'origin':origin})
         return result
 
     def filter(self,entry):

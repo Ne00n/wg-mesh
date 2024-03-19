@@ -337,11 +337,11 @@ class Wireguard(Base):
     def groupByArea(self,latencyData):
         results = {}
         wgLinks = self.getLinks()
-        for target,data in latencyData.items():
-            if not f"{target}.sh" in wgLinks: continue
-            current = wgLinks[f"{target}.sh"]
+        for data in latencyData:
+            if not f"{data['nic']}.sh" in wgLinks: continue
+            current = wgLinks[f"{data['nic']}.sh"]
             if not current['area'] in results: results[current['area']] = {}
-            results[current['area']][target] = data
+            results[current['area']][data['nic']] = data
         return results
 
     def checkLinks(self,links):
