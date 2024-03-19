@@ -1,4 +1,5 @@
 import subprocess, requests, json, time, sys, re, os
+from Class.wireguard import Wireguard
 from datetime import datetime
 from Class.base import Base
 from random import randint
