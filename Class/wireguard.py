@@ -340,8 +340,8 @@ class Wireguard(Base):
         for data in latencyData:
             if not f"{data['nic']}.sh" in wgLinks: continue
             current = wgLinks[f"{data['nic']}.sh"]
-            if not current['area'] in results: results[current['area']] = {}
-            results[current['area']][data['nic']] = data
+            if not current['area'] in results: results[current['area']] = []
+            results[current['area']].append(data)
         return results
 
     def checkLinks(self,links):

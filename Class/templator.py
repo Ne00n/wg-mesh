@@ -90,7 +90,7 @@ protocol device {
 '''
         localPTP = ""
         for area,latencyData in latency.items():
-            for target,data in latencyData.items():
+            for data in latencyData:
                 if localPTP != "":
                     localPTP += ","
                 localPTP += data['target']+"/32-"
@@ -151,9 +151,9 @@ protocol ospf {
             for area,latencyData in latency.items():
                 template += """
     area """+str(area)+""" {"""
-                for target,data in latencyData.items():
+                for data in latencyData:
                     template += '''
-        interface "'''+target+'''" {
+        interface "'''+str(data['nic'])+'''" {
                 type ptmp;
                 neighbors {
                 '''+data['target']+''';
@@ -182,9 +182,9 @@ protocol ospf v3 {
             for area,latencyData in latency.items():
                 template += """
     area """+str(area)+""" {"""
-                for target,data in latencyData.items():
+                for data in latencyData:
                     template += '''
-        interface "'''+target+'''" {
+        interface "'''+str(data['nic'])+'''" {
             type ptmp;
             cost '''+str(data['latency'])+'''; #'''+data["target"]+'''E
         };
