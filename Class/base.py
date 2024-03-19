@@ -54,22 +54,6 @@ class Base:
         netmaskDecimal = ~ wildcardDecimal
         return ( ( ipDecimal & netmaskDecimal ) == ( rangeDecimal & netmaskDecimal ) )
 
-    def genTargets(self,links,last={}):
-        result = []
-        for link in links:
-            nic,ip,lastByte = link[0],link[2],link[3]
-            origin = ip+lastByte
-            #Client or Server roll the dice or rather not, so we ping the correct ip
-            target = self.resolve(f"{ip}{int(lastByte)+1}",origin,31)
-            if target == True:
-                targetIP = f"{ip}{int(lastByte)+1}"
-            else:
-                targetIP = f"{ip}{int(lastByte)-1}"
-            #include the older latency data if last is provided
-            weight = 0 if not last else last[targetIP]
-            result.append({'nic':nic,'target':targetIP,'origin':origin,'weight':weight})
-        return result
-
     def filter(self,entry):
         if "Ping" in entry: return False
         return True

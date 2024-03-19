@@ -158,7 +158,7 @@ protocol ospf {
                 neighbors {
                 '''+data['target']+''';
                 };
-                cost '''+str(data['latency'])+'''; #'''+data['target']+'''E
+                cost '''+str(data['cost'])+'''; #'''+data['target']+'''E
         };
             '''
             template += """
@@ -186,7 +186,7 @@ protocol ospf v3 {
                     template += '''
         interface "'''+str(data['nic'])+'''" {
             type ptmp;
-            cost '''+str(data['latency'])+'''; #'''+data["target"]+'''E
+            cost '''+str(data['cost'])+'''; #'''+data["target"]+'''E
         };
             '''
                 template += """

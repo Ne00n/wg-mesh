@@ -28,14 +28,28 @@ class Bird(Base):
             for entry,row in latency.items():
                 if entry == data['target']:
                     if len(row) < 5: self.logger.warning(f"Expected 5 pings, got {len(row)} from {data['target']}, possible Packetloss")
-                    data['latency'] = self.getAvrg(row,False)
-                    if data['latency'] == 65535: self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
+                    data['cost'] = self.getAvrg(row,False)
+                    if data['cost'] == 65535: self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
                 #apparently fping 4.2 and 5.0 result in different outputs, neat, so we keep this
                 elif data['target'] not in latency and not "latency" in data:
                     self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
-                    data['latency'] = 65535
+                    data['cost'] = 65535
         if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
         return targets
+
+    def genTargets(self,links):
+        result = []
+        for link in links:
+            nic,ip,lastByte = link[0],link[2],link[3]
+            origin = ip+lastByte
+            #Client or Server roll the dice or rather not, so we ping the correct ip
+            target = self.resolve(f"{ip}{int(lastByte)+1}",origin,31)
+            if target == True:
+                targetIP = f"{ip}{int(lastByte)+1}"
+            else:
+                targetIP = f"{ip}{int(lastByte)-1}"
+            result.append({'nic':nic,'target':targetIP,'origin':origin})
+        return result
 
     def bird(self):
         #check if bird is running
@@ -60,7 +74,7 @@ class Bird(Base):
         #if client adjust base latency to avoid transit
         for data in latencyData:
             linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",data['nic'], re.MULTILINE)[0]
-            if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['latency'] + 10000) < 65535: data['latency'] += 10000
+            if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65535: data['cost'] += 10000
         latencyData = self.wg.groupByArea(latencyData)
         self.logger.info("Generating config")
         bird = self.Templator.genBird(latencyData,local,self.config)
