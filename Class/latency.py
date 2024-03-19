@@ -5,6 +5,7 @@ from random import randint
 
 class Latency(Base):
     def __init__(self,path,logger):
+        self.wg = Wireguard(path)
         self.logger = logger
         self.path = path
         self.config = self.readConfig(f'{path}/configs/config.json')
