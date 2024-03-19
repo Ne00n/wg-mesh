@@ -54,7 +54,7 @@ class Base:
         netmaskDecimal = ~ wildcardDecimal
         return ( ( ipDecimal & netmaskDecimal ) == ( rangeDecimal & netmaskDecimal ) )
 
-    def genTargets(self,links):
+    def genTargets(self,links,last={}):
         result = []
         for link in links:
             nic,ip,lastByte = link[0],link[2],link[3]
@@ -65,7 +65,9 @@ class Base:
                 targetIP = f"{ip}{int(lastByte)+1}"
             else:
                 targetIP = f"{ip}{int(lastByte)-1}"
-            result.append({'nic':nic,'target':targetIP,'origin':origin})
+            #include the older latency data if last is provided
+            weight = 0 if not last else last[targetIP]
+            result.append({'nic':nic,'target':targetIP,'origin':origin,'weight':weight})
         return result
 
     def filter(self,entry):
