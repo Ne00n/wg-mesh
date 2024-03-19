@@ -51,16 +51,6 @@ class Bird(Base):
         if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
         return targets
 
-    def groupByArea(self,latencyData):
-        results = {}
-        wgLinks = self.wg.getLinks()
-        for target,data in latencyData.items():
-            if not f"{target}.sh" in wgLinks: continue
-            current = wgLinks[f"{target}.sh"]
-            if not current['area'] in results: results[current['area']] = {}
-            results[current['area']][target] = data
-        return results
-
     def bird(self):
         #check if bird is running
         bird = self.cmd("systemctl status bird")[0]
@@ -85,7 +75,7 @@ class Bird(Base):
         for target,data in latencyData.items():
             linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",target, re.MULTILINE)[0]
             if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['latency'] + 10000) < 65535: data['latency'] += 10000
-        latencyData = self.groupByArea(latencyData)
+        latencyData = self.wg.groupByArea(latencyData)
         self.logger.info("Generating config")
         bird = self.Templator.genBird(latencyData,local,self.config)
         if bird == "": 

@@ -334,6 +334,16 @@ class Wireguard(Base):
         if not links: exit("No links found.")
         return links
 
+    def groupByArea(self,latencyData):
+        results = {}
+        wgLinks = self.getLinks()
+        for target,data in latencyData.items():
+            if not f"{target}.sh" in wgLinks: continue
+            current = wgLinks[f"{target}.sh"]
+            if not current['area'] in results: results[current['area']] = {}
+            results[current['area']][target] = data
+        return results
+
     def checkLinks(self,links):
         #fping
         fping = "fping -c2"
