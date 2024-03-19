@@ -16,7 +16,7 @@ class Bird(Base):
 
     def getLatency(self,targets):
         ips = []
-        for nic,data in targets.items(): ips.append(data['target'])
+        for row in targets: ips.append(row['target'])
         latency =  self.fping(ips,5)
         if not latency:
             self.logger.warning("No pingable links found.")
@@ -24,15 +24,15 @@ class Bird(Base):
         for entry,row in latency.items():
             row = row[2:] #drop the first 2 pings
             row.sort()
-        for nic,data in list(targets.items()):
+        for data in list(targets):
             for entry,row in latency.items():
                 if entry == data['target']:
                     if len(row) < 5: self.logger.warning(f"Expected 5 pings, got {len(row)} from {data['target']}, possible Packetloss")
                     data['latency'] = self.getAvrg(row,False)
-                    if data['latency'] == 65535: self.logger.warning(f"Cannot reach {nic} {data['target']}")
+                    if data['latency'] == 65535: self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
                 #apparently fping 4.2 and 5.0 result in different outputs, neat, so we keep this
                 elif data['target'] not in latency and not "latency" in data:
-                    self.logger.warning(f"Cannot reach {nic} {data['target']}")
+                    self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
                     data['latency'] = 65535
         if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
         return targets
@@ -45,10 +45,10 @@ class Bird(Base):
             return False
         self.logger.info("Collecting Network data")
         configs = self.cmd('ip addr show')[0]
+        local = re.findall(f"inet ({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.(?!252)[0-9.]+\.1)\/(32|30) scope global lo",configs, re.MULTILINE | re.DOTALL)
         links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet ({self.subnetPrefixSplitted[0]}[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
         #filter out specific links
         links = [x for x in links if self.filter(x[0])]
-        local = re.findall(f"inet ({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.(?!252)[0-9.]+\.1)\/(32|30) scope global lo",configs, re.MULTILINE | re.DOTALL)
         if not links: 
             self.logger.warning("No wireguard interfaces found") 
             return False
@@ -58,8 +58,8 @@ class Bird(Base):
         latencyData = self.getLatency(nodes)
         if not latencyData: return False
         #if client adjust base latency to avoid transit
-        for target,data in latencyData.items():
-            linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",target, re.MULTILINE)[0]
+        for data in latencyData:
+            linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",data['nic'], re.MULTILINE)[0]
             if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['latency'] + 10000) < 65535: data['latency'] += 10000
         latencyData = self.wg.groupByArea(latencyData)
         self.logger.info("Generating config")
