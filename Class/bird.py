@@ -13,20 +13,6 @@ class Bird(Base):
         self.wg = Wireguard(path)
         self.logger = logger
         self.path = path
-    
-    def genTargets(self,links):
-        result = {}
-        for link in links:
-            nic,ip,lastByte = link[0],link[2],link[3]
-            origin = ip+lastByte
-            #Client or Server roll the dice or rather not, so we ping the correct ip
-            target = self.resolve(f"{ip}{int(lastByte)+1}",origin,31)
-            if target == True:
-                targetIP = f"{ip}{int(lastByte)+1}"
-            else:
-                targetIP = f"{ip}{int(lastByte)-1}"
-            result[nic] = {"target":targetIP,"origin":origin}
-        return result
 
     def getLatency(self,targets):
         ips = []
