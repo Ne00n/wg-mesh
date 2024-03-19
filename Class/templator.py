@@ -82,7 +82,7 @@ fi'''
         else:
             routerID = local[0][0]
         template = f'''log syslog all;
-router id {routerID}; #generated '''+str(int(time.time()))+'''
+router id {routerID}; #updated '''+str(int(time.time()))+'''
 
 protocol device {
     scan time 10;
@@ -158,7 +158,7 @@ protocol ospf {
                 neighbors {
                 '''+data['target']+''';
                 };
-                cost '''+str(data['latency'])+''';
+                cost '''+str(data['latency'])+'''; #'''+data['target']+'''E
         };
             '''
             template += """
@@ -186,7 +186,7 @@ protocol ospf v3 {
                     template += '''
         interface "'''+target+'''" {
             type ptmp;
-            cost '''+str(data['latency'])+''';
+            cost '''+str(data['latency'])+'''; #'''+data["target"]+'''E
         };
             '''
                 template += """
