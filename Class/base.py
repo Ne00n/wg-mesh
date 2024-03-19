@@ -119,13 +119,3 @@ class Base:
                 response += f"{entry}" if response.endswith("\n") or response == "" else f" {entry}"
             if i < len(list) -1: response += "\n"
         return response
-
-    def groupByArea(self,latencyData):
-        results = {}
-        wgLinks = self.wg.getLinks()
-        for target,data in latencyData.items():
-            if not f"{target}.sh" in wgLinks: continue
-            current = wgLinks[f"{target}.sh"]
-            if not current['area'] in results: results[current['area']] = {}
-            results[current['area']][target] = data
-        return results
