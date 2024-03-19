@@ -108,8 +108,8 @@ class Bird(Base):
         #fetch network interfaces and parse
         configs = self.cmd('ip addr show')[0]
         links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet ({self.subnetPrefixSplitted[0]}[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
-        local = re.findall(f"inet ({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.(?!252)[0-9.]+\.1)\/30 scope global lo",configs, re.MULTILINE | re.DOTALL)
-        if not links or not local: 
+        localIP = f"{'.'.join(self.config['subnet'].split('.')[:2])}.{self.config['id']}.1"
+        if not links: 
             self.logger.warning("No wireguard interfaces found") 
             return False
         #when targets empty, abort
@@ -126,7 +126,7 @@ class Bird(Base):
                 self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1v6 dst fd10:0:{splitted[2]}::1")
         #remove local machine from list
         for ip in list(targets):
-            if self.resolve(local[0],ip.replace("/30",""),30):
+            if self.resolve(localIP,ip.replace("/30",""),30):
                 targets.remove(ip)
         #run against existing links
         for ip in list(targets):
