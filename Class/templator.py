@@ -68,19 +68,10 @@ else
     sudo ip link delete vxlan1; sudo ip -6 link delete vxlan1v6;
 fi'''
         return template
-    
-    def getFirst(self,latency):
-        for area,latencyData in latency.items():
-            for entry in latencyData: return entry
 
-    def genBird(self,latency,local,config):
-        firstNode = self.getFirst(latency)
+    def genBird(self,latency,config):
         isRouter = "yes" if config['bird']['client'] else "no"
-        if not firstNode: return ""
-        if not local:
-            routerID = latency[firstNode]["origin"]
-        else:
-            routerID = local[0][0]
+        routerID = f"{'.'.join(config['subnet'].split('.')[:2])}.{config['id']}.1"
         template = f'''log syslog all;
 router id {routerID}; #updated '''+str(int(time.time()))+'''
 
@@ -117,8 +108,7 @@ include "bgp.conf";
 protocol kernel {
 	ipv4 {
 	    export filter { '''
-        if local:
-            template += 'krt_prefsrc = '+routerID+';'
+        template += 'krt_prefsrc = '+routerID+';'
         template += '''
         if avoid_local_ptp() then reject;
             accept;

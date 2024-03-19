@@ -59,7 +59,6 @@ class Bird(Base):
             return False
         self.logger.info("Collecting Network data")
         configs = self.cmd('ip addr show')[0]
-        local = re.findall(f"inet ({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.(?!252)[0-9.]+\.1)\/(32|30) scope global lo",configs, re.MULTILINE | re.DOTALL)
         links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet ({self.subnetPrefixSplitted[0]}[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
         #filter out specific links
         links = [x for x in links if self.filter(x[0])]
@@ -77,7 +76,7 @@ class Bird(Base):
             if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65535: data['cost'] += 10000
         latencyData = self.wg.groupByArea(latencyData)
         self.logger.info("Generating config")
-        bird = self.Templator.genBird(latencyData,local,self.config)
+        bird = self.Templator.genBird(latencyData,self.config)
         if bird == "": 
             self.logger.warning("No bird config generated")
             return False
