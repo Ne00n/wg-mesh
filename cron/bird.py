@@ -38,6 +38,7 @@ while True:
                 bird.mesh()
                 bird.bird()
                 latency.setLatencyData(bird.bird())
+                links = currentLinks
         #every 30s
         run = [0,3]
         if runs in run:
