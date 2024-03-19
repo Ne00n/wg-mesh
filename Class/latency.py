@@ -9,7 +9,6 @@ class Latency(Base):
         self.wg = Wireguard(path)
         self.logger = logger
         self.path = path
-        self.last = {}
         self.config = self.readConfig(f'{path}/configs/config.json')
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
         self.network = self.readConfig(f"{path}/configs/network.json")
@@ -118,9 +117,6 @@ class Latency(Base):
                     #make sure we always stay over zero
                     #in case of a typo and you connect to itself, it may cause a weight to be measured at zero
                     if node['latency'] < 0: node['latency'] = 1
-                    #save latency results into memory so we don't have to parse the bird config
-                    if not node['target'] in self.last: self.last[node['target']] = 0
-                    self.last[node['target']] = node['latency']
 
         #clear out old peers
         for entry in list(self.network):
