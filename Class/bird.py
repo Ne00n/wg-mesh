@@ -51,16 +51,6 @@ class Bird(Base):
         if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
         return targets
 
-    def groupByArea(self,latencyData):
-        results = {}
-        wgLinks = self.wg.getLinks()
-        for target,data in latencyData.items():
-            if not f"{target}.sh" in wgLinks: continue
-            current = wgLinks[f"{target}.sh"]
-            if not current['area'] in results: results[current['area']] = {}
-            results[current['area']][target] = data
-        return results
-
     def bird(self):
         #check if bird is running
         bird = self.cmd("systemctl status bird")[0]
