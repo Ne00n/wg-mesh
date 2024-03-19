@@ -1,6 +1,5 @@
 import subprocess, requests, json, time, sys, re, os
 from Class.wireguard import Wireguard
-from datetime import datetime
 from Class.base import Base
 from random import randint
 
@@ -12,7 +11,7 @@ class Latency(Base):
         self.config = self.readConfig(f'{path}/configs/config.json')
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
         self.network = self.readConfig(f"{path}/configs/network.json")
-        if not self.network: self.network = {"created":int(datetime.now().timestamp()),"updated":0}
+        if not self.network: self.network = {"created":int(time.time()),"updated":0}
 
     def parse(self,configRaw):
         if self.config['bird']['ospfv2']:
@@ -48,11 +47,11 @@ class Latency(Base):
     def countEvents(self,entry,eventType):
         eventCount,eventScore = 0,0
         for event,details in list(self.network[entry][eventType].items()):
-            if int(event) > int(datetime.now().timestamp()): 
+            if int(event) > int(time.time()): 
                 eventCount += 1
                 eventScore += details['peak']
             #delete events after 60 minutes
-            elif (int(datetime.now().timestamp()) - 3600) > int(event):
+            elif (int(time.time()) - 3600) > int(event):
                 del self.network[entry][eventType][event]
         return eventCount,round(eventScore,1)
 
@@ -75,7 +74,7 @@ class Latency(Base):
                     hasLoss,peakLoss = len(row) < pings -1,(pings -1) - len(row)
                     if hasLoss:
                         #keep packet loss events for 15 minutes
-                        self.network[entry]['packetloss'][int(datetime.now().timestamp()) + randint(900,1200)] = {"peak":peakLoss,"latency":node['current']}
+                        self.network[entry]['packetloss'][int(time.time()) + randint(900,1200)] = {"peak":peakLoss,"latency":node['current']}
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
 
                     eventCount,eventScore = self.countEvents(entry,'packetloss')
@@ -94,7 +93,7 @@ class Latency(Base):
                     hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
                     if hasJitter:
                         #keep jitter events for 30 minutes
-                        self.network[entry]['jitter'][int(datetime.now().timestamp()) + randint(1700,2100)] = {"peak":peakJitter,"latency":node['current']}
+                        self.network[entry]['jitter'][int(time.time()) + randint(1700,2100)] = {"peak":peakJitter,"latency":node['current']}
                         self.logger.info(f"{node['nic']} ({entry}) High Jitter dectected")
 
                     eventCount,eventScore = self.countEvents(entry,'jitter')
@@ -122,7 +121,7 @@ class Latency(Base):
         for entry in list(self.network):
             if entry not in peers: del self.network[entry]
         self.logger.info(f"Total {total}, Jitter {ongoingJitter}, Packetloss {ongoingLoss}")
-        self.network['updated'] = int(datetime.now().timestamp())
+        self.network['updated'] = int(time.time())
         return config
 
     def run(self,runs):
