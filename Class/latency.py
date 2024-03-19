@@ -7,6 +7,7 @@ from random import randint
 class Latency(Base):
     def __init__(self,path,logger):
         self.wg = Wireguard(path)
+        self.latencyData = {}
         self.logger = logger
         self.path = path
         self.config = self.readConfig(f'{path}/configs/config.json')
@@ -174,3 +175,6 @@ class Latency(Base):
         self.saveJson(self.network,f"{self.path}/configs/network.json")
         time.sleep(5)
         return self.noWait
+
+    def setLatencyData(self,latencyData):
+        self.latencyData = latencyData
