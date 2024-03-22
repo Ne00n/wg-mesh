@@ -63,4 +63,4 @@ host = {data[0][0]}
 alerts = startloss,someloss,bigloss,rttdetect,hostdown,lossdetect
 """
 
-base.saveFile(smokeping,"Targets")
+base.saveFile(smokeping,"/etc/smokeping/config.d/Targets")
