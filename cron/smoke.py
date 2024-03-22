@@ -44,6 +44,7 @@ remark = Welcome to the SmokePing website of xxx Company. Here you will learn al
 """
 
 for continent,details in build.items():
+    continent = continent.replace(" ","")
     smokeping += f"""
 
 + {continent}
