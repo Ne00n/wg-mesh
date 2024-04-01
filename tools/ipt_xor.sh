@@ -5,6 +5,5 @@ git clone https://github.com/faicker/ipt_xor
 cd ipt_xor
 cd kernel
 make
-sudo make install
 insmod xt_XOR.ko
-echo 'ipt_xor' > /etc/modules
+echo 'ipt_xor' >> /etc/modules
