@@ -96,8 +96,10 @@ class CLI(Base):
             config['bird']['client'] = False
         elif "wgobfs" in option:
             if "wgobfs" in config['linkTypes']: config['linkTypes'].remove("wgobfs")
+        elif "ipt_xor" in option:
+            if "ipt_xor" in config['linkTypes']: config['linkTypes'].remove("ipt_xor")
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, client")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, client")
         self.saveJson(config,f"{self.path}/configs/config.json")
             
     def enable(self,option):
@@ -113,8 +115,11 @@ class CLI(Base):
         elif "wgobfs" in option:
             if not "wgobfs" in config['linkTypes']: config['linkTypes'].append("wgobfs")
             print("You still need to install wgobfs with: bash /opt/wg-mesh/tools/wgobfs.sh")
+        elif "ipt_xor" in option:
+            if not "ipt_xor" in config['linkTypes']: config['linkTypes'].append("ipt_xor")
+            print("You still need to install ipt_xor with: bash /opt/wg-mesh/tools/ipt_xor.sh")
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, client")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, client")
         self.saveJson(config,f"{self.path}/configs/config.json")
 
     def setOption(self,options):

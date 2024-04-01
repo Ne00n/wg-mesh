@@ -7,6 +7,8 @@ class Templator:
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
+        if linkType == "ipt_xor": wgobfs += f"sudo iptables -t mangle -A OUTPUT -p udp --dport {serverPort} -j XOR --key 0x61;\n"
+        if linkType == "ipt_xor": wgobfs += f"sudo iptables -t mangle -A INPUT -p udp --sport {serverPort} -j XOR --key 0x61;\n"
         wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
 #Area {area}
@@ -29,6 +31,8 @@ fi'''
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
+        if linkType == "ipt_xor": wgobfs += f"sudo iptables -t mangle -A OUTPUT -p udp --dport {serverPort} -j XOR --key 0x61;\n"
+        if linkType == "ipt_xor": wgobfs += f"sudo iptables -t mangle -A INPUT -p udp --sport {serverPort} -j XOR --key 0x61;\n"
         wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
 #Area {config['bird']["area"]}
