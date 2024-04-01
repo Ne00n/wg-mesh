@@ -100,7 +100,9 @@ class CLI(Base):
             if "ipt_xor" in config['linkTypes']: config['linkTypes'].remove("ipt_xor")
         else:
             print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, client")
+            return
         self.saveJson(config,f"{self.path}/configs/config.json")
+        print("You should reload the services to apply any config changes")
             
     def enable(self,option):
         config = self.readConfig(f"{self.path}/configs/config.json")
@@ -120,7 +122,9 @@ class CLI(Base):
             print("You still need to install ipt_xor with: bash /opt/wg-mesh/tools/ipt_xor.sh")
         else:
             print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, client")
+            return
         self.saveJson(config,f"{self.path}/configs/config.json")
+        print("You should reload the services to apply any config changes")
 
     def setOption(self,options):
         validOptions = ["area","prefix","defaultLinkType","basePort","tick"]
