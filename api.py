@@ -137,8 +137,8 @@ def index():
             logging.info(f"ID Collision from {requestIP}")
             return HTTPResponse(status=416, body="Collision")
     #generate interface name
-    servName = "v6Serv" if payload['ipv6'] else "Serv"
-    interface = wg.getInterface(payload['id'],servName,payload['network'])
+    interfaceType = "v6" if payload['ipv6'] else ""
+    interface = wg.getInterface(payload['id'],interfaceType,payload['network'])
     #check if interface exists
     if os.path.isfile(f"{folder}/links/{interface}.sh"):
         return HTTPResponse(status=412, body="link already exists")
