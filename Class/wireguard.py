@@ -227,10 +227,10 @@ class Wireguard(Base):
             elif req.status_code == 200:
                 resp = req.json()
                 #check if v6 or v4
-                interfaceID = f"{resp['id']}v6" if isv6 else resp['id']
+                interfaceType = "v6" if isv6 else ""
                 connectivity =  f"[{resp['connectivity']['ipv6']}]"  if isv6 else resp['connectivity']['ipv4']
                 #interface
-                interface = self.getInterface(interfaceID)
+                interface = self.getInterface(resp['id'],interfaceType)
                 #generate config
                 clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,self.subnetPrefix)
                 print(f"Creating & Starting {interface}")
