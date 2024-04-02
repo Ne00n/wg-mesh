@@ -210,7 +210,7 @@ def index():
         logging.info(f"Invalid interface name from {reqIP}")
         return HTTPResponse(status=400, body="Invalid link name")
     #support older versions that are using Serv
-    if not os.path.isfile(f"{folder}/links/{payload['interface']}Serv.sh"): payload['interface'] = f"{payload['interface']}Serv"
+    if os.path.isfile(f"{folder}/links/{payload['interface']}Serv.sh"): payload['interface'] = f"{payload['interface']}Serv"
     #check if interface exists
     if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
         logging.info(f"Invalid link from {reqIP}")
