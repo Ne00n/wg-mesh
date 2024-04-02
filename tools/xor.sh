@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /tmp/
+cd
 apt-get update
 apt-get install linux-headers-$(uname -r) git make autoconf automake libtool libxtables-dev pkg-config -y
 git clone https://github.com/faicker/ipt_xor
