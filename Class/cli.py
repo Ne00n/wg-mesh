@@ -119,7 +119,7 @@ class CLI(Base):
             print("You still need to install wgobfs with: bash /opt/wg-mesh/tools/wgobfs.sh")
         elif "ipt_xor" in option:
             if not "ipt_xor" in config['linkTypes']: config['linkTypes'].append("ipt_xor")
-            print("You still need to install ipt_xor with: bash /opt/wg-mesh/tools/ipt_xor.sh")
+            print("You still need to install ipt_xor with: bash /opt/wg-mesh/tools/xor.sh")
         else:
             print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, client")
             return
