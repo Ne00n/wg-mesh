@@ -140,7 +140,7 @@ def index():
     interfaceType = "v6" if payload['ipv6'] else ""
     interface = wg.getInterface(payload['id'],interfaceType,payload['network'])
     #check if interface exists
-    if os.path.isfile(f"{folder}/links/{interface}.sh"):
+    if os.path.isfile(f"{folder}/links/{interface}.sh") or os.path.isfile(f"{folder}/links/{interface}Serv.sh"):
         return HTTPResponse(status=412, body="link already exists")
     #block any other requests to prevent issues regarding port and ip assignment
     mutex.acquire()
