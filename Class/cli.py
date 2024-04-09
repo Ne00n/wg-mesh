@@ -1,8 +1,9 @@
+from logging.handlers import RotatingFileHandler
 from Class.wireguard import Wireguard
 from Class.templator import Templator
 from Class.base import Base
 from Class.bird import Bird
-import subprocess, sys, os
+import subprocess, logging, sys, os
 
 class CLI(Base):
 
@@ -53,7 +54,11 @@ class CLI(Base):
         self.wg.updateConfig()
 
     def recover(self):
-        self.bird = Bird(self.path)
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(levels[level])
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%d.%m.%Y %H:%M:%S',level=levels[level],handlers=[RotatingFileHandler(maxBytes=10000000,backupCount=5,filename=f"{path}/logs/recovery.log"),stream_handler])
+        logger = logging.getLogger()
+        self.bird = Bird(self.path,logger)
         self.bird.bird(True)
 
     def token(self):
