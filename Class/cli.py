@@ -1,6 +1,7 @@
 from Class.wireguard import Wireguard
 from Class.templator import Templator
 from Class.base import Base
+from Class.bird import Bird
 import subprocess, sys, os
 
 class CLI(Base):
@@ -50,6 +51,10 @@ class CLI(Base):
     def migrate(self):
         self.wg = Wireguard(self.path)
         self.wg.updateConfig()
+
+    def recover(self):
+        self.bird = Bird(self.path)
+        self.bird.bird(True)
 
     def token(self):
         if os.path.isfile(f"{self.path}/token"):

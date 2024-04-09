@@ -51,10 +51,10 @@ class Bird(Base):
             result.append({'nic':nic,'target':targetIP,'origin':origin})
         return result
 
-    def bird(self):
+    def bird(self,override=False):
         #check if bird is running
         bird = self.cmd("systemctl status bird")[0]
-        if not "running" in bird:
+        if not "running" in bird and override == False:
             self.logger.warning("bird not running")
             return False
         self.logger.info("Collecting Network data")
