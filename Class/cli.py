@@ -55,7 +55,7 @@ class CLI(Base):
 
     def recover(self):
         stream_handler = logging.StreamHandler()
-        stream_handler.setLevel(levels[level])
+        stream_handler.setLevel(logging.DEBUG)
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%d.%m.%Y %H:%M:%S',level=levels[level],handlers=[RotatingFileHandler(maxBytes=10000000,backupCount=5,filename=f"{path}/logs/recovery.log"),stream_handler])
         logger = logging.getLogger()
         self.bird = Bird(self.path,logger)
