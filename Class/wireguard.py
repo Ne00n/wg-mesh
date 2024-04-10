@@ -316,6 +316,7 @@ class Wireguard(Base):
             print(result)
             return True
         for ip,latency in latencyData.items():
+            if latency == 0: continue
             if latency > float(cutoff): continue 
             targetSplit = ips[ip].split(".")
             #reserve 10.0.200+ for clients, don't mesh
