@@ -68,8 +68,8 @@ class Base:
             actual += 1
         #do not return 0, never, ever
         if result == 0: return 65535
-        #make sure its not below zero
-        if result < 0: result = 1
+        #make sure its not below one
+        if result < 1: result = 1
         if weight: return int(float(result / actual))
         else: return int(float(result / actual) * 10)
 
