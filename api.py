@@ -121,6 +121,10 @@ def index():
     if "area" in payload and not validateID(payload['area']):
         logging.info(f"Invalid Area from {requestIP}")
         return HTTPResponse(status=400, body="Invalid Area")
+    #prevent local connects
+    if payload['id'] == config['id']:
+        logging.info(f"Invalid connection from {requestIP}")
+        return HTTPResponse(status=400,body="Are you trying to connect to yourself?!")
     #defaults
     if not "linkType" in payload: payload['linkType'] = "default"
     if not "network" in payload: payload['network'] = ""
