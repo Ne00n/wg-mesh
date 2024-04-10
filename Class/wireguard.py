@@ -291,8 +291,12 @@ class Wireguard(Base):
         targets = re.findall(f"({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
         print("Getting Connection info")
         ips = {}
+        local = f"{self.subnetPrefix}.{self.config['id']}.1"
         for target in targets:
             target = target.replace("0/30","1")
+            if target == local:
+                print(f"Skipping {target} since local.")
+                continue
             resp = self.AskProtocol(f'http://{target}:{self.config["listenPort"]}','')
             if not resp: continue
             ips[resp['connectivity']['ipv4']] = target
@@ -316,7 +320,6 @@ class Wireguard(Base):
             print(result)
             return True
         for ip,latency in latencyData.items():
-            if latency == 0: continue
             if latency > float(cutoff): continue 
             targetSplit = ips[ip].split(".")
             #reserve 10.0.200+ for clients, don't mesh
