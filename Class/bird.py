@@ -107,7 +107,7 @@ class Bird(Base):
             time.sleep(5)
         #fetch network interfaces and parse
         configs = self.cmd('ip addr show')[0]
-        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet ({self.subnetPrefixSplitted[0]}[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        links = self.getLinks(configs,self.prefix,self.subnetPrefixSplitted)
         localIP = f"{'.'.join(self.config['subnet'].split('.')[:2])}.{self.config['id']}.1"
         if not links: 
             self.logger.warning("No wireguard interfaces found") 

@@ -198,7 +198,7 @@ class Wireguard(Base):
         clientPrivateKey, clientPublicKey = self.genKeys()
         #initial check
         configs = self.cmd('ip addr show')[0]
-        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet ({self.subnetPrefixSplitted[0]}[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        links = self.getLinks(configs,self.prefix,self.subnetPrefixSplitted)
         isInitial = False if links else True
         #ask remote about available protocols
         data = self.AskProtocol(dest,token)
