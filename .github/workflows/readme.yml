@@ -1,0 +1,28 @@
+name: Update Readme
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  update_templates:
+    name: "Update Readme"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Fetching Repository Contents"
+        uses: actions/checkout@main
+
+      - name: Update README.md
+        run: |
+          sed -i -e 's/experimental/master/g' README.md
+          sed -i -e 's/experimental/master/g' install.sh
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git commit -am "Updated README"
+
+      - name: Push changes
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git push https://Ne00n:${GH_TOKEN}@github.com/Ne00n/wg-mesh.git master
