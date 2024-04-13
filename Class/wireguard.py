@@ -264,8 +264,7 @@ class Wireguard(Base):
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
     def getUsedIDs(self):
-        routes = self.cmd("birdc show route")[0]
-        targets = re.findall(f"({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+        targets = self.getRoutes(self.subnetPrefixSplitted)
         parsed = re.findall(f"([0-9]+).0\/30",", ".join(targets), re.MULTILINE)
         parsed.sort(key = int)
         return parsed
@@ -287,8 +286,7 @@ class Wireguard(Base):
         links = self.getLinks()
         for link,details in links.items(): existing.append(details['vxlan'])
         print("Getting Routes")
-        routes = self.cmd("birdc show route")[0]
-        targets = re.findall(f"({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+        targets = self.getRoutes(self.subnetPrefixSplitted)
         print("Getting Connection info")
         ips = {}
         local = f"{self.subnetPrefix}.{self.config['id']}.1"
