@@ -21,22 +21,40 @@ bird = Bird(path,logger)
 
 path,links = f'{path}/links/',[]
 
-skip = 0
+skip,skipUntil = 0,0
+restartCooldown = regenCooldown = int(time.time()) + 1800
+
 while True:
     for runs in range(6):
         currentLinks = os.listdir(path)
         #filter out specific links
         currentLinks = [x for x in currentLinks if bird.filter(x)]
         if links != currentLinks:
+            logger.info(f"Found difference in files, triggering reload")
+            difference = list(set(links) - set(currentLinks))
+            logger.info(f"Difference {difference}")
             #hold until bird reports success
             if bird.bird():
                 bird.mesh()
                 bird.bird()
+                latency.setLatencyData(bird.bird())
                 links = currentLinks
         #every 30s
         run = [0,3]
         if runs in run:
             if links: 
+                logger.info("Running latency")
                 skip = latency.run(runs)
+                if skip > 0: 
+                    skipUntil = time.time() + 60
+                    logger.info(f"Skipping 10s wait until {skipUntil}")
+                elif skip == -1 and int(time.time()) > restartCooldown:
+                    logger.info(f"Triggering bird restart")
+                    os.system("sudo systemctl restart bird")
+                    restartCooldown = int(time.time()) + 1800
+                elif skip == -2 and int(time.time()) > regenCooldown:
+                    logger.info(f"Triggering bird config regenerate")
+                    links.append("dummy")
+                    regenCooldown = int(time.time()) + 1800
         else:
-            if skip == 0: time.sleep(10)
+            if skipUntil < time.time(): time.sleep(10)

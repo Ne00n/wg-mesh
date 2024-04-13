@@ -12,16 +12,10 @@ for i in range(1,250):
     try: s.connect((f"10.0.{i}.1", 22)) 
     except: continue 
     #continue
-    print("Updating",f"10.0.{i}.1")
+    print("Cleaning",f"10.0.{i}.1")
     resp = B.cmd(f"""ssh root@10.0.{i}.1 <<EOF
-su wg-mesh
-cd
-timeout 10 git pull --ff-only
-python3 cli.py migrate
-exit
-systemctl restart wgmesh
-systemctl restart wgmesh-bird
-EOF""",60)
-    print(resp)
+/opt/wg-mesh/cli.py clean
+EOF""",120)
+    for line in resp: print(line)
 
 print("END")

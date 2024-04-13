@@ -22,25 +22,33 @@ class Base:
 
     def readConfig(self,file):
         if os.path.isfile(file):
-            self.logger.debug(f"Loading {file}")
             try:
                 with open(file) as handle: return json.loads(handle.read())
             except Exception as e:
-                self.logger.debug(f"Unable to read {file} got {e}")
                 return {}
         else:
-            self.logger.debug(f"Creating {file}")
             return {}
 
     def saveFile(self,data,path):
-        with open(path, 'w') as file: file.write(data)
+        try:
+            with open(path, 'w') as file: file.write(data)
+        except:
+            return False
+        return True
 
     def saveJson(self,data,path):
-        with open(path, 'w') as f: json.dump(data, f, indent=4)
+        try:
+            with open(path, 'w') as f: json.dump(data, f, indent=4)
+        except:
+            return False
+        return True
 
-    def getRoutes(self):
+    def getRoutes(self,subnetPrefixSplitted=[10,0]):
         routes = self.cmd("birdc show route")[0]
-        return re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+        return re.findall(f"({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+
+    def getLinks(self,configs,prefix="pipe",subnetPrefixSplitted=[10,0]):
+        return re.findall(f"({prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet ({subnetPrefixSplitted[0]}[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
 
     def resolve(self,ip,range,netmask):
         rangeDecimal = int(netaddr.IPAddress(range))
@@ -54,23 +62,26 @@ class Base:
         return True
 
     def getAvrg(self,row,weight=True):
-        result = 0
-        if not row: return 65000
+        result,actual = 0,0
+        if not row: return 65535
         for entry in row:
             #ignore timed out
             if entry[0] == "timed out": continue
             result += float(entry[0])
+            actual += 1
         #do not return 0, never, ever
-        if result == 0: return 65000
-        if weight: return int(float(result / len(row)))
-        else: return int(float(result / len(row)) * 10)
+        if result == 0: return 65535
+        #make sure its not below one
+        if result < 1: result = 1
+        if weight: return int(float(result / actual))
+        else: return int(float(result / actual) * 10)
 
     def fping(self,targets,pings=3,dropTimeout = False):
         fping = f"fping -c {pings} "
         fping += " ".join(targets)
         result = self.cmd(fping)[0]
         parsed = re.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result, re.MULTILINE)
-        if not parsed: return False
+        if not parsed: return {}
         latency =  {}
         for ip,ms,loss in parsed:
             if ip not in latency: latency[ip] = []

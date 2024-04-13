@@ -1,12 +1,12 @@
 #!/bin/bash
+set -e
 if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
-apt-get install wireguard iptables bird2 sudo python3 python3-pip fping mtr vnstat git -y
-pip3 install netaddr requests bottle paste
+apt-get install wireguard iptables bird2 sudo python3 python3-netaddr python3-paste python3-bottle python3-requests python3-pip fping mtr vnstat git -y
 cd /opt/
 #git
 git clone https://github.com/Ne00n/wg-mesh.git
 cd wg-mesh
-git checkout master
+git checkout experimental
 useradd wg-mesh -r -d /opt/wg-mesh -s /bin/bash
 #run init
 ./cli.py $@
@@ -31,6 +31,8 @@ echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/wg set*" >> /etc/sudoers.d/wg-mesh
 #bird permissions
 echo "wg-mesh ALL=(ALL) NOPASSWD: /bin/systemctl reload bird" >> /etc/sudoers.d/wg-mesh
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload bird" >> /etc/sudoers.d/wg-mesh
+echo "wg-mesh ALL=(ALL) NOPASSWD: /bin/systemctl restart bird" >> /etc/sudoers.d/wg-mesh
+echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart bird" >> /etc/sudoers.d/wg-mesh
 usermod -a -G bird wg-mesh
 touch /etc/bird/static.conf
 chown bird:bird /etc/bird/static.conf

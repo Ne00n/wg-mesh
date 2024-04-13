@@ -30,6 +30,7 @@
 - [x] Active Latency optimisation
 - [x] Packet loss detection & rerouting
 - [x] High Jitter detection & rerouting
+- [x] Support for wgobfs (obfuscated wireguard)
 
 **Requirements**<br>
 - Debian or Ubuntu
@@ -37,12 +38,6 @@
 - Kernel 5.4+ (wg kernel module, no user space support yet)
 
 Keep in mind that some containers such as OVZ or LXC, depending on kernel version and host configuration have issues with bird and/or wireguard.<br>
- 
-For Debian 12, python packages are externally managed, however, the installer installs all packages via pip3.<br>
-So you have to disable this with, otherwise the installation will fail.<br>
-```
-apt-get install python3 -y && rm /usr/lib/python3.11/EXTERNALLY-MANAGED
-```
 
 **Example 2 nodes**<br>
 The ID needs to be unique, otherwise it will result in collisions.<br>
@@ -50,9 +45,9 @@ Keep in mind, ID's 200 and higher are reserved for clients, they won't get meshe
 Public is used to expose the API to all interfaces, by default it listens only local on 10.0.id.1.<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 1 public
 #Install wg-mesh and initialize the second node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 2
 ```
 Grab the Token from Node1<br>
 ```
@@ -66,22 +61,30 @@ After connecting successfully, a dummy.sh will be created, which assigns a 10.0.
 This will be picked up by bird, so on booth nodes on 10.0.1.1 and 10.0.2.1 should be reachable after bird ran.<br>
 Regarding NAT or in general behind Firewalls, the "connector" is always a Client, the endpoint the Server.<br>
 
+**Wireguard Port**<br>
+If you like to change the default wireguard port.
+```
+wgmesh set basePort 4000 && systemctl restart wgmesh
+#or 0 for random
+wgmesh set basePort 0 && systemctl restart wgmesh
+```
+
 **Prevent meshing**<br>
 In case you want to stop a client/server from automatically meshing into the network.<br>
 You can simply block it by creating an empty state.json.<br>
 ```
-wgmesh disable mesh
+wgmesh disable mesh && systemctl restart wgmesh
 ```
 This needs to be done before you connecting to the network.<br>
 
 **Example 2+ nodes**<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 1 public
 #Install wg-mesh and initialize the second node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 2
 #Install wg-mesh and initialize the third node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 3
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 3
 ```
 Grab the Token from Node 1 with
 ```
@@ -141,6 +144,22 @@ wgmesh down && bash /opt/wg-mesh/deinstall.sh
 wgmesh update && wgmesh migrate && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
 
+**wgobfs**<br>
+Install wgbofs with
+```
+bash /opt/wg-mesh/tools/wgobfs.sh
+```
+To enable wgobfs connections run.<br>
+```
+#add wgobfs to linkTypes
+wgmesh enable wgobfs 
+#To override the defaultLinkType, if you want to prefer wgobfs over normal wg.
+wgmesh set defaultLinkType wgobfs
+systemctl restart wgmesh
+```
+
+If the remote has wgbofs not in linkeTypes, default will be used.<br>
+
 **Limitations**<br>
 Connecting multiple nodes at once, without waiting for the other node to finish, will result in double links.<br>
 By default, when a new node joins, it checks which connections it does not have, which with a new node would be everything.<br>
@@ -161,6 +180,8 @@ This can be "fixed" by reloading wgmesh-bird.<br>
 sudo requires a resolvable hostname
 - wg-mesh is not meshing<br>
 bird2 needs to be running / hidepid can block said access to check if bird is running.<br>
+- sudo is asking for authentication<br>
+reinstall sudo, likely old config file (debian 10)<br>
 - RTNETLINK answers: Address already in use<br>
 Can also mean the Port wg tries to listen, is already in use. Check your existing wg links.<br>
 - packetloss and/or higher latency inside the wg-mesh network but not on the uplink/network itself

@@ -5,14 +5,40 @@ from Class.base import Base
 
 class Bird(Base):
     Templator = Templator()
-    prefix = "pipe"
 
     def __init__(self,path,logger):
+        self.config = self.readConfig(f'{path}/configs/config.json')
+        self.subnetPrefixSplitted = self.config['subnet'].split(".")
+        self.prefix = self.config['prefix']
+        self.wg = Wireguard(path)
         self.logger = logger
         self.path = path
-    
+
+    def getLatency(self,targets):
+        ips = []
+        for row in targets: ips.append(row['target'])
+        latency =  self.fping(ips,5)
+        if not latency:
+            self.logger.warning("No pingable links found.")
+            return False
+        for entry,row in latency.items():
+            row = row[2:] #drop the first 2 pings
+            row.sort()
+        for data in list(targets):
+            for entry,row in latency.items():
+                if entry == data['target']:
+                    if len(row) < 5: self.logger.warning(f"Expected 5 pings, got {len(row)} from {data['target']}, possible Packetloss")
+                    data['cost'] = self.getAvrg(row,False)
+                    if data['cost'] == 65535: self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
+                #apparently fping 4.2 and 5.0 result in different outputs, neat, so we keep this
+                elif data['target'] not in latency and not "latency" in data:
+                    self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
+                    data['cost'] = 65535
+        if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
+        return targets
+
     def genTargets(self,links):
-        result = {}
+        result = []
         for link in links:
             nic,ip,lastByte = link[0],link[2],link[3]
             origin = ip+lastByte
@@ -22,44 +48,20 @@ class Bird(Base):
                 targetIP = f"{ip}{int(lastByte)+1}"
             else:
                 targetIP = f"{ip}{int(lastByte)-1}"
-            result[nic] = {"target":targetIP,"origin":origin}
+            result.append({'nic':nic,'target':targetIP,'origin':origin})
         return result
 
-    def getLatency(self,targets):
-        ips = []
-        for nic,data in targets.items(): ips.append(data['target'])
-        latency =  self.fping(ips,5)
-        if not latency:
-            self.logger.warning("No pingable links found.")
-            return False
-        for entry,row in latency.items():
-            row = row[2:] #drop the first 2 pings
-            row.sort()
-        for nic,data in list(targets.items()):
-            for entry,row in latency.items():
-                if entry == data['target']:
-                    if len(row) < 5: self.logger.warning(f"Expected 5 pings, got {len(row)} from {data['target']}, possible Packetloss")
-                    data['latency'] = self.getAvrg(row,False)
-                    if data['latency'] == 65000: self.logger.warning(f"Cannot reach {nic} {data['target']}")
-                #apparently fping 4.2 and 5.0 result in different outputs, neat, so we keep this
-                elif data['target'] not in latency and not "latency" in data:
-                    self.logger.warning(f"Cannot reach {nic} {data['target']}")
-                    data['latency'] = 65000
-        if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
-        return targets
-
-    def bird(self):
+    def bird(self,override=False):
         #check if bird is running
-        proc = self.cmd("pgrep bird")[0]
-        if proc == "": 
+        bird = self.cmd("systemctl status bird")[0]
+        if not "running" in bird and override == False:
             self.logger.warning("bird not running")
             return False
         self.logger.info("Collecting Network data")
         configs = self.cmd('ip addr show')[0]
-        links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet ({self.subnetPrefixSplitted[0]}[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
         #filter out specific links
         links = [x for x in links if self.filter(x[0])]
-        local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/(32|30) scope global lo",configs, re.MULTILINE | re.DOTALL)
         if not links: 
             self.logger.warning("No wireguard interfaces found") 
             return False
@@ -68,21 +70,26 @@ class Bird(Base):
         self.logger.info("Latency messurement")
         latencyData = self.getLatency(nodes)
         if not latencyData: return False
+        #if client adjust base latency to avoid transit
+        for data in latencyData:
+            linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",data['nic'], re.MULTILINE)[0]
+            if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65535: data['cost'] += 10000
+        latencyData = self.wg.groupByArea(latencyData)
         self.logger.info("Generating config")
-        bird = self.Templator.genBird(latencyData,local,int(time.time()))
+        bird = self.Templator.genBird(latencyData,self.config)
         if bird == "": 
             self.logger.warning("No bird config generated")
             return False
         self.logger.info("Writing config")
-        self.cmd(f"echo '{bird}' > /etc/bird/bird.conf")
+        self.saveFile(bird,'/etc/bird/bird.conf')
         self.logger.info("Reloading bird")
         self.cmd("sudo systemctl reload bird")
-        return True
+        return latencyData
 
     def mesh(self):
         #check if bird is running
-        proc = self.cmd("pgrep bird")[0]
-        if proc == "": 
+        bird = self.cmd("systemctl status bird")[0]
+        if not "running" in bird:
             self.logger.warning("bird not running")
             return False
         #wait for bird to fully bootstrap
@@ -100,9 +107,9 @@ class Bird(Base):
             time.sleep(5)
         #fetch network interfaces and parse
         configs = self.cmd('ip addr show')[0]
-        links = re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet (10[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
-        local = re.findall("inet (10\.0\.(?!252)[0-9.]+\.1)\/30 scope global lo",configs, re.MULTILINE | re.DOTALL)
-        if not links or not local: 
+        links = self.getLinks(configs,self.prefix,self.subnetPrefixSplitted)
+        localIP = f"{'.'.join(self.config['subnet'].split('.')[:2])}.{self.config['id']}.1"
+        if not links: 
             self.logger.warning("No wireguard interfaces found") 
             return False
         #when targets empty, abort
@@ -119,7 +126,7 @@ class Bird(Base):
                 self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1v6 dst fd10:0:{splitted[2]}::1")
         #remove local machine from list
         for ip in list(targets):
-            if self.resolve(local[0],ip.replace("/30",""),30):
+            if self.resolve(localIP,ip.replace("/30",""),30):
                 targets.remove(ip)
         #run against existing links
         for ip in list(targets):
@@ -140,7 +147,6 @@ class Bird(Base):
             self.logger.debug("state.json already exist, skipping")
         else:
             #wireguard
-            wg = Wireguard(self.path)
             self.logger.info("meshing")
             results = {}
             for target in targets:
@@ -150,12 +156,12 @@ class Bird(Base):
                 dest = target.replace(".0/30",".1")
                 #no token needed but external IP for the client
                 self.logger.info(f"Setting up link to {dest}")
-                resp = wg.connect(f"http://{dest}:8080")
-                if resp:
+                status = self.wg.connect(f"http://{dest}:{self.config['listenPort']}")
+                if status['v4'] or status['v6']:
                     results[target] = True
-                    self.logger.info(f"Link established to http://{dest}:8080")
+                    self.logger.info(f"Link established to http://{dest}:{self.config['listenPort']}")
                 else:
                     results[target] = False
-                    self.logger.warning(f"Failed to setup link to http://{dest}:8080")
+                    self.logger.warning(f"Failed to setup link to http://{dest}:{self.config['listenPort']}")
             self.logger.info("saving state.json")
             with open(f"{self.path}/configs/state.json", 'w') as f: json.dump(results, f ,indent=4)
