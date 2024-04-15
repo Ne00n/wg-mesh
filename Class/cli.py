@@ -23,9 +23,9 @@ class CLI(Base):
         self.wg = Wireguard(self.path)
         self.wg.bender()
 
-    def connect(self,dest,token,linkType="default",port=51820):
+    def connect(self,dest,token,linkType="default",port=51820,network=""):
         self.wg = Wireguard(self.path)
-        self.wg.connect(dest,token,linkType,port)
+        self.wg.connect(dest,token,linkType,port,network)
 
     def proximity(self,cutoff=0):
         self.wg = Wireguard(self.path)

@@ -19,12 +19,13 @@ elif sys.argv[1] == "status":
     cli.status()
 elif sys.argv[1] == "bender":
     cli.bender()
-elif sys.argv[1] == "connect":
+elif sys.argv[1] == "connect" or sys.argv[1] == "peer":
     if len(sys.argv) <= 2: exit("URL is missing.")
     token = "dummy" if len(sys.argv) <= 3 else sys.argv[3]
     linkType = "default" if len(sys.argv) <= 4 else sys.argv[4]
     port = 51820 if len(sys.argv) <= 5 else sys.argv[5]
-    cli.connect(sys.argv[2],token,linkType,port)
+    network = "Peer" if sys.argv[1] == "peer" else ""
+    cli.connect(sys.argv[2],token,linkType,port,network)
 elif sys.argv[1] == "proximity":
     cutoff = sys.argv[2] if len(sys.argv) == 3 else 0
     cli.proximity(cutoff)
