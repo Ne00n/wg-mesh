@@ -77,13 +77,19 @@ def getReqIP():
     if ipaddress.ip_address(reqIP).version == 6 and ipaddress.IPv6Address(reqIP).ipv4_mapped: return ipaddress.IPv6Address(reqIP).ipv4_mapped
     return reqIP
 
+def getInternal(requestIP):
+    try:
+        isInternalSubnet =  ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnet'])
+        isInternalSubnetPeer =  ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnetPeer'])
+        if isInternalSubnet or isInternalSubnetPeer: return True
+    except:
+        return False
+    return False
+
 @route('/connectivity',method='POST')
 def index():
     requestIP = getReqIP()
-    try:
-        isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnet'])
-    except:
-        return HTTPResponse(status=400, body="Subnet incorrect configured")
+    isInternal = getInternal(requestIP)
     payload = json.load(request.body)
     #validate token
     if not isInternal and not validateToken(payload): 
@@ -94,7 +100,7 @@ def index():
 @route('/connect', method='POST')
 def index():
     requestIP = getReqIP()
-    isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnet'])
+    isInternal = getInternal(requestIP)
     payload = json.load(request.body)
     #validate token
     if not isInternal and not validateToken(payload): 
