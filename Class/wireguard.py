@@ -199,7 +199,7 @@ class Wireguard(Base):
         data = req.json()
         return data
 
-    def connect(self,dest,token="",linkType="",port=51820):
+    def connect(self,dest,token="",linkType="",port=51820,network=""):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
@@ -225,7 +225,7 @@ class Wireguard(Base):
         for run in range(2):
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
-            "ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":self.subnetPrefix}
+            "ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":self.subnetPrefix,"network":network}
             if port != 51820: payload["port"] = port
             req = self.call(f'{dest}/connect',payload)
             if req == False: return status
