@@ -207,19 +207,18 @@ def index():
 
 @route('/disconnect', method='POST')
 def index():
-    reqIP = request.environ.get('HTTP_X_REAL_IP') or request.environ.get('REMOTE_ADDR')
-    logging.debug(f"{reqIP} connecting")
+    requestIP = getReqIP()
     payload = json.load(request.body)
     #validate interface name
     interface = re.findall(r"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
-    if not interface: 
-        logging.info(f"Invalid interface name from {reqIP}")
+    if not interface:
+        logging.info(f"Invalid interface name from {requestIP}")
         return HTTPResponse(status=400, body="Invalid link name")
     #support older versions that are using Serv
     if os.path.isfile(f"{folder}/links/{payload['interface']}Serv.sh"): payload['interface'] = f"{payload['interface']}Serv"
     #check if interface exists
     if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
-        logging.info(f"Invalid link from {reqIP}")
+        logging.info(f"Invalid link from {requestIP}")
         return HTTPResponse(status=400, body="invalid link")
     #read private key
     with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
@@ -227,7 +226,7 @@ def index():
     publicKeyServer = wg.getPublic(privateKeyServer)
     #check if they match
     if payload['publicKeyServer'] != publicKeyServer:
-        logging.info(f"Invalid public key from {reqIP}")
+        logging.info(f"Invalid public key from {requestIP}")
         return HTTPResponse(status=400, body="invalid public key")
     #terminate the link
     if "wait" in payload and payload['wait'] == False:
