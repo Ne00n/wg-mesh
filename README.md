@@ -128,7 +128,7 @@ To disconnect all links on a Node
 wgmesh disconnect
 #disconnect all links despite untable to reach API endpoint
 wgmesh disconnect force
-#disconnect a specific link e.g pipe250, pipe250Serv, pipe250v6Serv
+#disconnect a specific link e.g pipe250, pipe250v6
 wgmesh disconnect pipe250
 #disconnect a specific link with force
 wgmesh disconnect pipe250 force
