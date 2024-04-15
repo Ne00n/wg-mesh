@@ -50,7 +50,7 @@ class CLI(Base):
         self.wg.clean()
 
     def migrate(self):
-        self.wg = Wireguard(self.path)
+        self.wg = Wireguard(self.path,False,True)
         self.wg.updateConfig()
 
     def recover(self):

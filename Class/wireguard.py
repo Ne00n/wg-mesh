@@ -5,11 +5,12 @@ from Class.base import Base
 class Wireguard(Base):
     Templator = Templator()
 
-    def __init__(self,path,skip=False):
+    def __init__(self,path,skip=False,onlyConfig=False):
         self.path = path
         if skip: return
         if not os.path.isfile(f"{self.path}/configs/config.json"): exit("Config missing")
         with open(f'{self.path}/configs/config.json') as f: self.config = json.load(f)
+        if onlyConfig: return
         self.prefix = self.config['prefix']
         self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
