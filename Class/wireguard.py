@@ -148,7 +148,7 @@ class Wireguard(Base):
         offline,online = self.checkLinks(links)
         for link in offline:
             data = links[link]
-            parsed, remote = self.getRemote(data['local'])
+            parsed, remote = self.getRemote(data['local'],self.subnetPrefixSplitted)
             print(f"Found dead link {link} ({remote})")
             pings = self.fping([data['vxlan']],3,True)
             if not pings or not pings[data['vxlan']]:
@@ -180,7 +180,7 @@ class Wireguard(Base):
                 linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
                 destination = f"{self.subnetPrefix}.{linkID}.1"
             #get remote endpoint
-            parsed, remote = self.getRemote(config)
+            parsed, remote = self.getRemote(config,self.subnetPrefixSplitted)
             #grab publickey
             publicKey = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)[0]
             #grab area
