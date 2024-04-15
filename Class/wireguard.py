@@ -205,7 +205,7 @@ class Wireguard(Base):
         clientPrivateKey, clientPublicKey = self.genKeys()
         #initial check
         configs = self.cmd('ip addr show')[0]
-        links = self.getLinks(configs,self.prefix,self.subnetPrefixSplitted)
+        links = self.getBirdLinks(configs,self.prefix,self.subnetPrefixSplitted)
         isInitial = False if links else True
         #ask remote about available protocols
         data = self.AskProtocol(dest,token)
