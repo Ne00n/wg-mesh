@@ -96,7 +96,7 @@ class Bird(Base):
         oldTargets,counter = [],0
         self.logger.info("Waiting for bird routes")
         for run in range(30):
-            targets = self.getRoutes()
+            targets = self.getRoutes(self.subnetPrefixSplitted)
             self.logger.debug(f"Run {run}/30, Counter {counter}, Got {targets} as targets")
             if oldTargets != targets:
                 oldTargets = targets
