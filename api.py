@@ -119,7 +119,7 @@ def index():
         logging.info(f"Invalid Prefix from {requestIP}")
         return HTTPResponse(status=400, body="Invalid Prefix")
     #validate network
-    if "network" in payload and not validateNetwork(payload['network']):
+    if "network" in payload and payload['network'] != "" and not validateNetwork(payload['network']):
         logging.info(f"Invalid Network from {requestIP}")
         return HTTPResponse(status=400, body="Invalid Network")
     #validate linkType
