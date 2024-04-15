@@ -13,7 +13,8 @@ class Wireguard(Base):
         self.prefix = self.config['prefix']
         self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
-
+        self.subnetPeerPrefix = ".".join(self.config['subnetPeer'].split(".")[:2])
+        self.subnetPeerPrefixSplitted = self.config['subnetPeer'].split(".")
 
     def updateConfig(self):
         if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
@@ -197,13 +198,20 @@ class Wireguard(Base):
         data = req.json()
         return data
 
+    def subnetSwitch(self,network=""):
+        if network == "Peer":
+            return self.subnetPeerPrefix,self.subnetPeerPrefixSplitted
+        else:
+            return self.subnetPrefix,self.subnetPrefixSplitted
+
     def connect(self,dest,token="",linkType="",port=51820,network=""):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
         #initial check
         configs = self.cmd('ip addr show')[0]
-        links = self.getBirdLinks(configs,self.prefix,self.subnetPrefixSplitted)
+        subnetPrefix,subnetPrefixSplitted = self.subnetSwitch(network)
+        links = self.getBirdLinks(configs,self.prefix,subnetPrefixSplitted)
         isInitial = False if links else True
         #ask remote about available protocols
         data = self.AskProtocol(dest,token)
@@ -223,7 +231,7 @@ class Wireguard(Base):
         for run in range(2):
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
-            "ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":self.subnetPrefix,"network":network}
+            "ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":subnetPrefix,"network":network}
             if port != 51820: payload["port"] = port
             req = self.call(f'{dest}/connect',payload)
             if req == False: return status
@@ -237,7 +245,7 @@ class Wireguard(Base):
                 #interface
                 interface = self.getInterface(resp['id'],interfaceType)
                 #generate config
-                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,self.subnetPrefix)
+                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,subnetPrefix)
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
