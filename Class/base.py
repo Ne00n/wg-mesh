@@ -58,7 +58,8 @@ class Base:
         return ( ( ipDecimal & netmaskDecimal ) == ( rangeDecimal & netmaskDecimal ) )
 
     def filter(self,entry):
-        if "Ping" in entry: return False
+        ignoreNetworks = ["Ping","Peer"]
+        if any(network in entry for network in ignoreNetworks): return False
         return True
 
     def getAvrg(self,row,weight=True):
