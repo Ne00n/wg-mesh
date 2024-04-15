@@ -80,7 +80,10 @@ def getReqIP():
 @route('/connectivity',method='POST')
 def index():
     requestIP = getReqIP()
-    isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnet'])
+    try:
+        isInternal =  ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnet'])
+    except:
+        return HTTPResponse(status=400, body="Subnet incorrect configured")
     payload = json.load(request.body)
     #validate token
     if not isInternal and not validateToken(payload): 
