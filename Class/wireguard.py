@@ -95,6 +95,13 @@ class Wireguard(Base):
             self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
             self.setInterface("dummy","up")
 
+    def reconfigureDummy(self):
+        self.setInterface("dummy","down")
+        self.cleanInterface("dummy",False)
+        dummyConfig = self.Templator.genDummy(self.config['id'],self.config['connectivity'],self.subnetPrefix)
+        self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
+        self.setInterface("dummy","up")
+
     def findLowest(self,min,list):
         for i in range(min,min + 400):
             if i not in list and i % 2 == 0: return i

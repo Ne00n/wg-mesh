@@ -137,7 +137,7 @@ class CLI(Base):
         print("You should reload the services to apply any config changes")
 
     def setOption(self,options):
-        validOptions = ["area","prefix","defaultLinkType","basePort","tick"]
+        validOptions = ["area","prefix","defaultLinkType","basePort","tick","subnet"]
         if len(sys.argv) == 0:
             print(f"Valid options: {', '.join(validOptions)}")
         else:
@@ -152,6 +152,10 @@ class CLI(Base):
                     config[key] = value
                 self.saveJson(config,f"{self.path}/configs/config.json")
                 print("You should reload the services to apply any config changes")
+                if key == "subnet":        
+                    print("Reconfiguring dummy")
+                    self.wg = Wireguard(self.path)
+                    self.wg.reconfigureDummy()
             else:
                 print(f"Valid options: {', '.join(validOptions)}")
         
