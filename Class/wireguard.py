@@ -11,12 +11,9 @@ class Wireguard(Base):
         if not os.path.isfile(f"{self.path}/configs/config.json"): exit("Config missing")
         with open(f'{self.path}/configs/config.json') as f: self.config = json.load(f)
         self.prefix = self.config['prefix']
-        if "subnet" in self.config:
-            self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
-            self.subnetPrefixSplitted = self.config['subnet'].split(".")
-        else:
-            self.subnetPrefix = "10.0"
-            self.subnetPrefixSplitted = [10,0]
+        self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
+        self.subnetPrefixSplitted = self.config['subnet'].split(".")
+
 
     def updateConfig(self):
         if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
