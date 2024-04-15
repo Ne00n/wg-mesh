@@ -15,7 +15,7 @@ class Base:
         t = ip_network(target, strict = False).network_address
         return o == t
 
-    def getRemote(self,local,subnetPrefix):
+    def getRemote(self,local,subnetPrefixSplitted):
         parsed = re.findall(f'(({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.)([0-9]+)\/31)',local, re.MULTILINE)[0]
         lastOctet = int(parsed[2])
         return parsed,f"{parsed[1]}{lastOctet-1}" if self.sameNetwork(f"{parsed[1]}{lastOctet-1}",parsed[0]) else f"{parsed[1]}{lastOctet+1}"
