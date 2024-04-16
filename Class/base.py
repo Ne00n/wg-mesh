@@ -58,7 +58,7 @@ class Base:
         return ( ( ipDecimal & netmaskDecimal ) == ( rangeDecimal & netmaskDecimal ) )
 
     def filter(self,entry):
-        ignoreNetworks = ["Ping","Peer"]
+        ignoreNetworks = ["Ping"]
         if any(network in entry for network in ignoreNetworks): return False
         return True
 
