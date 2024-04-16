@@ -73,7 +73,7 @@ else
 fi'''
         return template
 
-    def genBird(self,latency,config):
+    def genBird(self,latency,peers,config):
         isRouter = "yes" if config['bird']['client'] else "no"
         routerID = f"{'.'.join(config['subnet'].split('.')[:2])}.{config['id']}.1"
         template = f'''log syslog all;

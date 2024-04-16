@@ -38,7 +38,7 @@ class Bird(Base):
         return targets
 
     def genTargets(self,links):
-        result = []
+        result,peers = [],[]
         for link in links:
             nic,ip,lastByte = link[0],link[2],link[3]
             origin = ip+lastByte
@@ -48,8 +48,11 @@ class Bird(Base):
                 targetIP = f"{ip}{int(lastByte)+1}"
             else:
                 targetIP = f"{ip}{int(lastByte)-1}"
-            result.append({'nic':nic,'target':targetIP,'origin':origin})
-        return result
+            if "Peer" in nic:
+                peers.append({'nic':nic,'target':targetIP,'origin':origin})
+            else:
+                result.append({'nic':nic,'target':targetIP,'origin':origin})
+        return result,peers
 
     def bird(self,override=False):
         #check if bird is running
@@ -66,7 +69,7 @@ class Bird(Base):
             self.logger.warning("No wireguard interfaces found") 
             return False
         self.logger.info("Getting Network targets")
-        nodes = self.genTargets(links)
+        nodes,peers = self.genTargets(links)
         self.logger.info("Latency messurement")
         latencyData = self.getLatency(nodes)
         if not latencyData: return False
@@ -76,7 +79,7 @@ class Bird(Base):
             if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65535: data['cost'] += 10000
         latencyData = self.wg.groupByArea(latencyData)
         self.logger.info("Generating config")
-        bird = self.Templator.genBird(latencyData,self.config)
+        bird = self.Templator.genBird(latencyData,peers,self.config)
         if bird == "": 
             self.logger.warning("No bird config generated")
             return False
