@@ -244,7 +244,7 @@ class Wireguard(Base):
                 interfaceType = "v6" if isv6 else ""
                 connectivity =  f"[{resp['connectivity']['ipv6']}]"  if isv6 else resp['connectivity']['ipv4']
                 #interface
-                interface = self.getInterface(resp['id'],interfaceType)
+                interface = self.getInterface(resp['id'],interfaceType,network)
                 #generate config
                 clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,subnetPrefix)
                 print(f"Creating & Starting {interface}")
