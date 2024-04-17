@@ -148,8 +148,10 @@ protocol kernel {
         if config['bird']['ospfv2']:
             template += '''
 filter export_OSPF {
-    if source ~ [ RTS_DEVICE ] then accept;
-    if source ~ [ 0.0.0.0/0{16} ] then accept;
+    if source ~ [ RTS_DEVICE ] then accept;\n'''
+            for peerSubnet in config['AllowedPeers']:
+                template += f"if net ~ [ {peerSubnet} ] then accept;\n" 
+            template += '''
     reject;
 }
 
