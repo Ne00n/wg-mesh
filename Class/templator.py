@@ -74,12 +74,13 @@ else
 fi'''
         return template
 
-    def genBGPPeer(self,peer):
+    def genBGPPeer(self,config,peer):
+        subnetPrefix = ".".join(config['subnet'].split(".")[:2])
         return '''
 protocol bgp '''+peer["nic"]+''' {
         ipv4 {
                 import all;
-                export all;
+                export where net ~ [ '''+subnetPrefix+'''.'''+str(config["vxlan"])+'''.0/24 ];
         };
         local as '''+"".join(peer["origin"].split(".")[2:])+''';
         neighbor '''+peer["target"]+''' as '''+"".join(peer["target"].split(".")[2:])+''';
@@ -124,7 +125,7 @@ include "bgp.conf";'''
 
         #BGP Peers
         for peer in peers:
-            template += self.genBGPPeer(peer)
+            template += self.genBGPPeer(config,peer)
 
         template += '''
 protocol kernel {
