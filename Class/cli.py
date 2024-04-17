@@ -137,7 +137,7 @@ class CLI(Base):
         print("You should reload the services to apply any config changes")
 
     def setOption(self,options):
-        validOptions = ["area","prefix","defaultLinkType","basePort","tick","subnet","vxlan"]
+        validOptions = ["area","prefix","defaultLinkType","basePort","tick","subnet","vxlan","AllowedPeers"]
         if len(sys.argv) == 0:
             print(f"Valid options: {', '.join(validOptions)}")
         else:
@@ -148,6 +148,11 @@ class CLI(Base):
                     config[key] = int(value)
                 elif key == "area" or key == "tick":
                     config['bird'][key] = int(value)
+                elif key == "AllowedPeers":
+                    if value in config['AllowedPeers']:
+                        config['AllowedPeers'].remove(value)
+                    else:
+                        config['AllowedPeers'].append(value)
                 else:
                     config[key] = value
                 self.saveJson(config,f"{self.path}/configs/config.json")
