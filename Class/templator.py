@@ -133,7 +133,7 @@ include "bgp.conf";'''
 protocol kernel {
 	ipv4 {
 	    export filter { '''
-        template += 'krt_prefsrc = '+routerID+';'
+        template += 'krt_prefsrc = '+routerID+';\n'
         for peerSubnet in config['AllowedPeers']:
             template += f"if net ~ [ {peerSubnet} ] then accept;" 
         template += '''
