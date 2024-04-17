@@ -73,6 +73,18 @@ else
 fi'''
         return template
 
+    def genBGPPeer(self,peer):
+        return '''
+protocol bgp '''+peer["nic"]+''' {
+        ipv4 {
+                import all;
+                export all;
+        };
+        local as '''+"".join(peer["origin"].split(".")[2:])+''';
+        neighbor '''+peer["targetIP"]+''' as '''+"".join(peer["targetIP"].split(".")[2:])+''';
+}
+        '''
+
     def genBird(self,latency,peers,config):
         isRouter = "yes" if config['bird']['client'] else "no"
         routerID = f"{'.'.join(config['subnet'].split('.')[:2])}.{config['id']}.1"
@@ -107,8 +119,13 @@ protocol static {
     include "static.conf";
 }
 
-include "bgp.conf";
+include "bgp.conf";'''
 
+        #BGP Peers
+        for peer in peers:
+            template += self.genBGPPeer(peer)
+
+        template += '''
 protocol kernel {
 	ipv4 {
 	    export filter { '''
