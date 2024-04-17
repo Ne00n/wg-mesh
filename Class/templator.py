@@ -133,11 +133,9 @@ protocol kernel {
 	ipv4 {
 	    export filter { '''
         template += 'krt_prefsrc = '+routerID+';\n'
-        for peerSubnet in config['AllowedPeers']:
-            template += f"if net ~ [ {peerSubnet} ] then accept;" 
         template += '''
         if avoid_local_ptp() then reject;
-            accept;
+        accept;
         };
     };
 }
