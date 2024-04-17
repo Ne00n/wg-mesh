@@ -62,7 +62,7 @@ class Bird(Base):
             return False
         self.logger.info("Collecting Network data")
         configs = self.cmd('ip addr show')[0]
-        links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet ({self.subnetPrefixSplitted[0]}[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet ([0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
         #filter out specific links
         links = [x for x in links if self.filter(x[0])]
         if not links: 
