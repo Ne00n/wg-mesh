@@ -76,11 +76,12 @@ fi'''
 
     def genBGPPeer(self,config,peer):
         subnetPrefix = ".".join(config['subnet'].split(".")[:2])
-        return '''
+        export = f"{subnetPrefix}.{config['vxlan']}.0/24"
+        return export,'''
 protocol bgp '''+peer["nic"]+''' {
         ipv4 {
                 import all;
-                export where net ~ [ '''+subnetPrefix+'''.'''+str(config["vxlan"])+'''.0/24 ];
+                export where net ~ [ '''+export+''' ];
         };
         local as '''+"".join(peer["origin"].split(".")[2:])+''';
         neighbor '''+peer["target"]+''' as '''+"".join(peer["target"].split(".")[2:])+''';
@@ -125,14 +126,19 @@ protocol static {
 include "bgp.conf";'''
 
         #BGP Peers
+        peerSubnets = []
         for peer in peers:
-            template += self.genBGPPeer(config,peer)
+            export, bgpConfig = self.genBGPPeer(config,peer)
+            peerSubnets.append(export)
+            template += bgpConfig
 
         template += '''
 protocol kernel {
 	ipv4 {
 	    export filter { '''
         template += 'krt_prefsrc = '+routerID+';'
+        for peerSubnet in peerSubnets:
+            template += f"if net ~ [ {peerSubnet} ] then accept;" 
         template += '''
         if avoid_local_ptp() then reject;
             accept;
