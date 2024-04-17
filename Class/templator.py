@@ -82,7 +82,7 @@ protocol bgp '''+peer["nic"]+''' {
                 export all;
         };
         local as '''+"".join(peer["origin"].split(".")[2:])+''';
-        neighbor '''+peer["targetIP"]+''' as '''+"".join(peer["targetIP"].split(".")[2:])+''';
+        neighbor '''+peer["target"]+''' as '''+"".join(peer["target"].split(".")[2:])+''';
 }
         '''
 
