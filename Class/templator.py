@@ -74,9 +74,8 @@ else
 fi'''
         return template
 
-    def genBGPPeer(self,config,peer):
-        subnetPrefix = ".".join(config['subnet'].split(".")[:2])
-        export = f"{subnetPrefix}.{config['id']}.0/30"
+    def genBGPPeer(self,subnetPrefix,peer):
+        export = f"{subnetPrefix}.0.0/16"
         return '''
 protocol bgp '''+peer["nic"]+''' {
         ipv4 {
@@ -90,7 +89,8 @@ protocol bgp '''+peer["nic"]+''' {
 
     def genBird(self,latency,peers,config):
         isRouter = "yes" if config['bird']['client'] else "no"
-        routerID = f"{'.'.join(config['subnet'].split('.')[:2])}.{config['id']}.1"
+        subnetPrefix = ".".join(config['subnet'].split(".")[:2])
+        routerID = f"{subnetPrefix}.{config['id']}.1"
         template = f'''log syslog all;
 router id {routerID}; #updated '''+str(int(time.time()))+'''
 
@@ -119,6 +119,7 @@ protocol direct {
 
 protocol static {
     ipv4;
+    route '''+subnetPrefix+'''.0.0/16 unreachable;
     include "static.conf";
 }
 
@@ -126,7 +127,7 @@ include "bgp.conf";'''
 
         #BGP Peers
         for peer in peers:
-            template += self.genBGPPeer(config,peer)
+            template += self.genBGPPeer(subnetPrefix,peer)
 
         template += '''
 protocol kernel {
@@ -147,10 +148,6 @@ protocol kernel {
         if config['bird']['ospfv2']:
             template += '''
 filter export_OSPF {
-    if source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;\n'''
-            for peerSubnet in config['AllowedPeers']:
-                template += f"if net ~ [ {peerSubnet} ] then accept;\n" 
-            template += '''
     reject;
 }
 
