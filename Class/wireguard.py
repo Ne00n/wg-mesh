@@ -169,9 +169,10 @@ class Wireguard(Base):
         for findex, filename in enumerate(files):
             if not filename.endswith(".sh") or filename == "dummy.sh": continue
             with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
+            subnetPrefix,subnetPrefixSplitted = self.subnetSwitch(filename)
             #grab wg server ip from client wg config
             if "endpoint" in config:
-                destination = re.findall(f'({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.[0-9]+\.)',config, re.MULTILINE)
+                destination = re.findall(f'({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.)',config, re.MULTILINE)
                 if not destination:
                     print(f"Ignoring {filename}")
                     continue
@@ -179,9 +180,9 @@ class Wireguard(Base):
             elif "listen-port" in config:
                 #grab ID from filename
                 linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
-                destination = f"{self.subnetPrefix}.{linkID}.1"
+                destination = f"{subnetPrefix}.{linkID}.1"
             #get remote endpoint
-            parsed, remote = self.getRemote(config,self.subnetPrefixSplitted)
+            parsed, remote = self.getRemote(config,subnetPrefixSplitted)
             #grab publickey
             publicKey = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)[0]
             #grab area
