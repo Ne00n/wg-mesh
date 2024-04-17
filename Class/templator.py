@@ -76,7 +76,7 @@ fi'''
 
     def genBGPPeer(self,config,peer):
         subnetPrefix = ".".join(config['subnet'].split(".")[:2])
-        export = f"{subnetPrefix}.{config['vxlan']}.0/24, {subnetPrefix}.{config['id']}.0/30"
+        export = f"{subnetPrefix}.{config['id']}.0/30"
         return '''
 protocol bgp '''+peer["nic"]+''' {
         ipv4 {
@@ -114,7 +114,6 @@ protocol direct {
     ipv4;
     ipv6;
     interface "lo";
-    interface "vxlan*";
     interface "tunnel*";
 }
 
