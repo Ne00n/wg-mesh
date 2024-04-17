@@ -201,7 +201,7 @@ class Wireguard(Base):
         return data
 
     def subnetSwitch(self,network=""):
-        if network == "Peer":
+        if "Peer" in network:
             return self.subnetPeerPrefix,self.subnetPeerPrefixSplitted
         else:
             return self.subnetPrefix,self.subnetPrefixSplitted
