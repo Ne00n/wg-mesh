@@ -148,6 +148,7 @@ protocol kernel {
         if config['bird']['ospfv2']:
             template += '''
 filter export_OSPF {
+    if source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;
     reject;
 }
 
