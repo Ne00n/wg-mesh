@@ -113,6 +113,7 @@ protocol direct {
     ipv4;
     ipv6;
     interface "lo";
+    interface "vxlan*;
     interface "tunnel*";
 }
 
