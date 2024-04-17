@@ -92,14 +92,14 @@ class Wireguard(Base):
         configs = self.getConfigs(False)
         #dummy
         if not "dummy.sh" in configs:
-            dummyConfig = self.Templator.genDummy(id,connectivity)
+            dummyConfig = self.Templator.genDummy(config,connectivity)
             self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
             self.setInterface("dummy","up")
 
     def reconfigureDummy(self):
         self.setInterface("dummy","down")
         self.cleanInterface("dummy",False)
-        dummyConfig = self.Templator.genDummy(self.config['id'],self.config['connectivity'],self.subnetPrefix)
+        dummyConfig = self.Templator.genDummy(self.config,self.config['connectivity'],self.subnetPrefix)
         self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
         self.setInterface("dummy","up")
 
