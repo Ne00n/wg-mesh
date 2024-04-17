@@ -78,12 +78,9 @@ def getReqIP():
 
 def getInternal(requestIP):
     try:
-        isInternalSubnet =  ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnet'])
-        isInternalSubnetPeer =  ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnetPeer'])
-        if isInternalSubnet or isInternalSubnetPeer: return True
+        return ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnet'])
     except:
         return False
-    return False
 
 @route('/connectivity',method='POST')
 def index():
