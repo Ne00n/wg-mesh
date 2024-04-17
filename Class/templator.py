@@ -147,9 +147,6 @@ protocol kernel {
         if config['bird']['ospfv2']:
             template += '''
 filter export_OSPF {
-    if net ~ [ 10.0.252.0/24+ ] then reject; #Source based Routing for Clients
-    if net ~ [ 172.16.0.0/24+ ] then reject; #Wireguard VPN
-    if net ~ [ 127.0.0.0/8+ ] then reject; #loopback
     if source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;\n'''
             for peerSubnet in config['AllowedPeers']:
                 template += f"if net ~ [ {peerSubnet} ] then accept;\n" 
