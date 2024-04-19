@@ -87,7 +87,7 @@ class Bird(Base):
         self.saveFile(bird,'/etc/bird/bird.conf')
         self.logger.info("Reloading bird")
         self.cmd("sudo systemctl reload bird")
-        return latencyData
+        return latencyData,peers
 
     def mesh(self):
         #check if bird is running
