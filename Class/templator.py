@@ -172,7 +172,7 @@ protocol ospf {
         interface "'''+str(data['nic'])+'''" {
                 type ptmp;
                 neighbors {
-                '''+data['target']+''';
+                    '''+data['target']+''';
                 };
                 cost '''+str(data['cost'])+''';
         };
