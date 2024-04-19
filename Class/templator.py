@@ -92,7 +92,7 @@ protocol bgp '''+peer["nic"]+''' {
         subnetPrefix = ".".join(config['subnet'].split(".")[:2])
         routerID = f"{subnetPrefix}.{config['id']}.1"
         template = f'''log syslog all;
-router id {routerID}; #updated '''+str(int(time.time()))+'''
+router id {routerID}; #generated '''+str(int(time.time()))+'''
 
 protocol device {
     scan time 10;
@@ -174,7 +174,7 @@ protocol ospf {
                 neighbors {
                 '''+data['target']+''';
                 };
-                cost '''+str(data['cost'])+'''; #'''+data['target']+'''E
+                cost '''+str(data['cost'])+''';
         };
             '''
             template += """
@@ -203,7 +203,7 @@ protocol ospf v3 {
                     template += '''
         interface "'''+str(data['nic'])+'''" {
             type ptmp;
-            cost '''+str(data['cost'])+'''; #'''+data["target"]+'''E
+            cost '''+str(data['cost'])+''';
         };
             '''
                 template += """
