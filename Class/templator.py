@@ -147,6 +147,7 @@ protocol kernel {
 
         if config['bird']['ospfv2']:
             template += '''
+
 filter export_OSPF {
     if source ~ [ RTS_DEVICE ] then accept;\n'''
             for peerSubnet in config['AllowedPeers']:
@@ -187,6 +188,7 @@ filter export_OSPFv3 {
     if source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;
     reject;
 }
+
 protocol ospf v3 {
     tick """+str(config['bird']['tick'])+""";
     graceful restart yes;
