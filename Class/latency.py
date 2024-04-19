@@ -1,10 +1,13 @@
 import subprocess, requests, json, time, sys, re, os
 from Class.wireguard import Wireguard
+from Class.templator import Templator
 from datetime import datetime
 from Class.base import Base
 from random import randint
 
 class Latency(Base):
+    Templator = Templator()
+
     def __init__(self,path,logger):
         self.wg = Wireguard(path)
         self.latencyData = {}
@@ -69,7 +72,7 @@ class Latency(Base):
             for entry,row in latency.items():
                 if entry == node['target']:
                     peers.append(entry)
-                    node['latency'] = node['current'] = self.getAvrg(row,False)
+                    node['cost'] = node['current'] = self.getAvrg(row,False)
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
 
                     #Packetloss
@@ -83,9 +86,9 @@ class Latency(Base):
                     #multiply by 10 otherwise small package loss may not result in routing changes
                     eventScore = (eventScore * eventCount) * 10
                     if eventCount > 0:
-                        node['latency'] += eventScore
-                        self.logger.debug(f"Loss {node['nic']} ({entry}) Weight: {node['weight']}, Latency: {node['current']}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
-                        if self.reloadPeacemaker(node['nic'],hasLoss,eventCount,node['latency'],node['weight']): 
+                        node['cost'] += eventScore
+                        self.logger.debug(f"Loss {node['nic']} ({entry}) Weight: {node['weight']}, Latency: {node['current']}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
+                        if self.reloadPeacemaker(node['nic'],hasLoss,eventCount,node['cost'],node['weight']): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
                             self.reload += 1
                             self.noWait += 1
@@ -100,9 +103,9 @@ class Latency(Base):
 
                     eventCount,eventScore = self.countEvents(entry,'jitter')
                     if eventCount > 0:
-                        node['latency'] += eventScore
-                        self.logger.debug(f"Jitter {node['nic']} ({entry}) Weight: {node['weight']}, Latency: {node['current']}, Modified: {node['latency']}, Score: {eventScore}, Count: {eventCount}")
-                        if self.reloadPeacemaker(node['nic'],hasJitter,eventCount,node['latency'],node['weight']):
+                        node['cost'] += eventScore
+                        self.logger.debug(f"Jitter {node['nic']} ({entry}) Weight: {node['weight']}, Latency: {node['current']}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
+                        if self.reloadPeacemaker(node['nic'],hasJitter,eventCount,node['cost'],node['weight']):
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
                             self.reload += 1
                         ongoingJitter += 1
@@ -110,14 +113,14 @@ class Latency(Base):
                     total += 1
                     #if within 200-255 range (client) adjust base cost/weight to avoid transit
                     linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",node['nic'], re.MULTILINE)[0]
-                    if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (node['latency'] + 10000) < 65535: node['latency'] += 10000
+                    if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (node['cost'] + 10000) < 65535: node['cost'] += 10000
                     #make sure its always int
-                    node['latency'] = int(node['latency'])
+                    node['cost'] = int(node['cost'])
                     #make sure we stay below max int
-                    if node['latency'] > 65535: node['latency'] = 65535
+                    if node['cost'] > 65535: node['cost'] = 65535
                     #make sure we always stay over zero
                     #in case of a typo and you connect to itself, it may cause a weight to be measured at zero
-                    if node['latency'] < 0: node['latency'] = 1
+                    if node['cost'] < 0: node['cost'] = 1
 
         #clear out old peers
         for entry in list(self.network):
@@ -138,34 +141,25 @@ class Latency(Base):
         configRaw = self.cmd("cat /etc/bird/bird.conf")[0].rstrip()
         #Parsing
         config = self.parse(configRaw)
+        print(config)
         if not config:
             self.logger.warning("Parsed bird config is empty")
             return -2
-        configs = self.cmd('ip addr show')
         #fping
         self.logger.debug("Running fping")
-        result = self.getLatency(config,5)
-        #update
-        local = re.findall(f"inet ({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}[0-9.]+\.1)\/(32|30) scope global lo",configs[0], re.MULTILINE | re.DOTALL)
-        if not local: return False
-        configRaw = re.sub(local[0][0]+"; #updated [0-9]+", local[0][0]+"; #updated "+str(int(time.time())), configRaw, 0, re.MULTILINE)
-        self.logger.debug(f"Got {len(result)} changes")
-        for entry in result:
-            if "latency" not in entry: continue
-            self.logger.debug(f"Replacing {entry['weight']} with {entry['latency']} on {entry['target']}")
-            configRaw = re.sub(f"cost {entry['weight']}; #{entry['target']}E", f"cost {entry['latency']}; #{entry['target']}E", configRaw, 0, re.MULTILINE)
-            #checking
-            search = re.findall( f"cost {entry['latency']}; #{entry['target']}E", configRaw)
-            if not search or len(search) > 2: self.logger.warning(f"Anomaly detected in bird.conf for {entry['target']}")
-        if not result:
+        latencyData = self.getLatency(config,5)
+        print(latencyData)
+        if not latencyData:
             self.logger.warning("Nothing todo")
         else:
+            latencyData = self.wg.groupByArea(latencyData)
+            peers = []
+            birdConfig = self.Templator.genBird(latencyData,peers,self.config)
+            #write
+            self.saveFile(birdConfig,'/etc/bird/bird.conf')
             #reload bird with updates only every 10 minutes or if reload is greater than 1
             restart = [0,10,20,30,40,50]
             if (datetime.now().minute in restart and runs == 0) or self.reload > 0:
-                #write
-                self.logger.info("Writing config")
-                self.saveFile(configRaw,'/etc/bird/bird.conf')
                 #reload
                 self.logger.info("Reloading bird")
                 self.cmd('sudo systemctl reload bird')
@@ -176,5 +170,6 @@ class Latency(Base):
         time.sleep(5)
         return self.noWait
 
-    def setLatencyData(self,latencyData):
+    def setLatencyData(self,latencyData,peers):
         self.latencyData = latencyData
+        self.peers = peers
