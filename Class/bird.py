@@ -77,6 +77,7 @@ class Bird(Base):
         for data in latencyData:
             linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",data['nic'], re.MULTILINE)[0]
             if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65535: data['cost'] += 10000
+        latencyDataNoGroup = latencyData
         latencyData = self.wg.groupByArea(latencyData)
         self.logger.info("Generating config")
         bird = self.Templator.genBird(latencyData,peers,self.config)
@@ -87,7 +88,7 @@ class Bird(Base):
         self.saveFile(bird,'/etc/bird/bird.conf')
         self.logger.info("Reloading bird")
         self.cmd("sudo systemctl reload bird")
-        return latencyData,peers
+        return latencyDataNoGroup,peers
 
     def mesh(self):
         #check if bird is running
