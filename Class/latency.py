@@ -153,8 +153,7 @@ class Latency(Base):
             self.logger.warning("Nothing todo")
         else:
             latencyData = self.wg.groupByArea(latencyData)
-            peers = []
-            birdConfig = self.Templator.genBird(latencyData,peers,self.config)
+            birdConfig = self.Templator.genBird(latencyData,self.peers,self.config)
             #write
             self.saveFile(birdConfig,'/etc/bird/bird.conf')
             #reload bird with updates only every 10 minutes or if reload is greater than 1
