@@ -18,16 +18,6 @@ class Latency(Base):
         self.network = self.readConfig(f"{path}/configs/network.json")
         if not self.network: self.network = {"created":int(time.time()),"updated":0}
 
-    def parse(self,configRaw):
-        if self.config['bird']['ospfv2']:
-            parsed = re.findall('interface "([a-zA-Z0-9]*)".{50,130}?cost ([0-9.]+);\s#([0-9.]+)E',configRaw, re.DOTALL)
-        else:
-            parsed = re.findall('interface "([a-zA-Z0-9]*)".{35,130}?cost ([0-9.]+);\s#([0-9.]+)E',configRaw, re.DOTALL)
-        data = []
-        for nic,weight,target in parsed:
-            data.append({'nic':nic,'target':target,'weight':weight})
-        return data
-
     def checkJitter(self,row,avrg):
         grace = 20
         for entry in row:
@@ -138,15 +128,6 @@ class Latency(Base):
         if not "running" in bird:
             self.logger.warning("bird not running")
             return -1
-        #Getting config
-        self.logger.debug("Reading bird config")
-        configRaw = self.cmd("cat /etc/bird/bird.conf")[0].rstrip()
-        #Parsing
-        config = self.parse(configRaw)
-        if not config:
-            self.logger.warning("Parsed bird config is empty")
-            return -2
-        #fping
         self.logger.debug("Running fping")
         latencyData = self.getLatency(self.latencyData,5)
         if not latencyData:
