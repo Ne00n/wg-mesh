@@ -35,17 +35,17 @@ class Latency(Base):
             if float(entry[0]) > avrg + grace: return True,round(float(entry[0]) - (avrg + grace),2)
         return False,0
 
-    def reloadPeacemaker(self,nic,ongoing,eventCount,latency,weight):
+    def reloadPeacemaker(self,nic,ongoing,eventCount,latency,old):
         #needs to be ongoing
         if not ongoing: return False
         #ignore links dead or nearly dead links
-        if latency > 20000 and float(weight) > 20000: return False
+        if latency > 20000 and float(old) > 20000: return False
         #ignore any negative changes
-        if latency <= float(weight): return False
-        diff = latency - float(weight)
-        percentage = round((abs(float(weight) - latency) / latency) * 100.0,1)
+        if latency <= float(old): return False
+        diff = latency - float(old)
+        percentage = round((abs(float(old) - latency) / latency) * 100.0,1)
         #needs to be higher than 15% and 20+ difference
-        self.logger.info(f"{nic} Current percentage: {percentage}%, needed 15% (latency {latency}, weight {weight}, diff {diff})")
+        self.logger.info(f"{nic} Current percentage: {percentage}%, needed 15% (current {latency}, earlier {old}, diff {diff})")
         if diff <= 20 or percentage <= 15: return False
         return True
 
@@ -72,6 +72,8 @@ class Latency(Base):
             for entry,row in latency.items():
                 if entry == node['target']:
                     peers.append(entry)
+                    #bird passes this as cost, so we rename it to weight, when this runs through, cost is basically the old latency results
+                    node['old'] = node['cost']
                     node['cost'] = node['current'] = self.getAvrg(row,False)
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
 
@@ -87,8 +89,8 @@ class Latency(Base):
                     eventScore = (eventScore * eventCount) * 10
                     if eventCount > 0:
                         node['cost'] += eventScore
-                        self.logger.debug(f"Loss {node['nic']} ({entry}) Weight: {node['weight']}, Latency: {node['current']}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
-                        if self.reloadPeacemaker(node['nic'],hasLoss,eventCount,node['cost'],node['weight']): 
+                        self.logger.debug(f"Loss {node['nic']} ({entry}) Weight: {node['old']}, Latency: {node['current']}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
+                        if self.reloadPeacemaker(node['nic'],hasLoss,eventCount,node['cost'],node['old']): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
                             self.reload += 1
                             self.noWait += 1
@@ -104,8 +106,8 @@ class Latency(Base):
                     eventCount,eventScore = self.countEvents(entry,'jitter')
                     if eventCount > 0:
                         node['cost'] += eventScore
-                        self.logger.debug(f"Jitter {node['nic']} ({entry}) Weight: {node['weight']}, Latency: {node['current']}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
-                        if self.reloadPeacemaker(node['nic'],hasJitter,eventCount,node['cost'],node['weight']):
+                        self.logger.debug(f"Jitter {node['nic']} ({entry}) Weight: {node['old']}, Latency: {node['current']}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
+                        if self.reloadPeacemaker(node['nic'],hasJitter,eventCount,node['cost'],node['old']):
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
                             self.reload += 1
                         ongoingJitter += 1
@@ -141,17 +143,17 @@ class Latency(Base):
         configRaw = self.cmd("cat /etc/bird/bird.conf")[0].rstrip()
         #Parsing
         config = self.parse(configRaw)
-        print(config)
         if not config:
             self.logger.warning("Parsed bird config is empty")
             return -2
         #fping
         self.logger.debug("Running fping")
-        latencyData = self.getLatency(config,5)
-        print(latencyData)
+        latencyData = self.getLatency(self.latencyData,5)
         if not latencyData:
             self.logger.warning("Nothing todo")
         else:
+            #save in memory so we don't have to read the config file again
+            self.latencyData = latencyData
             latencyData = self.wg.groupByArea(latencyData)
             birdConfig = self.Templator.genBird(latencyData,self.peers,self.config)
             #write
