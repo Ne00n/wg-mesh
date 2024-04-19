@@ -62,7 +62,7 @@ class Latency(Base):
             for entry,row in latency.items():
                 if entry == node['target']:
                     peers.append(entry)
-                    #bird passes this as cost, so we rename it to weight, when this runs through, cost is basically the old latency results
+                    #bird passes this as cost, so we rename it to old, when this runs through, cost is basically the old latency results
                     node['old'] = node['cost']
                     node['cost'] = node['current'] = self.getAvrg(row,False)
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
