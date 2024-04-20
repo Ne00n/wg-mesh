@@ -79,6 +79,7 @@ fi'''
         return '''
 protocol bgp '''+peer["nic"]+''' {
         ipv4 {
+                preference 100;
                 import all;
                 export where net ~ [ '''+export+''' ];
         };
