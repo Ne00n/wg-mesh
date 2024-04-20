@@ -97,39 +97,20 @@ protocol bgp '''+peer["nic"]+''' {
         isRouter = "yes" if config['bird']['client'] else "no"
         subnetPrefix = ".".join(config['subnet'].split(".")[:2])
         routerID = f"{subnetPrefix}.{config['id']}.1"
-        template = f'''log syslog all;
-router id {routerID}; #generated '''+str(int(time.time()))+'''
+        template = f"log syslog all;\nrouter id {routerID}; #generated {int(time.time())}"
+        template += "\n\nprotocol device {\n\tscan time 10;\n}\n"
 
-protocol device {
-    scan time 10;
-}
-'''
         localPTP = ""
         for area,latencyData in latency.items():
             for data in latencyData:
                 if localPTP != "":
                     localPTP += ","
                 localPTP += data['target']+"/32-"
-        template += '''
-function avoid_local_ptp() {
-### Avoid fucking around with direct peers
-return net ~ [ '''+localPTP+''' ];
-}
 
-protocol direct {
-    ipv4;
-    ipv6;
-    interface "lo";
-    interface "tunnel*";
-}
-
-protocol static {
-    ipv4;
-    route '''+subnetPrefix+'''.0.0/16 unreachable;
-    include "static.conf";
-}
-
-include "bgp.conf";'''
+        template += f"\nfunction avoid_local_ptp() {{\n\t### Avoid fucking around with direct peers\n\treturn net ~ [ {localPTP} ];\n}}"
+        template += '\n\nprotocol direct {\n\tipv4;\n\tipv6;\n\tinterface "lo";\n\tinterface "tunnel*";\n}'
+        template += f'\n\nprotocol static {{\n\tipv4;\n\troute {subnetPrefix}.0.0/16 unreachable;\n\tinclude "static.conf";\n\n}}'
+        template += '\ninclude "bgp.conf";'
 
         #BGP Peers
         for peer in peers:
