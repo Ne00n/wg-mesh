@@ -87,6 +87,12 @@ protocol bgp '''+peer["nic"]+''' {
 }
         '''
 
+    def genInterfaceOSPF(self,data,ospfType=2):
+        template = f'''\n\tinterface "{data['nic']}" {{ \n\t\ttype ptmp;'''
+        if ospfType == 2: template += f"\n\t\tneighbors {{ {data['target']}; }};"
+        template += f"\n\t\tcost {data['cost']};\n\t}};"
+        return template
+
     def genBird(self,latency,peers,config):
         isRouter = "yes" if config['bird']['client'] else "no"
         subnetPrefix = ".".join(config['subnet'].split(".")[:2])
@@ -165,18 +171,10 @@ protocol ospf {
         export filter export_OSPF;
     };'''
             for area,latencyData in latency.items():
-                template += """
-    area """+str(area)+""" {"""
+                template += f"""
+    area {area} {{"""
                 for data in latencyData:
-                    template += '''
-        interface "'''+str(data['nic'])+'''" {
-                type ptmp;
-                neighbors {
-                    '''+data['target']+''';
-                };
-                cost '''+str(data['cost'])+''';
-        };
-            '''
+                    template += self.genInterfaceOSPF(data)
             template += """
     };"""
             template += """
@@ -200,12 +198,7 @@ protocol ospf v3 {
                 template += """
     area """+str(area)+""" {"""
                 for data in latencyData:
-                    template += '''
-        interface "'''+str(data['nic'])+'''" {
-            type ptmp;
-            cost '''+str(data['cost'])+''';
-        };
-            '''
+                    template += self.genInterfaceOSPF(data,3)
                 template += """
     };"""
             template += """
