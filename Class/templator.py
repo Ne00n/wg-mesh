@@ -135,51 +135,29 @@ include "bgp.conf";'''
         for peer in peers:
             template += self.genBGPPeer(subnetPrefix,peer)
 
-        template += '''
-protocol kernel {
-	ipv4 {
-	    export filter { '''
-        template += 'krt_prefsrc = '+routerID+';\n'
-        template += '''
-        if avoid_local_ptp() then reject;
-        accept;
-        };
-    };
-}
-
-protocol kernel {
-    ipv6 { export all; };
-}'''
+        template += "\nprotocol kernel {\n\tipv4 {\n\t\texport filter { "
+        template += f"\n\t\t\tkrt_prefsrc = {routerID};"
+        template += "\n\t\t\tif avoid_local_ptp() then reject;\n\t\t\taccept;\n\t\t};\n\t};\n}"
+        template += "\n\nprotocol kernel {\n\tipv6 { export all; };\n}"
 
         if config['bird']['ospfv2']:
-            template += '''
-
-filter export_OSPF {
-    if source ~ [ RTS_DEVICE ] then accept;\n'''
+            template += "\n\nfilter export_OSPF {\n\tif source ~ [ RTS_DEVICE ] then accept;"
             for peerSubnet in config['AllowedPeers']:
-                template += f"if net ~ [ {peerSubnet} ] then accept;\n" 
-            template += '''
-    reject;
-}
-
-protocol ospf {
-    tick '''+str(config['bird']['tick'])+''';
-    graceful restart yes;
-    stub router '''+isRouter+''';
-    ipv4 {
-        import all;
-        export filter export_OSPF;
-    };'''
+                template += f"\n\tif net ~ [ {peerSubnet} ] then accept;" 
+            template += "\n\treject;\n}"
+            template += f"\n\nprotocol ospf {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
+            template += f"\n\tipv4 {{\n\t\timport all;\n\t\texport filter export_OSPF;\n\t}};"
             for area,latencyData in latency.items():
                 template += f"\n\tarea {area} {{"
                 for data in latencyData:
                     template += self.genInterfaceOSPF(data)
             template += "\n\t};"
             template += "\n}"
+
         if config['bird']['ospfv3']:
             template += f"\n\nfilter export_OSPFv3 {{\n\tif (net.len > 48) then reject;\n\tif source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;\n\treject;\n}}"
-            template += f"\n\nprotocol ospf v3 {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub {isRouter};"
-            template += f"\n\tipv6 {{\n\t\texport filter export_OSPFv3\n\t}};"
+            template += f"\n\nprotocol ospf v3 {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
+            template += f"\n\tipv6 {{\n\t\texport filter export_OSPFv3;\n\t}};"
             for area,latencyData in latency.items():
                 template += f"\n\tarea {area} {{"
                 for data in latencyData:
