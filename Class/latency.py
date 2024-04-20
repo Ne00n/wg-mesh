@@ -1,4 +1,4 @@
-import subprocess, requests, json, time, sys, re, os
+import subprocess, requests, json, copy, time, sys, re, os
 from Class.wireguard import Wireguard
 from Class.templator import Templator
 from datetime import datetime
@@ -50,6 +50,10 @@ class Latency(Base):
                 del self.network[entry][eventType][event]
         return eventCount,round(eventScore,1)
 
+    def getOldLatencyData(self,target):
+        for node in self.latencyDataState:
+            if target == node['target']: return node 
+
     def getLatency(self,config,pings=4):
         targets = []
         for row in config: targets.append(row['target'])
@@ -62,11 +66,12 @@ class Latency(Base):
             for entry,row in latency.items():
                 if entry == node['target']:
                     peers.append(entry)
-                    #bird passes this as cost, so we rename it to old, when this runs through, cost is basically the old latency results
-                    node['old'] = node['cost']
+                    #get old latencyData before reload, so we have a better reference
+                    oldLatencyData = self.getOldLatencyData(node['target'])
+                    old = oldLatencyData['cost']
+                    #get average
                     node['cost'] = node['current'] = self.getAvrg(row,False)
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
-
                     #Packetloss
                     hasLoss,peakLoss = len(row) < pings -1,(pings -1) - len(row)
                     if hasLoss:
@@ -79,8 +84,8 @@ class Latency(Base):
                     eventScore = (eventScore * eventCount) * 10
                     if eventCount > 0:
                         node['cost'] += eventScore
-                        self.logger.debug(f"Loss {node['nic']} ({entry}) Weight: {node['old']}, Latency: {node['current']}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
-                        if self.reloadPeacemaker(node['nic'],hasLoss,eventCount,node['cost'],node['old']): 
+                        self.logger.debug(f"Loss {node['nic']} ({entry}) Weight: {old}, Latency: {node['current']}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
+                        if self.reloadPeacemaker(node['nic'],hasLoss,eventCount,node['cost'],old): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
                             self.reload += 1
                             self.noWait += 1
@@ -96,8 +101,8 @@ class Latency(Base):
                     eventCount,eventScore = self.countEvents(entry,'jitter')
                     if eventCount > 0:
                         node['cost'] += eventScore
-                        self.logger.debug(f"Jitter {node['nic']} ({entry}) Weight: {node['old']}, Latency: {node['current']}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
-                        if self.reloadPeacemaker(node['nic'],hasJitter,eventCount,node['cost'],node['old']):
+                        self.logger.debug(f"Jitter {node['nic']} ({entry}) Weight: {old}, Latency: {node['current']}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
+                        if self.reloadPeacemaker(node['nic'],hasJitter,eventCount,node['cost'],old):
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
                             self.reload += 1
                         ongoingJitter += 1
@@ -142,6 +147,8 @@ class Latency(Base):
             #reload bird with updates only every 10 minutes or if reload is greater than 1
             restart = [0,10,20,30,40,50]
             if (datetime.now().minute in restart and runs == 0) or self.reload > 0:
+                #keep a copy with the current values in the bird config
+                self.latencyDataState = copy.deepcopy(self.latencyData)
                 #reload
                 self.logger.info("Reloading bird")
                 self.cmd('sudo systemctl reload bird')
@@ -153,5 +160,6 @@ class Latency(Base):
         return self.noWait
 
     def setLatencyData(self,latencyData,peers):
-        self.latencyData = latencyData
+        self.latencyData = copy.deepcopy(latencyData)
+        self.latencyDataState = copy.deepcopy(latencyData)
         self.peers = peers
