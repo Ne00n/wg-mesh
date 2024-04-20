@@ -70,13 +70,13 @@ class Latency(Base):
                     oldLatencyData = self.getOldLatencyData(node['target'])
                     old = oldLatencyData['cost']
                     #get average
-                    node['cost'] = node['current'] = self.getAvrg(row,False)
+                    node['cost'] = current = self.getAvrg(row,False)
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
                     #Packetloss
                     hasLoss,peakLoss = len(row) < pings -1,(pings -1) - len(row)
                     if hasLoss:
                         #keep packet loss events for 15 minutes
-                        self.network[entry]['packetloss'][int(time.time()) + randint(900,1200)] = {"peak":peakLoss,"latency":node['current']}
+                        self.network[entry]['packetloss'][int(time.time()) + randint(900,1200)] = {"peak":peakLoss,"latency":current}
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
 
                     eventCount,eventScore = self.countEvents(entry,'packetloss')
@@ -84,7 +84,7 @@ class Latency(Base):
                     eventScore = (eventScore * eventCount) * 10
                     if eventCount > 0:
                         node['cost'] += eventScore
-                        self.logger.debug(f"Loss {node['nic']} ({entry}) Weight: {old}, Latency: {node['current']}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
+                        self.logger.debug(f"Loss {node['nic']} ({entry}) Weight: {old}, Latency: {current}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
                         if self.reloadPeacemaker(node['nic'],hasLoss,eventCount,node['cost'],old): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
                             self.reload += 1
@@ -95,13 +95,13 @@ class Latency(Base):
                     hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
                     if hasJitter:
                         #keep jitter events for 30 minutes
-                        self.network[entry]['jitter'][int(time.time()) + randint(1700,2100)] = {"peak":peakJitter,"latency":node['current']}
+                        self.network[entry]['jitter'][int(time.time()) + randint(1700,2100)] = {"peak":peakJitter,"latency":current}
                         self.logger.info(f"{node['nic']} ({entry}) High Jitter dectected")
 
                     eventCount,eventScore = self.countEvents(entry,'jitter')
                     if eventCount > 0:
                         node['cost'] += eventScore
-                        self.logger.debug(f"Jitter {node['nic']} ({entry}) Weight: {old}, Latency: {node['current']}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
+                        self.logger.debug(f"Jitter {node['nic']} ({entry}) Weight: {old}, Latency: {current}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
                         if self.reloadPeacemaker(node['nic'],hasJitter,eventCount,node['cost'],old):
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
                             self.reload += 1
