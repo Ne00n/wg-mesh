@@ -177,20 +177,9 @@ protocol ospf {
             template += "\n\t};"
             template += "\n}"
         if config['bird']['ospfv3']:
-            template += """
-\nfilter export_OSPFv3 {
-    if (net.len > 48) then reject;
-    if source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;
-    reject;
-}
-
-protocol ospf v3 {
-    tick """+str(config['bird']['tick'])+""";
-    graceful restart yes;
-    stub router """+isRouter+""";
-    ipv6 {
-        export filter export_OSPFv3;
-    };"""
+            template += f"\n\nfilter export_OSPFv3 {{\n\tif (net.len > 48) then reject;\n\tif source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;\n\treject;\n}}"
+            template += f"\n\nprotocol ospf v3 {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub {isRouter};"
+            template += f"\n\tipv6 {{\n\t\texport filter export_OSPFv3\n\t}};"
             for area,latencyData in latency.items():
                 template += f"\n\tarea {area} {{"
                 for data in latencyData:
