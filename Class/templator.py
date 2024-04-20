@@ -88,9 +88,9 @@ protocol bgp '''+peer["nic"]+''' {
         '''
 
     def genInterfaceOSPF(self,data,ospfType=2):
-        template = f'''\n\tinterface "{data['nic']}" {{ \n\t\ttype ptmp;'''
-        if ospfType == 2: template += f"\n\t\tneighbors {{ {data['target']}; }};"
-        template += f"\n\t\tcost {data['cost']};\n\t}};"
+        template = f'''\n\t\tinterface "{data['nic']}" {{ \n\t\t\ttype ptmp;'''
+        if ospfType == 2: template += f"\n\t\t\tneighbors {{ {data['target']}; }};"
+        template += f"\n\t\t\tcost {data['cost']};\n\t\t}};"
         return template
 
     def genBird(self,latency,peers,config):
@@ -171,17 +171,14 @@ protocol ospf {
         export filter export_OSPF;
     };'''
             for area,latencyData in latency.items():
-                template += f"""
-    area {area} {{"""
+                template += f"\n\tarea {area} {{"
                 for data in latencyData:
                     template += self.genInterfaceOSPF(data)
-            template += """
-    };"""
-            template += """
-}"""
+            template += "\n\t};"
+            template += "\n}"
         if config['bird']['ospfv3']:
             template += """
-filter export_OSPFv3 {
+\nfilter export_OSPFv3 {
     if (net.len > 48) then reject;
     if source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;
     reject;
@@ -195,13 +192,10 @@ protocol ospf v3 {
         export filter export_OSPFv3;
     };"""
             for area,latencyData in latency.items():
-                template += """
-    area """+str(area)+""" {"""
+                template += f"\n\tarea {area} {{"
                 for data in latencyData:
                     template += self.genInterfaceOSPF(data,3)
-                template += """
-    };"""
-            template += """
-}"""
+                template += "\n\t};"
+            template += "\n}\n"
         
         return template
