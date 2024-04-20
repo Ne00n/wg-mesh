@@ -88,8 +88,10 @@ protocol bgp '''+peer["nic"]+''' {
         '''
 
     def genInterfaceOSPF(self,data,ospfType=2):
-        template = f'''\n\t\tinterface "{data['nic']}" {{ \n\t\t\ttype ptmp;'''
-        if ospfType == 2: template += f"\n\t\t\tneighbors {{ {data['target']}; }};"
+        nic = data['nic']
+        template = f'\n\t\tinterface "{nic}" {{' 
+        template += '\n\t\t\tstub;' if "Peer" in data ['nic'] else '\n\t\t\ttype ptmp;'
+        if ospfType == 2 and not "Peer" in data['nic']: template += f"\n\t\t\tneighbors {{ {data['target']}; }};"
         template += f"\n\t\t\tcost {data['cost']};\n\t\t}};"
         return template
 
