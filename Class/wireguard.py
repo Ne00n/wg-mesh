@@ -179,6 +179,12 @@ class Wireguard(Base):
                     print(f"Ignoring {filename}")
                     continue
                 destination = f"{destination[0]}1"
+            elif "Peer" in filename:
+                peerIP = re.findall("Peer\s([0-9.]+)",config, re.MULTILINE)[0]
+                if not peerIP:
+                    print(f"Unable to figure out peer for {filename}")
+                    continue
+                destination = peerIP[0]
             elif "listen-port" in config:
                 #grab ID from filename
                 linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
@@ -250,7 +256,7 @@ class Wireguard(Base):
                 #interface
                 interface = self.getInterface(resp['id'],interfaceType,network)
                 #generate config
-                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,subnetPrefix)
+                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,subnetPrefix,data['subnetPrefix'])
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")

@@ -26,7 +26,7 @@ else
 fi'''
         return template
 
-    def genClient(self,interface,config,resp,serverIPExternal,linkType="default",prefix="10.0",):
+    def genClient(self,interface,config,resp,serverIPExternal,linkType="default",prefix="10.0",peerPrefix="172.31"):
         serverID,serverIP,serverPort,serverPublicKey,wgobfsSharedKey = resp['id'],resp['lastbyte'],resp['port'],resp['publicKeyServer'],resp['wgobfsSharedKey']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
@@ -36,6 +36,7 @@ fi'''
         wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
 #Area {config['bird']["area"]}
+#Peer {peerPrefix}.{serverID}.1
 if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type wireguard
