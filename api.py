@@ -91,7 +91,7 @@ def index():
     if not isInternal and not validateToken(payload): 
         logging.info(f"Invalid Token from {requestIP}")
         return HTTPResponse(status=401, body="Invalid Token")
-    subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
+    subnetPrefix = ".".join(config['subnet'].split(".")[:2])
     return HTTPResponse(status=200, body={'connectivity':config['connectivity'],'linkTypes':config['linkTypes'],'subnetPrefix':subnetPrefix})
 
 @route('/connect', method='POST')
