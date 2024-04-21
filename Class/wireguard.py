@@ -20,7 +20,7 @@ class Wireguard(Base):
     def updateConfig(self):
         if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
         if not "listenPort" in self.config: self.config['listenPort'] = 8080
-        if not "subnet" in self.config: self.config['subnet'] = "10.0.0.0/8"
+        if not "subnet" in self.config: self.config['subnet'] = "10.0.0.0/16"
         if not "subnetPeer" in self.config: self.config['subnetPeer'] = "172.31.0.0/16"
         if not "AllowedPeers" in self.config: self.config['AllowedPeers'] = []
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
@@ -85,7 +85,7 @@ class Wireguard(Base):
         #config
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
-        config = {"listen":listen,"listenPort":8080,"basePort":51820,"subnet":"10.0.0.0/8","subnetPeer":"172.31.0.0/16","AllowedPeers":[],
+        config = {"listen":listen,"listenPort":8080,"basePort":51820,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16","AllowedPeers":[],
         "prefix":"pipe","id":id,'vxlan':251,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"area":0,"tick":1,"client":False}}
         with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
