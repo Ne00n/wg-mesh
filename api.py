@@ -31,7 +31,6 @@ try:
     wg.saveJson(tokens,f"{folder}/tokens.json")
 except:
     logging.warning("Failed to write token file")
-tokens.append(token)
 
 def validateToken(payload):
     if not "token" in payload: return False

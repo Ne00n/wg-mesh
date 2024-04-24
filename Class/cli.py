@@ -62,11 +62,11 @@ class CLI(Base):
         self.bird.bird(True)
 
     def token(self):
-        if os.path.isfile(f"{self.path}/token"):
-            with open(f'{self.path}/token') as f:
-                print(f.read().rstrip())
+        tokens = self.readConfig(f"{self.path}/tokens.json")
+        if tokens:
+            print(f"Connect: {','.join(tokens['connect'])}")
         else:
-            print("Unable to load the token file")
+            print("Unable to load the tokens.json")
 
     def status(self):
         print("--- Services ----")
