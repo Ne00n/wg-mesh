@@ -23,10 +23,12 @@ stream_handler = logging.StreamHandler()
 stream_handler.setLevel(levels[level])
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%d.%m.%Y %H:%M:%S',level=levels[level],handlers=[RotatingFileHandler(maxBytes=10000000,backupCount=5,filename=f"{folder}/logs/api.log"),stream_handler])
 #token
+tokens = {"connect":[],"peer":[]}
 token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=18))
 logging.info(f"Adding Token {token}")
+tokens['connect'].append(token)
 try:
-    wg.saveFile(f"{token}\n",f"{folder}/token")
+    wg.saveJson(tokens,f"{folder}/tokens.json")
 except:
     logging.warning("Failed to write token file")
 tokens.append(token)
@@ -35,7 +37,7 @@ def validateToken(payload):
     if not "token" in payload: return False
     token = re.findall(r"^([A-Za-z0-9/.=+]{18,60})$",payload['token'],re.MULTILINE | re.DOTALL)
     if not token: return False
-    if payload['token'] not in tokens: return False
+    if payload['token'] not in tokens['connect']: return False
     return True
 
 def validateID(id):
