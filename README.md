@@ -108,6 +108,18 @@ cat /opt/wg-mesh/configs/state.json
 ```
 All 3 nodes should be reachable under 10.0.nodeID.1<br>
 
+**Peering**<br>
+Peering works like Connect, its technically the same.<br>
+A BGP session will be setup automatically on booth ends.<br>
+
+However, since filters are used, you have to specify which prefixes should be imported.<br>
+You can simply do this with.<br>
+```
+wgmesh set AllowedPeers 10.1.0.0/16
+```
+You can add multiple subnets and you can remove them the same way you added them.<br>
+Don't forget to restart the services.<br>
+
 **API**<br>
 Currently the webservice / API is exposed at ::8080, without TLS, use a reverse proxy for TLS<br>
 Internal requests from 10.0.0.0/8 don't need a token (connectivity, connect and update).<br>
