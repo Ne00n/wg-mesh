@@ -102,7 +102,7 @@ protocol bgp '''+peer["nic"]+''' {
         isRouter = "yes" if config['bird']['client'] else "no"
         subnetPrefix = ".".join(config['subnet'].split(".")[:2])
         routerID = f"{subnetPrefix}.{config['id']}.1"
-        template = f"log syslog all;\nrouter id {routerID}; #generated {int(time.time())}"
+        template = f'log "/var/log/bird.log" all;\nrouter id {routerID}; #generated {int(time.time())}'
         template += "\n\nprotocol device {\n\tscan time 10;\n}\n"
 
         localPTP = ""
