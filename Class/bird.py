@@ -94,23 +94,35 @@ class Bird(Base):
         if not "running" in bird:
             self.logger.warning("bird not running")
             return False
+        #wait for bird to fully bootstrap
+        oldTargets,counter = [],0
+        self.logger.info("Waiting for bird routes")
+        for run in range(30):
+            targets = self.getRoutes(self.subnetPrefixSplitted)
+            self.logger.debug(f"Run {run}/30, Counter {counter}, Got {targets} as targets")
+            if oldTargets != targets:
+                oldTargets = targets
+                counter = 0
+            else:
+                counter += 1
+                if counter == 8: break
+            time.sleep(5)
+        #when targets empty, abort
+        if not targets: 
+            self.logger.warning("bird returned no routes, did you setup bird?")
+            return False
+        #vxlan fuckn magic
+        vxlan = self.cmd("bridge fdb show dev vxlan1 | grep dst")[0]
+        for target in targets:
+            ip = target.replace("0/30","1")
+            splitted = ip.split(".")
+            if not ip in vxlan: 
+                self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1 dst {ip}")
+                self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1v6 dst fd10:0:{splitted[2]}::1")
         #To prevent creating connections to new nodes joined afterwards, save state
         if os.path.isfile(f"{self.path}/configs/state.json"):
             self.logger.debug("state.json already exist, skipping")
         else:
-            #wait for bird to fully bootstrap
-            oldTargets,counter = [],0
-            self.logger.info("Waiting for bird routes")
-            for run in range(30):
-                targets = self.getRoutes(self.subnetPrefixSplitted)
-                self.logger.debug(f"Run {run}/30, Counter {counter}, Got {targets} as targets")
-                if oldTargets != targets:
-                    oldTargets = targets
-                    counter = 0
-                else:
-                    counter += 1
-                    if counter == 8: break
-                time.sleep(5)
             #fetch network interfaces and parse
             configs = self.cmd('ip addr show')[0]
             links = self.getBirdLinks(configs,self.prefix,self.subnetPrefixSplitted)
@@ -118,18 +130,6 @@ class Bird(Base):
             if not links: 
                 self.logger.warning("No wireguard interfaces found") 
                 return False
-            #when targets empty, abort
-            if not targets: 
-                self.logger.warning("bird returned no routes, did you setup bird?")
-                return False
-            #vxlan fuckn magic
-            vxlan = self.cmd("bridge fdb show dev vxlan1 | grep dst")[0]
-            for target in targets:
-                ip = target.replace("0/30","1")
-                splitted = ip.split(".")
-                if not ip in vxlan: 
-                    self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1 dst {ip}")
-                    self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1v6 dst fd10:0:{splitted[2]}::1")
             #remove local machine from list
             for ip in list(targets):
                 if self.resolve(localIP,ip.replace("/30",""),30):
