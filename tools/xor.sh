@@ -13,5 +13,4 @@ cd ..
 cd kernel
 make
 insmod xt_XOR.ko
-echo 'ipt_xor' >> /etc/modules
 lsmod | grep "xt_XOR"
