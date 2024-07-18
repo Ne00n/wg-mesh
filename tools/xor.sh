@@ -13,4 +13,6 @@ cd ..
 cd kernel
 make
 insmod xt_XOR.ko
+currentKernel=$(uname -r)
+cp xt_XOR.ko /lib/modules/$currentKernel/kernel/net/netfilter/
 lsmod | grep "xt_XOR"
