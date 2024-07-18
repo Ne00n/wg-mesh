@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 cd
 apt-get update
 apt-get install linux-headers-$(uname -r) git make autoconf automake libtool libxtables-dev pkg-config -y
