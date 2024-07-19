@@ -126,7 +126,7 @@ class Base:
             if i < len(list) -1: response += "\n"
         return response
 
-    def notify(self,server,title,message,priority='5'):
+    def notify(self,server,title,message,priority=5):
         payload = {'title':title, 'message':message, 'priority':priority}
         req = self.call(server,payload,"POST")
         if req: return True
