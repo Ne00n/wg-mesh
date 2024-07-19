@@ -125,3 +125,8 @@ class Base:
                 response += f"{entry}" if response.endswith("\n") or response == "" else f" {entry}"
             if i < len(list) -1: response += "\n"
         return response
+
+    def notify(self,server,token,title,message,priority='5'):
+        payload = {'title': (None, title), 'message': (None, message), 'priority': (None, priority)}
+        req = self.call(server,payload)
+        if req: return True
