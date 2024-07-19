@@ -12,6 +12,7 @@ class Latency(Base):
         self.wg = Wireguard(path)
         self.latencyData = {}
         self.logger = logger
+        self.linkState = {}
         self.path = path
         self.config = self.readConfig(f'{path}/configs/config.json')
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
@@ -139,6 +140,7 @@ class Latency(Base):
             self.logger.warning("Nothing todo")
         else:
             #save in memory so we don't have to read the config file again
+            self.notifications(latencyData)
             self.latencyData = latencyData
             latencyData = self.wg.groupByArea(latencyData)
             birdConfig = self.Templator.genBird(latencyData,self.peers,self.config)
@@ -163,3 +165,14 @@ class Latency(Base):
         self.latencyData = copy.deepcopy(latencyData)
         self.latencyDataState = copy.deepcopy(latencyData)
         self.peers = peers
+
+    def notifications(self,latencyData):
+        for index,row in enumerate(latencyData):
+            nic = row['nic']
+            if not nic in self.linkState: self.linkState[nic] = 1
+            if not self.linkState[nic] and row['cost'] != 65535:
+                self.linkState[row['nic']] = 1
+                self.logger.warning(f"Link {row['nic']} is up")
+            elif self.linkState[nic] and row['cost'] == 65535:
+                self.linkState[row['nic']] = 0
+                self.logger.warning(f"Link {row['nic']} is down")
