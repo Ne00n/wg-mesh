@@ -175,10 +175,10 @@ class Latency(Base):
                 self.logger.warning(f"Link {row['nic']} is up")
                 notifications = self.config['notifications']
                 if notifications['enabled']:
-                    self.notify(notifications['server'],f"Link {row['nic']} is up","")
+                    self.notify(notifications['server'],f"Link {row['nic']} is up",f"Link {row['nic']} on node {self.config['id']} is up")
             elif self.linkState[nic] and row['cost'] == 65535:
                 self.linkState[row['nic']] = 0
                 self.logger.warning(f"Link {row['nic']} is down")
                 notifications = self.config['notifications']
                 if notifications['enabled']:
-                    self.notify(notifications['server'],f"Link {row['nic']} is down","")
+                    self.notify(notifications['server'],f"Link {row['nic']} is down",f"Link {row['nic']} on node {self.config['id']} is down")
