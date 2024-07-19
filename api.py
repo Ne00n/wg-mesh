@@ -65,6 +65,15 @@ def validatePrefix(prefix):
     if not result: return False
     return True
 
+def validateConnectivity(connectivity):
+    if "ipv4" not in connectivity or "ipv6" not in connectivity: return False
+    try:
+        ip_obj = ipaddress.ip_address(connectivity['ipv4'])
+        ip_obj = ipaddress.ip_address(connectivity['ipv6'])
+    except ValueError:
+        return False
+    return True
+
 def terminateLink(folder,interface,wait=True):
     wg = Wireguard(folder)
     if wait: time.sleep(2)
@@ -128,6 +137,10 @@ def index():
     if "area" in payload and not validateID(payload['area']):
         logging.info(f"Invalid Area from {requestIP}")
         return HTTPResponse(status=400, body="Invalid Area")
+    #validate connectivity
+    if "connectivity" in payload and not validateConnectivity(payload['connectivity']):
+        logging.info(f"Invalid connectivity data from {requestIP}")
+        return HTTPResponse(status=400, body="Invalid connectivity data")
     #prevent local connects
     if payload['id'] == config['id']:
         logging.info(f"Invalid connection from {requestIP}")
