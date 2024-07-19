@@ -7,8 +7,8 @@ class Templator:
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
-        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I OUTPUT -p udp -d {payload['connectivity']["ipv4"]}-j XOR --keys "{wgobfsSharedKey}";\n'
-        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I INPUT -p udp -s {payload['connectivity']["ipv4"]} -j XOR --keys "{wgobfsSharedKey}";\n'
+        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I OUTPUT -p udp -d {payload["connectivity"]["ipv4"]}-j XOR --keys "{wgobfsSharedKey}";\n'
+        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I INPUT -p udp -s {payload["connectivity"]["ipv4"]} -j XOR --keys "{wgobfsSharedKey}";\n'
         wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
 #Area {area}
