@@ -146,6 +146,7 @@ def index():
         logging.info(f"Invalid connection from {requestIP}")
         return HTTPResponse(status=400,body="Are you trying to connect to yourself?!")
     #defaults
+    if not "connectivity" in payload: payload['connectivity'] = {}
     if not "linkType" in payload: payload['linkType'] = "default"
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
