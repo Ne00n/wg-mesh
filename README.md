@@ -30,7 +30,8 @@
 - [x] Active Latency optimisation
 - [x] Packet loss detection & rerouting
 - [x] High Jitter detection & rerouting
-- [x] Support for wgobfs (obfuscated wireguard)
+- [x] Support for wgobfs and ipt_xor
+- [x] Push notifications via gotify
 
 **Requirements**<br>
 - Debian or Ubuntu
