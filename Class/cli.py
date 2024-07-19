@@ -104,12 +104,14 @@ class CLI(Base):
             config['bird']['ospfv3'] = False
         elif "client" in option:
             config['bird']['client'] = False
+        elif "notifications" in option:
+            config['notifications']['enabled'] = False
         elif "wgobfs" in option:
             if "wgobfs" in config['linkTypes']: config['linkTypes'].remove("wgobfs")
         elif "ipt_xor" in option:
             if "ipt_xor" in config['linkTypes']: config['linkTypes'].remove("ipt_xor")
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, client")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, client, notifications")
             return
         self.saveJson(config,f"{self.path}/configs/config.json")
         print("You should reload the services to apply any config changes")
@@ -124,6 +126,8 @@ class CLI(Base):
             config['bird']['ospfv3'] = True
         elif "client" in option:
             config['bird']['client'] = True
+        elif "notifications" in option:
+            config['notifications']['enabled'] = True
         elif "wgobfs" in option:
             if not "wgobfs" in config['linkTypes']: config['linkTypes'].append("wgobfs")
             print("You still need to install wgobfs with: bash /opt/wg-mesh/tools/wgobfs.sh")
@@ -131,13 +135,13 @@ class CLI(Base):
             if not "ipt_xor" in config['linkTypes']: config['linkTypes'].append("ipt_xor")
             print("You still need to install ipt_xor with: bash /opt/wg-mesh/tools/xor.sh")
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, client")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, client, notifications")
             return
         self.saveJson(config,f"{self.path}/configs/config.json")
         print("You should reload the services to apply any config changes")
 
     def setOption(self,options):
-        validOptions = ["area","prefix","defaultLinkType","basePort","tick","subnet","vxlan","AllowedPeers"]
+        validOptions = ["area","prefix","defaultLinkType","basePort","tick","subnet","vxlan","AllowedPeers","token","server"]
         if len(sys.argv) == 0:
             print(f"Valid options: {', '.join(validOptions)}")
         else:
@@ -148,6 +152,8 @@ class CLI(Base):
                     config[key] = int(value)
                 elif key == "area" or key == "tick":
                     config['bird'][key] = int(value)
+                elif key == "token" or key == "server":
+                    config['notifications'][key] = value
                 elif key == "AllowedPeers":
                     if value in config['AllowedPeers']:
                         config['AllowedPeers'].remove(value)
