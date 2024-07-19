@@ -173,6 +173,12 @@ class Latency(Base):
             if not self.linkState[nic] and row['cost'] != 65535:
                 self.linkState[row['nic']] = 1
                 self.logger.warning(f"Link {row['nic']} is up")
+                notifications = self.config['notifications']
+                if notifications['enabled']:
+                    self.notify(notifications['server'],f"Link {row['nic']} is up","")
             elif self.linkState[nic] and row['cost'] == 65535:
                 self.linkState[row['nic']] = 0
                 self.logger.warning(f"Link {row['nic']} is down")
+                notifications = self.config['notifications']
+                if notifications['enabled']:
+                    self.notify(notifications['server'],f"Link {row['nic']} is down","")
