@@ -127,6 +127,6 @@ class Base:
         return response
 
     def notify(self,server,title,message,priority='5'):
-        payload = {'title': (None, title), 'message': (None, message), 'priority': (None, priority)}
+        payload = {'title':title, 'message':message, 'priority':priority}
         req = self.call(server,payload)
         if req: return True
