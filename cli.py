@@ -39,7 +39,8 @@ elif sys.argv[1] == "disconnect":
 elif sys.argv[1] == "up" or sys.argv[1] == "down":
     cli.links(sys.argv[1])
 elif sys.argv[1] == "clean":
-    cli.clean()
+    ignoreEndpoint = False if len(sys.argv) <= 2 else True
+    cli.clean(ignoreEndpoint)
 elif sys.argv[1] == "migrate":
     cli.migrate()
 elif sys.argv[1] == "recover":

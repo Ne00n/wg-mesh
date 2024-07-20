@@ -147,7 +147,7 @@ class Wireguard(Base):
         self.setInterface(interface,"down")
         self.cleanInterface(interface)
 
-    def clean(self):
+    def clean(self,ignoreEndpoint):
         links =  self.getLinks()
         offline,online = self.checkLinks(links)
         for link in offline:
@@ -155,7 +155,7 @@ class Wireguard(Base):
             parsed, remote = self.getRemote(data['local'],self.subnetPrefixSplitted)
             print(f"Found dead link {link} ({remote})")
             pings = self.fping([data['vxlan']],3,True)
-            if not pings or not pings[data['vxlan']]:
+            if ignoreEndpoint or not pings or not pings[data['vxlan']]:
                 print(f"Unable to reach endpoint {link} ({data['vxlan']})")
                 print(f"Removing {link} ({data['vxlan']})")
                 interface = self.filterInterface(link)
