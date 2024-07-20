@@ -2,6 +2,7 @@ import subprocess, requests, json, copy, time, sys, re, os
 from Class.wireguard import Wireguard
 from Class.templator import Templator
 from datetime import datetime
+from threading import Thread
 from Class.base import Base
 from random import randint
 
@@ -166,6 +167,14 @@ class Latency(Base):
         self.latencyDataState = copy.deepcopy(latencyData)
         self.peers = peers
 
+    def sendMessage(self,status,row):
+        mtr = self.cmd(f'mtr {row["target"]} --report --report-cycles 3 --no-dns')
+        notifications = self.config['notifications']
+        if status:
+            self.notify(notifications['server'],f"Node {self.config['id']}: {row['nic']} is up",f"{row['nic']} on node {self.config['id']} is up\n\n{mtr[0]}")
+        else:
+            self.notify(notifications['server'],f"Node {self.config['id']}: {row['nic']} is down",f"{row['nic']} on node {self.config['id']} is down\n\n{mtr[0]}")
+
     def notifications(self,latencyData):
         for index,row in enumerate(latencyData):
             nic = row['nic']
@@ -175,10 +184,12 @@ class Latency(Base):
                 self.logger.warning(f"Link {row['nic']} is up")
                 notifications = self.config['notifications']
                 if notifications['enabled']:
-                    self.notify(notifications['server'],f"Node {self.config['id']}: {row['nic']} is up",f"{row['nic']} on node {self.config['id']} is up")
+                    sendMessage = Thread(target=self.sendMessage, args=([1,row]))
+                    sendMessage.start()
             elif self.linkState[nic] and row['cost'] == 65535:
                 self.linkState[row['nic']] = 0
                 self.logger.warning(f"Link {row['nic']} is down")
                 notifications = self.config['notifications']
                 if notifications['enabled']:
-                    self.notify(notifications['server'],f"Node {self.config['id']}: {row['nic']} is down",f"{row['nic']} on node {self.config['id']} is down")
+                    sendMessage = Thread(target=self.sendMessage, args=([0,row]))
+                    sendMessage.start()
