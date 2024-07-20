@@ -137,7 +137,7 @@ protocol bgp '''+peer["nic"]+''' {
                 template += f"\n\tarea {area} {{"
                 for data in latencyData:
                     template += self.genInterfaceOSPF(data)
-            template += "\n\t};"
+                template += "\n\t};"
             template += "\n}"
 
         if config['bird']['ospfv3']:
