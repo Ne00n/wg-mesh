@@ -171,13 +171,12 @@ class Latency(Base):
     def sendMessage(self,status,row):
         linkOnDisk = self.currentLinks[f"{row['nic']}.sh"]
         mtr = ["",""]
-        if status == 0:
-            if linkOnDisk['remotePublic']:
-                targetIP = linkOnDisk['remotePublic']
-                targetIP = targetIP.replace("[","").replace("]","")
-                mtr = self.cmd(f'mtr {targetIP} --report --report-cycles 3 --no-dns')
-            else:
-                mtr = ["No public ip data available for mtr",""]
+        if linkOnDisk['remotePublic']:
+            targetIP = linkOnDisk['remotePublic']
+            targetIP = targetIP.replace("[","").replace("]","")
+            mtr = self.cmd(f'mtr {targetIP} --report --report-cycles 3 --no-dns')
+        else:
+            mtr = ["No public ip data available for mtr",""]
         notifications = self.config['notifications']
         if status:
             self.notify(notifications['server'],f"Node {self.config['id']}: {row['nic']} is up",f"{row['nic']} on node {self.config['id']} is up\n\n{mtr[0]}")
