@@ -15,6 +15,7 @@ class Latency(Base):
         self.logger = logger
         self.linkState = {}
         self.path = path
+        self.currentLinks = self.wg.getLinks()
         self.config = self.readConfig(f'{path}/configs/config.json')
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
         self.network = self.readConfig(f"{path}/configs/network.json")
@@ -168,7 +169,13 @@ class Latency(Base):
         self.peers = peers
 
     def sendMessage(self,status,row):
-        mtr = self.cmd(f'mtr {row["target"]} --report --report-cycles 3 --no-dns')
+        linkOnDisk = self.currentLinks[f"{row['nic']}.sh"]
+        if linkOnDisk['remotePublic']:
+            targetIP = linkOnDisk['remotePublic']
+            targetIP = targetIP.replace("[","").replace("]","")
+            mtr = self.cmd(f'mtr {targetIP} --report --report-cycles 3 --no-dns')
+        else:
+            mtr = ["No public ip data available for mtr",""]
         notifications = self.config['notifications']
         if status:
             self.notify(notifications['server'],f"Node {self.config['id']}: {row['nic']} is up",f"{row['nic']} on node {self.config['id']} is up\n\n{mtr[0]}")
