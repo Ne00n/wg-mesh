@@ -170,7 +170,7 @@ class Latency(Base):
 
     def sendMessage(self,status,row):
         linkOnDisk = self.currentLinks[f"{row['nic']}.sh"]
-        if linkOnDisk['remotePublic']:
+        if linkOnDisk['remotePublic'] and status == 0:
             targetIP = linkOnDisk['remotePublic']
             targetIP = targetIP.replace("[","").replace("]","")
             mtr = self.cmd(f'mtr {targetIP} --report --report-cycles 3 --no-dns')
