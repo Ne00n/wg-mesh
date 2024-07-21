@@ -3,15 +3,17 @@ import time
 class Templator:
 
     def genServer(self,interface,config,payload,serverIP,serverPort,wgobfsSharedKey=""):
-        clientPublicKey,linkType,prefix,area = payload['clientPublicKey'],payload['linkType'],payload['prefix'],payload['area']
+        clientPublicKey,linkType,prefix,area,connectivity = payload['clientPublicKey'],payload['linkType'],payload['prefix'],payload['area'],payload['connectivity']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
+        publicIP = connectivity['v6'] if "v6" in interface else connectivity['v4']
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
-        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I OUTPUT -p udp -d {payload["connectivity"]["ipv4"]} -j XOR --keys "{wgobfsSharedKey}";\n'
-        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I INPUT -p udp -s {payload["connectivity"]["ipv4"]} -j XOR --keys "{wgobfsSharedKey}";\n'
+        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I OUTPUT -p udp -d {connectivity["ipv4"]} -j XOR --keys "{wgobfsSharedKey}";\n'
+        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I INPUT -p udp -s {connectivity["ipv4"]} -j XOR --keys "{wgobfsSharedKey}";\n'
         wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
 #Area {area}
+#Client {publicIP}
 #Peer {prefix}.{config["id"]}.1
 if [ "$1" == "up" ];  then
     {wgobfs}
