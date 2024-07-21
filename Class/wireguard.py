@@ -192,6 +192,9 @@ class Wireguard(Base):
                 #grab ID from filename
                 linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
                 destination = f"{subnetPrefix}.{linkID}.1"
+                #when Client is available fetch publicIP
+                if "Client" in config:
+                    remotePublic = re.findall(f"Client\s([0-9.]+)",config,re.MULTILINE)[0]
             #get remote endpoint
             parsed, remote = self.getRemote(config,subnetPrefixSplitted)
             #grab publickey
