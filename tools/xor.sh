@@ -12,5 +12,6 @@ cp libxt_XOR.so /usr/lib/x86_64-linux-gnu/xtables/
 cd ..
 cd kernel
 make
-insmod xt_XOR.ko
-lsmod | grep "xt_XOR"
+currentKernel=$(uname -r)
+cp xt_XOR.ko /lib/modules/$currentKernel/kernel/
+depmod -a
