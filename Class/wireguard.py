@@ -182,6 +182,7 @@ class Wireguard(Base):
             subnetPrefix,subnetPrefixSplitted = self.subnetSwitch(filename)
             #grab wg server ip from client wg config
             if "endpoint" in config:
+                remotePublic = re.findall(f'endpoint\s(.*):',config, re.MULTILINE)[0]
                 destination = re.findall(f'({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.)',config, re.MULTILINE)
                 if not destination:
                     print(f"Ignoring {filename}")
