@@ -174,7 +174,7 @@ class CLI(Base):
         if os.path.isfile(f"{self.path}/links/{link}.sh"):
             linkConfig = self.readConfig(f"{self.path}/links/{link}.json")
             if cost == None:
-                print(f"Current cost: {linkConfig['cost']}")
+                print(f"Current static cost: {linkConfig['cost']}")
             else:
                 linkConfig['cost'] = cost
                 self.saveJson(linkConfig,f"{self.path}/links/{link}.json")
