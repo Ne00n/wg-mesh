@@ -142,6 +142,7 @@ class Wireguard(Base):
         if deleteKey:
             os.remove(f"{self.path}/links/{interface}.key")
             if os.path.isfile(f"{self.path}/links/{interface}.pre"): os.remove(f"{self.path}/links/{interface}.pre")
+            if os.path.isfile(f"{self.path}/links/{interface}.json"): os.remove(f"{self.path}/links/{interface}.json")
 
     def removeInterface(self,interface):
         self.setInterface(interface,"down")
