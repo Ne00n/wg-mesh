@@ -20,3 +20,4 @@ make
 currentKernel=$(uname -r)
 cp xt_XOR.ko /lib/modules/$currentKernel/kernel/
 depmod -a
+update-alternatives --set iptables /usr/sbin/iptables-legacy
