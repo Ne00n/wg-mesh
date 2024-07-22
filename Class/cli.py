@@ -179,4 +179,4 @@ class CLI(Base):
                 linkConfig['cost'] = cost
                 self.saveJson(linkConfig,f"{self.path}/links/{link}.json")
         else:
-            print(f"Unable to find file: {self.path}/links/{link}.json")
+            print(f"Unable to find file: {self.path}/links/{link}.sh")
