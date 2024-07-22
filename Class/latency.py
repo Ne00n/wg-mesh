@@ -180,9 +180,9 @@ class Latency(Base):
                 mtr = ["No public ip available for mtr",""]
         notifications = self.config['notifications']
         if status:
-            self.notify(notifications['server'],f"Node {self.config['id']}: {row['nic']} is up",f"{row['nic']} on node {self.config['id']} is up\n\n{mtr[0]}")
+            self.notify(notifications['gotifyUp'],f"Node {self.config['id']}: {row['nic']} is up",f"{row['nic']} on node {self.config['id']} is up\n\n{mtr[0]}")
         else:
-            self.notify(notifications['server'],f"Node {self.config['id']}: {row['nic']} is down",f"{row['nic']} on node {self.config['id']} is down\n\n{mtr[0]}")
+            self.notify(notifications['gotifyDown'],f"Node {self.config['id']}: {row['nic']} is down",f"{row['nic']} on node {self.config['id']} is down\n\n{mtr[0]}")
 
     def notifications(self,latencyData):
         for index,row in enumerate(latencyData):
