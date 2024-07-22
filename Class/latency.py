@@ -74,6 +74,10 @@ class Latency(Base):
                     old = oldLatencyData['cost']
                     #get average
                     node['cost'] = current = self.getAvrg(row,False)
+                    #load link config file
+                    linkConfig = self.readConfig(f"{self.path}/links/{node['nic']}.json")
+                    #add static cost from config
+                    if linkConfig: node['cost'] += linkConfig['cost']
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
                     #Packetloss
                     hasLoss,peakLoss = len(row) < pings -1,(pings -1) - len(row)
