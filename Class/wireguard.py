@@ -173,11 +173,15 @@ class Wireguard(Base):
         for findex, filename in enumerate(files):
             if not filename.endswith(".sh") or filename == "dummy.sh": continue
             with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
+            link = filename.replace(".sh","")
+            linkConfig = self.readConfig(f"{self.path}/links/{link}.json")
+            if linkConfig:
+                remotePublic = linkConfig['remotePublic']
+            else:
+                remotePublic = ""
             subnetPrefix,subnetPrefixSplitted = self.subnetSwitch(filename)
-            remotePublic = ""
             #grab wg server ip from client wg config
             if "endpoint" in config:
-                remotePublic = re.findall(f'endpoint\s(.*):',config, re.MULTILINE)[0]
                 destination = re.findall(f'({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.)',config, re.MULTILINE)
                 if not destination:
                     print(f"Ignoring {filename}")
@@ -193,10 +197,6 @@ class Wireguard(Base):
                 #grab ID from filename
                 linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
                 destination = f"{subnetPrefix}.{linkID}.1"
-                #when Client is available fetch publicIP
-                if "Client" in config:
-                    clientIP = re.findall(f"Client\s([0-9a-z.:]+)",config,re.MULTILINE)
-                    if clientIP: remotePublic = clientIP[0]
             #get remote endpoint
             parsed, remote = self.getRemote(config,subnetPrefixSplitted)
             #grab publickey
