@@ -184,6 +184,8 @@ def index():
     wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
     wg.saveFile(preSharedKey,f"{folder}/links/{interface}.pre")
     wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
+    linkConfig = {"cost":0,"wgobfsSharedKey":wgobfsSharedKey}
+    wg.saveJson(linkConfig,f"{folder}/links/{interface}.json")
     logging.debug(f"{interface} up")
     wg.setInterface(interface,"up")
     #check for dummy
