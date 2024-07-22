@@ -436,3 +436,14 @@ class Wireguard(Base):
             print("state.json has been reset!")
             os.remove(f"{self.path}/configs/state.json")
         return status
+
+    def setCost(self,link,cost=0):
+        if os.path.isfile(f"{self.path}/links/{link}.sh"):
+            linkConfig = self.readConfig(f"{self.path}/links/{link}.json")
+            if cost == None:
+                print(f"Current static cost: {linkConfig['cost']}")
+            else:
+                linkConfig['cost'] = cost
+                self.saveJson(linkConfig,f"{self.path}/links/{link}.json")
+        else:
+            print(f"Unable to find file: {self.path}/links/{link}.sh")
