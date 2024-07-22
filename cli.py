@@ -58,5 +58,9 @@ elif sys.argv[1] == "enable":
 elif sys.argv[1] == "set":
     sys.argv = sys.argv[2:]
     cli.setOption(sys.argv)
+elif sys.argv[1] == "cost":
+    if len(sys.argv) <= 2: exit("link missing")
+    cost = None if len(sys.argv) <= 3 else int(sys.argv[3])
+    cli.cost(sys.argv[2],cost)
 else:
     print(options)

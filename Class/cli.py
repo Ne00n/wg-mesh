@@ -170,3 +170,13 @@ class CLI(Base):
             else:
                 print(f"Valid options: {', '.join(validOptions)}")
         
+    def cost(self,link,cost=0):
+        if os.path.isfile(f"{self.path}/links/{link}.sh"):
+            linkConfig = self.readConfig(f"{self.path}/links/{link}.json")
+            if cost == None:
+                print(f"Current cost: {linkConfig['cost']}")
+            else:
+                linkConfig['cost'] = cost
+                self.saveJson(linkConfig,f"{self.path}/links/{link}.json")
+        else:
+            print("Unable to find link")

@@ -32,14 +32,14 @@ class Base:
     def saveFile(self,data,path):
         try:
             with open(path, 'w') as file: file.write(data)
-        except:
+        except Exception as e:
             return False
         return True
 
     def saveJson(self,data,path):
         try:
             with open(path, 'w') as f: json.dump(data, f, indent=4)
-        except:
+        except Exception as e:
             return False
         return True
 
