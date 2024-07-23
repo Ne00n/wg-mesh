@@ -287,7 +287,8 @@ class Wireguard(Base):
 
     def updateServer(self,link,data):
         with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
-        config = re.sub(f"listen-port ([0-9]+)", f"listen-port {data['port']}", config, 0, re.MULTILINE)
+        if 'port' in data: config = re.sub(f"listen-port ([0-9]+)", f"listen-port {data['port']}", config, 0, re.MULTILINE)
+        if 'xorKey' in data: config = re.sub(f'--keys."(.*?)"', f'--keys "{data['xorKey']}"', config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
     def updateClient(self,link,port):
