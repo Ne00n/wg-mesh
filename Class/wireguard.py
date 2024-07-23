@@ -205,7 +205,7 @@ class Wireguard(Base):
             #grab area
             area = re.findall(f"Area\s([0-9]+)",config,re.MULTILINE)
             area = int(area[0]) if area else 0
-            links[filename] = {"filename":filename,"vxlan":destination,"local":parsed[0],"remote":remote,'remotePublic':remotePublic,'publicKey':publicKey,"area":area}
+            links[filename] = {"filename":filename,"vxlan":destination,"local":parsed[0],"remote":remote,'remotePublic':remotePublic,'publicKey':publicKey,"area":area,"config":config}
         return links
 
     def AskProtocol(self,dest,token=""):
