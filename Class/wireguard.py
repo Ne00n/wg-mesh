@@ -213,7 +213,7 @@ class Wireguard(Base):
         req = self.call(f'{dest}/connectivity',{"token":token})
         if req == False: return False
         if req.status_code != 200:
-            print("Failed to request connectivity info, maybe wrong version?")
+            print("Failed to request connectivity info")
             return False
         data = req.json()
         return data
