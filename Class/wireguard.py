@@ -286,7 +286,7 @@ class Wireguard(Base):
         return status
 
     def updateLink(self,link,data):
-        with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
+        config = self.readFile(f"{self.path}/links/{link}.sh")
         if 'port' in data: config = re.sub(f"listen-port ([0-9]+)", f"listen-port {data['port']}", config, 0, re.MULTILINE)
         if 'xorKey' in data: 
             xorKey = data['xorKey']
