@@ -288,7 +288,9 @@ class Wireguard(Base):
     def updateLink(self,link,data):
         with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
         if 'port' in data: config = re.sub(f"listen-port ([0-9]+)", f"listen-port {data['port']}", config, 0, re.MULTILINE)
-        if 'xorKey' in data: config = re.sub(f'--keys."(.*?)"', f'--keys "{data['xorKey']}"', config, 0, re.MULTILINE)
+        if 'xorKey' in data: 
+            xorKey = data['xorKey']
+            config = re.sub(f'--keys."(.*?)"', f'--keys "{xorKey}"', config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
     def getUsedIDs(self):
