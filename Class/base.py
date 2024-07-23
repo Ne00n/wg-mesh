@@ -20,7 +20,7 @@ class Base:
         lastOctet = int(parsed[2])
         return parsed,f"{parsed[1]}{lastOctet-1}" if self.sameNetwork(f"{parsed[1]}{lastOctet-1}",parsed[0]) else f"{parsed[1]}{lastOctet+1}"
 
-    def readConfig(self,file):
+    def readJson(self,file):
         if os.path.isfile(file):
             try:
                 with open(file) as handle: return json.loads(handle.read())

@@ -62,7 +62,7 @@ class CLI(Base):
         self.bird.bird(True)
 
     def token(self):
-        tokens = self.readConfig(f"{self.path}/tokens.json")
+        tokens = self.readJSON(f"{self.path}/tokens.json")
         if tokens:
             print(f"Connect/Peer: {', '.join(tokens['connect'])}")
         else:
@@ -78,7 +78,7 @@ class CLI(Base):
         wgmeshBirdRunning = "wgmesh-bird is not running." if not "running" in proc else "wgmesh-bird is running."
         print(f"{birdRunning}\t{wgmeshRunning}\t{wgmeshBirdRunning}")
         print("--- Wireguard ---")
-        network = self.readConfig(f"{self.path}/configs/network.json")
+        network = self.readJSON(f"{self.path}/configs/network.json")
         print("Destination\tPacketloss\tJitter")
         jittar,loss = 0,0
         for dest,data in network.items():
@@ -95,7 +95,7 @@ class CLI(Base):
 
 
     def disable(self,option):
-        config = self.readConfig(f"{self.path}/configs/config.json")
+        config = self.readJSON(f"{self.path}/configs/config.json")
         if "mesh" in option:
             self.wg.saveJson({},f"{self.path}/configs/state.json")
         elif "ospfv2" in option:
@@ -117,7 +117,7 @@ class CLI(Base):
         print("You should reload the services to apply any config changes")
             
     def enable(self,option):
-        config = self.readConfig(f"{self.path}/configs/config.json")
+        config = self.readJSON(f"{self.path}/configs/config.json")
         if "mesh" in option:
             if os.path.isfile(f"{self.path}/configs/state.json"): os.remove(f"{self.path}/configs/state.json")
         elif "ospfv2" in option:
@@ -147,7 +147,7 @@ class CLI(Base):
         else:
             key, value = options
             if key in validOptions:
-                config = self.readConfig(f"{self.path}/configs/config.json")
+                config = self.readJSON(f"{self.path}/configs/config.json")
                 if key == "basePort" or key == "vxlan":
                     config[key] = int(value)
                 elif key == "area" or key == "tick":

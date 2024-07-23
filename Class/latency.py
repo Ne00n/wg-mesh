@@ -16,9 +16,9 @@ class Latency(Base):
         self.linkState = {}
         self.path = path
         self.currentLinks = self.wg.getLinks()
-        self.config = self.readConfig(f'{path}/configs/config.json')
+        self.config = self.readJSON(f'{path}/configs/config.json')
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
-        self.network = self.readConfig(f"{path}/configs/network.json")
+        self.network = self.readJSON(f"{path}/configs/network.json")
         if not self.network: self.network = {"created":int(time.time()),"updated":0}
 
     def checkJitter(self,row,avrg):
@@ -75,7 +75,7 @@ class Latency(Base):
                     #get average
                     node['cost'] = current = self.getAvrg(row,False)
                     #load link config file
-                    linkConfig = self.readConfig(f"{self.path}/links/{node['nic']}.json")
+                    linkConfig = self.readJSON(f"{self.path}/links/{node['nic']}.json")
                     #add static cost from config
                     if linkConfig: node['cost'] += linkConfig['cost']
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}

@@ -7,7 +7,7 @@ class Bird(Base):
     Templator = Templator()
 
     def __init__(self,path,logger):
-        self.config = self.readConfig(f'{path}/configs/config.json')
+        self.config = self.readJSON(f'{path}/configs/config.json')
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
         self.prefix = self.config['prefix']
         self.wg = Wireguard(path)
