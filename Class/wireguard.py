@@ -9,7 +9,7 @@ class Wireguard(Base):
         self.path = path
         if skip: return
         if not os.path.isfile(f"{self.path}/configs/config.json"): exit("Config missing")
-        self.config = self.readJSON(f'{self.path}/configs/config.json')
+        self.config = self.readJson(f'{self.path}/configs/config.json')
         if onlyConfig: return
         self.prefix = self.config['prefix']
         self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
@@ -173,7 +173,7 @@ class Wireguard(Base):
             if not filename.endswith(".sh") or filename == "dummy.sh": continue
             config = self.readFile(f"{self.path}/links/{filename}")
             link = filename.replace(".sh","")
-            linkConfig = self.readJSON(f"{self.path}/links/{link}.json")
+            linkConfig = self.readJson(f"{self.path}/links/{link}.json")
             if linkConfig:
                 remotePublic = linkConfig['remotePublic']
             else:
@@ -438,7 +438,7 @@ class Wireguard(Base):
 
     def setCost(self,link,cost=0):
         if os.path.isfile(f"{self.path}/links/{link}.sh"):
-            linkConfig = self.readJSON(f"{self.path}/links/{link}.json")
+            linkConfig = self.readJson(f"{self.path}/links/{link}.json")
             if cost == None:
                 print(f"Current static cost: {linkConfig['cost']}")
             else:
