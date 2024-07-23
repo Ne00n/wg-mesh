@@ -448,3 +448,6 @@ class Wireguard(Base):
             return True
         else:
             print(f"Unable to find file: {self.path}/links/{link}.sh")
+
+    def getConfig(self):
+        return self.config
