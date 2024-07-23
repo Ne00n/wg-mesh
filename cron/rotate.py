@@ -19,14 +19,18 @@ wg = Wireguard(path)
 config = wg.getConfig()
 path,links = f'{path}/links/',[]
 
+targetInterface = ""
+if len(sys.argv) == 2: targetInterface = sys.argv[1]
+
 waitUntil = 0
 while True:
     currentTime = int(time.time())
     if currentTime > waitUntil:
         links = wg.getLinks()
         for link, data in links.items():
+            link = wg.filterInterface(link)
+            if targetInterface and link = targetInterface: continue
             if "XOR" in data['config']:
-                link = wg.filterInterface(link)
                 logger.info(f"{link} swapping xor keys")
                 logger.info(f"{link} increasing cost")
                 result = wg.setCost(link,5000)
