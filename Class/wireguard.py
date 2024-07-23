@@ -9,7 +9,7 @@ class Wireguard(Base):
         self.path = path
         if skip: return
         if not os.path.isfile(f"{self.path}/configs/config.json"): exit("Config missing")
-        with open(f'{self.path}/configs/config.json') as f: self.config = json.load(f)
+        self.config = self.readConfig(f'{self.path}/configs/config.json')
         if onlyConfig: return
         self.prefix = self.config['prefix']
         self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
@@ -34,7 +34,7 @@ class Wireguard(Base):
         if not "client" in self.config['bird']: self.config['bird']['client'] = False
         if not "vxlan" in self.config: self.config['vxlan'] = 251
         if not "notifications" in self.config: self.config['notifications'] = {"enabled":False,"gotifyUp":"","gotifyDown":""}
-        with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(self.config, f ,indent=4)
+        self.saveJson(self.config,f"{self.path}/configs/config.json")
 
     def genKeys(self):
         keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')[0]
@@ -52,8 +52,7 @@ class Wireguard(Base):
 
     def loadConfigs(self,files):
         configs = []
-        for config in files:
-            with open(f'{self.path}/links/{config}') as f: configs.append(f.read())
+        for config in files: configs.append(self.readFile(f'{self.path}/links/{config}'))
         return configs
 
     def getConfigs(self,abort=True):
@@ -89,7 +88,7 @@ class Wireguard(Base):
         config = {"listen":listen,"listenPort":8080,"basePort":51820,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16","AllowedPeers":[],
         "prefix":"pipe","id":id,'vxlan':251,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"area":0,"tick":1,"client":False},"notifications":{"enabled":False,"gotifyUp":"","gotifyDown":""}}
-        with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
+        self.saveJson(config,f"{self.path}/configs/config.json")
         #load configs
         self.prefix = "pipe"
         configs = self.getConfigs(False)
@@ -114,7 +113,7 @@ class Wireguard(Base):
         ips,ports = [],[]
         if port == 0: port = random.randint(1500, 55000)
         for file in files:
-            with open(f"{self.path}/links/{file}", 'r') as f: config = f.read()
+            config = self.readFile(f"{self.path}/links/{file}")
             configPort = re.findall(f"listen-port\s([0-9]+)",config, re.MULTILINE)
             configIP = re.findall(f"ip address add dev.*?([0-9]+)\/",config, re.MULTILINE)
             if configPort:
@@ -172,7 +171,7 @@ class Wireguard(Base):
         links = {}
         for findex, filename in enumerate(files):
             if not filename.endswith(".sh") or filename == "dummy.sh": continue
-            with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
+            config = self.readFile(f"{self.path}/links/{filename}")
             link = filename.replace(".sh","")
             linkConfig = self.readConfig(f"{self.path}/links/{link}.json")
             if linkConfig:
