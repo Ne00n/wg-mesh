@@ -356,10 +356,12 @@ class Wireguard(Base):
             if not details['vxlan'] in terminate: continue
             self.disconnect([link])
 
-    def getLinks(self):
+    def getFiles(self):
         files = os.listdir(f"{self.path}/links/")
-        files = [x for x in files if self.filter(x)]
-        links = self.filesToLinks(files)
+        return [x for x in files if self.filter(x)]
+
+    def getLinks(self):
+        links = self.filesToLinks(self.getFiles())
         if not links: exit("No links found.")
         return links
 
