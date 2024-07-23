@@ -119,7 +119,10 @@ class CLI(Base):
         else:
             print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, client, notifications")
             return
-        self.saveJson(config,f"{self.path}/configs/config.json")
+        response = self.saveJson(config,f"{self.path}/configs/config.json")
+        if not response:
+            print("Failed to save config.json")
+            return
         print("You should reload the services to apply any config changes")
             
     def enable(self,option):
@@ -146,7 +149,10 @@ class CLI(Base):
         else:
             print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, client, notifications")
             return
-        self.saveJson(config,f"{self.path}/configs/config.json")
+        response = self.saveJson(config,f"{self.path}/configs/config.json")
+        if not response:
+            print("Failed to save config.json")
+            return
         print("You should reload the services to apply any config changes")
 
     def setOption(self,options):
@@ -173,7 +179,10 @@ class CLI(Base):
                         config['AllowedPeers'].append(value)
                 else:
                     config[key] = value
-                self.saveJson(config,f"{self.path}/configs/config.json")
+                response = self.saveJson(config,f"{self.path}/configs/config.json")
+                if not response:
+                    print("Failed to save config.json")
+                    return
                 print("You should reload the services to apply any config changes")
                 if key == "subnet" or key == "vxlan":        
                     print("Reconfiguring dummy")

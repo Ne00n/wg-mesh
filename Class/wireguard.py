@@ -88,7 +88,8 @@ class Wireguard(Base):
         config = {"listen":listen,"listenPort":8080,"basePort":51820,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16","AllowedPeers":[],
         "prefix":"pipe","id":id,'vxlan':251,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"area":0,"tick":1,"client":False},"notifications":{"enabled":False,"gotifyUp":"","gotifyDown":""}}
-        self.saveJson(config,f"{self.path}/configs/config.json")
+        response = self.saveJson(config,f"{self.path}/configs/config.json")
+        if not response: exit("Unable to save config.json")
         #load configs
         self.prefix = "pipe"
         configs = self.getConfigs(False)
@@ -446,7 +447,10 @@ class Wireguard(Base):
                 print(f"Current static cost: {linkConfig['cost']}")
             else:
                 linkConfig['cost'] = cost
-                self.saveJson(linkConfig,f"{self.path}/links/{link}.json")
+                response = self.saveJson(linkConfig,f"{self.path}/links/{link}.json")
+                if not response:
+                    print(f"Unable to save {self.path}/links/{link}.json")
+                    return
             return True
         else:
             print(f"Unable to find file: {self.path}/links/{link}.sh")
