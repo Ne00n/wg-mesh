@@ -29,7 +29,7 @@ while True:
         links = wg.getLinks()
         for link, data in links.items():
             link = wg.filterInterface(link)
-            if targetInterface and link = targetInterface: continue
+            if targetInterface and link == targetInterface: continue
             if "XOR" in data['config']:
                 logger.info(f"{link} swapping xor keys")
                 logger.info(f"{link} increasing cost")
