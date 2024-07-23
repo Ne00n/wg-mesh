@@ -285,18 +285,10 @@ class Wireguard(Base):
             isv6 = True
         return status
 
-    def updateServer(self,link,data):
+    def updateLink(self,link,data):
         with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
         if 'port' in data: config = re.sub(f"listen-port ([0-9]+)", f"listen-port {data['port']}", config, 0, re.MULTILINE)
         if 'xorKey' in data: config = re.sub(f'--keys."(.*?)"', f'--keys "{data['xorKey']}"', config, 0, re.MULTILINE)
-        self.saveFile(config,f"{self.path}/links/{link}.sh")
-
-    def updateClient(self,link,port):
-        with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
-        parsed = re.findall(f"(endpoint.*?:)([0-9]+)",config, re.MULTILINE)
-        oldEndPoint = ''.join(parsed[0])
-        newEndPoint = f"{parsed[0][0]}{port}"
-        config = re.sub(oldEndPoint, newEndPoint, config, 0, re.MULTILINE)
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
     def getUsedIDs(self):

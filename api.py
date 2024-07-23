@@ -223,7 +223,7 @@ def index():
         return HTTPResponse(status=400, body="invalid public key")
     #update
     wg.setInterface(payload['interface'],"down")
-    wg.updateServer(payload['interface'],payload)
+    wg.updateLink(payload['interface'],payload)
     wg.setInterface(payload['interface'],"up")
     return HTTPResponse(status=200, body="link updated")
 
