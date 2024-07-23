@@ -29,6 +29,15 @@ class Base:
         else:
             return {}
 
+    def readFile(self,file):
+        if os.path.isfile(file):
+            try:
+                with open(file, 'r') as file: return file.read()
+            except Exception as e:
+                return ""
+        else:
+            return ""
+
     def saveFile(self,data,path):
         try:
             with open(path, 'w') as file: file.write(data)
