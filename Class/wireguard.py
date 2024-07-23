@@ -439,6 +439,9 @@ class Wireguard(Base):
     def setCost(self,link,cost=0):
         if os.path.isfile(f"{self.path}/links/{link}.sh"):
             linkConfig = self.readJson(f"{self.path}/links/{link}.json")
+            if not linkConfig:
+                print(f"Unable to load {self.path}/links/{link}.json")
+                return
             if cost == None:
                 print(f"Current static cost: {linkConfig['cost']}")
             else:

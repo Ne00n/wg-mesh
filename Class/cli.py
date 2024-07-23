@@ -79,6 +79,9 @@ class CLI(Base):
         print(f"{birdRunning}\t{wgmeshRunning}\t{wgmeshBirdRunning}")
         print("--- Wireguard ---")
         network = self.readJson(f"{self.path}/configs/network.json")
+        if not network:
+            print("Unable to load network.json")
+            return
         print("Destination\tPacketloss\tJitter")
         jittar,loss = 0,0
         for dest,data in network.items():
@@ -96,6 +99,9 @@ class CLI(Base):
 
     def disable(self,option):
         config = self.readJson(f"{self.path}/configs/config.json")
+        if not config:
+            print("Unable to load config.json")
+            return
         if "mesh" in option:
             self.wg.saveJson({},f"{self.path}/configs/state.json")
         elif "ospfv2" in option:
@@ -118,6 +124,9 @@ class CLI(Base):
             
     def enable(self,option):
         config = self.readJson(f"{self.path}/configs/config.json")
+        if not config:
+            print("Unable to load config.json")
+            return
         if "mesh" in option:
             if os.path.isfile(f"{self.path}/configs/state.json"): os.remove(f"{self.path}/configs/state.json")
         elif "ospfv2" in option:
@@ -148,6 +157,9 @@ class CLI(Base):
             key, value = options
             if key in validOptions:
                 config = self.readJson(f"{self.path}/configs/config.json")
+                if not config:
+                    print(f"Unable to read config.json")
+                    return
                 if key == "basePort" or key == "vxlan":
                     config[key] = int(value)
                 elif key == "area" or key == "tick":
