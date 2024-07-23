@@ -445,5 +445,6 @@ class Wireguard(Base):
             else:
                 linkConfig['cost'] = cost
                 self.saveJson(linkConfig,f"{self.path}/links/{link}.json")
+            return True
         else:
             print(f"Unable to find file: {self.path}/links/{link}.sh")
