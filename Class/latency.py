@@ -187,16 +187,16 @@ class Latency(Base):
     def notifications(self,latencyData):
         for index,row in enumerate(latencyData):
             nic = row['nic']
-            if not nic in self.linkState: self.linkState[nic] = 1
-            if not self.linkState[nic] and row['cost'] != 65535:
-                self.linkState[row['nic']] = 1
+            if not nic in self.linkState: self.linkState[nic] = {"state":1,"cost":0}
+            if not self.linkState[nic]['state'] and row['cost'] != 65535:
+                self.linkState[row['nic']]['state'] = 1
                 self.logger.warning(f"Link {row['nic']} is up")
                 notifications = self.config['notifications']
                 if notifications['enabled']:
                     sendMessage = Thread(target=self.sendMessage, args=([1,row]))
                     sendMessage.start()
-            elif self.linkState[nic] and row['cost'] == 65535:
-                self.linkState[row['nic']] = 0
+            elif self.linkState[nic]['state'] and row['cost'] == 65535:
+                self.linkState[row['nic']]['state'] = 0
                 self.logger.warning(f"Link {row['nic']} is down")
                 notifications = self.config['notifications']
                 if notifications['enabled']:
