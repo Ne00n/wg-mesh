@@ -96,7 +96,6 @@ class CLI(Base):
             print(f"{dest}\t{hasLoss}\t\t{hasJitter}")
         print(f"{len(network) -1}\t\t{loss}\t\t{jittar}")
 
-
     def disable(self,option):
         config = self.readJson(f"{self.path}/configs/config.json")
         if not config:
