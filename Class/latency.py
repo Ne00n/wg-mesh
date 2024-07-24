@@ -136,6 +136,10 @@ class Latency(Base):
         if not "running" in bird:
             self.logger.warning("bird not running")
             return -1
+        self.logger.info("Processing messages")
+        for rawMessage in messages:
+            message = json.loads(rawMessage)
+            self.linkState[message['link']]['cost'] = message['cost']
         self.logger.debug("Running fping")
         latencyData = self.getLatency(self.latencyData,5)
         if not latencyData:
