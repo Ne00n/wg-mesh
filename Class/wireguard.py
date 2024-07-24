@@ -439,19 +439,10 @@ class Wireguard(Base):
 
     def setCost(self,link,cost=0):
         if os.path.isfile(f"{self.path}/links/{link}.sh"):
-            linkConfig = self.readJson(f"{self.path}/links/{link}.json")
-            if not linkConfig:
-                print(f"Unable to load {self.path}/links/{link}.json")
+            if not os.path.exists("pipe"):
+                print("Pipe not found, did you start wgmesh-bird?")
                 return
-            if cost == None:
-                print(f"Current static cost: {linkConfig['cost']}")
-            else:
-                linkConfig['cost'] = cost
-                response = self.saveJson(linkConfig,f"{self.path}/links/{link}.json")
-                if not response:
-                    print(f"Unable to save {self.path}/links/{link}.json")
-                    return
-            return True
+            with open("pipe", 'w') as f: f.write(json.dumps({"link":link,"cost":cost}))
         else:
             print(f"Unable to find file: {self.path}/links/{link}.sh")
 
