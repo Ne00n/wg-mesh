@@ -30,7 +30,7 @@ def readPipe(messagesQueue,last=""):
                 last = data
 
 messagesQueue = queue.Queue()
-pipeThread = threading.Thread(target=readPipe, args=(messagesQueue))
+pipeThread = threading.Thread(target=readPipe, args=(messagesQueue,))
 pipeThread.start()
 
 path,links = f'{path}/links/',[]
