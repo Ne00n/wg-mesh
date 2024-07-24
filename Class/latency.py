@@ -139,6 +139,7 @@ class Latency(Base):
         self.logger.info("Processing messages")
         for rawMessage in messages:
             message = json.loads(rawMessage)
+            self.logger.info(f"{message['link']} set cost to {message['cost']}")
             self.linkState[message['link']]['cost'] = message['cost']
         self.logger.debug("Running fping")
         latencyData = self.getLatency(self.latencyData,5)
