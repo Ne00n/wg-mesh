@@ -129,7 +129,7 @@ class Latency(Base):
         self.network['updated'] = int(time.time())
         return config
 
-    def run(self,runs):
+    def run(self,runs,messages=[]):
         #Check if bird is running
         self.logger.debug("Checking bird status")
         bird = self.cmd("systemctl status bird")[0]

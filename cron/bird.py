@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import logging, time, sys, os
+import logging, threading, queue, time, sys, os
 sys.path.append("..") # Adds higher directory to python modules path.
 from logging.handlers import RotatingFileHandler
 from Class.latency import Latency
@@ -18,6 +18,20 @@ logger = logging.getLogger()
 
 latency = Latency(path,logger)
 bird = Bird(path,logger)
+
+def readPipe(messagesQueue,last=""):
+    if not os.path.exists("pipe"): os.mkfifo("pipe")
+    while True:
+        with open('pipe', 'r') as f:
+            time.sleep(1)
+            data = f.read()
+            if data and data != last: 
+                messagesQueue.put(data)
+                last = data
+
+messagesQueue = queue.Queue()
+pipeThread = threading.Thread(target=readPipe, args=(messagesQueue))
+pipeThread.start()
 
 path,links = f'{path}/links/',[]
 
@@ -42,9 +56,12 @@ while True:
         #every 30s
         run = [0,3]
         if runs in run:
-            if links: 
+            if links:
+                logger.info("Grabbing messages")
+                messages = []
+                while not messagesQueue.empty(): messages.append(messagesQueue.get())
                 logger.info("Running latency")
-                skip = latency.run(runs)
+                skip = latency.run(runs,messages)
                 if skip > 0: 
                     skipUntil = time.time() + 60
                     logger.info(f"Skipping 10s wait until {skipUntil}")
