@@ -74,7 +74,7 @@ class Latency(Base):
                     old = oldLatencyData['cost']
                     #get average
                     node['cost'] = current = self.getAvrg(row,False)
-                    if node['nic'] in self.linkState: node += self.linkState[node['nic']]['cost']
+                    if node['nic'] in self.linkState: node['cost'] += self.linkState[node['nic']]['cost']
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
                     #Packetloss
                     hasLoss,peakLoss = len(row) < pings -1,(pings -1) - len(row)
