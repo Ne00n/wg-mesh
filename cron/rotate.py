@@ -22,6 +22,9 @@ path,links = f'{path}/links/',[]
 targetInterface = ""
 if len(sys.argv) == 2: targetInterface = sys.argv[1]
 
+def setRemoteCost(cost=0):
+    return wg.call(f'http://{data["vxlan"]}:{config["listenPort"]}/update',{"cost":cost,"publicKeyServer":data['publicKey'],"interface":interfaceRemote},'PATCH')
+
 waitUntil = 0
 while True:
     currentTime = int(time.time())
@@ -34,14 +37,14 @@ while True:
                 logger.info(f"{link} swapping xor keys")
                 interfaceRemote = wg.getInterfaceRemote(link)
                 logger.info(f"{link} increasing remote cost")
-                req = wg.call(f'http://{data["vxlan"]}:{config["listenPort"]}/update',{"cost":5000,"publicKeyServer":data['publicKey'],"interface":interfaceRemote},'PATCH')
+                req = setRemoteCost(5000)
                 if not req:
-                    logger.info(f"{link} Failed to increase remote cost")
+                    logger.warning(f"{link} Failed to increase remote cost")
                     continue
                 logger.info(f"{link} increasing local cost")
                 result = wg.setCost(link,5000)
                 if not result:
-                    logger.info(f"Failed to increase cost")
+                    logger.warning(f"Failed to increase cost")
                     continue
                 logger.info(f"{link} waiting 300s for cost to apply")
                 time.sleep(300)
@@ -51,20 +54,23 @@ while True:
                 xorKey = secrets.token_urlsafe(24)
                 req = wg.call(f'http://{data["vxlan"]}:{config["listenPort"]}/update',{"xorKey":xorKey,"publicKeyServer":data['publicKey'],"interface":interfaceRemote},'PATCH')
                 if not req:
-                    logger.info(f"{link} Failed to update remote xor keys")
+                    logger.warning(f"{link} Failed to update remote xor keys")
                     logger.info(f"{link} restoring link state")
                     wg.setCost(link,0)
                     wg.setInterface(link,"up")
+                    setRemoteCost(0)
+                    logger.info(f"{link} restored link state")
                     continue
                 logger.info(f"{link} updating local xor keys")
                 wg.updateLink(link,{'xorKey':xorKey})
                 logger.info(f"{link} starting link")
                 wg.setInterface(link,"up")
                 logger.info(f"{link} removing remote cost")
-                req = wg.call(f'http://{data["vxlan"]}:{config["listenPort"]}/update',{"cost":0,"publicKeyServer":data['publicKey'],"interface":interfaceRemote},'PATCH')
-                if not req: logger.info(f"{link} Failed to remove remote cost")
+                req = setRemoteCost(0)
+                if not req: logger.warning(f"{link} Failed to remove remote cost")
                 logger.info(f"{link} removing local cost")
-                wg.setCost(link,0)
+                result = wg.setCost(link,0)
+                if not result: logger.warning(f"{link} Failed to remove local cost")
                 logger.info(f"{link} done swapping xor keys")
         #run this twice per day
         waitUntil = currentTime + (3600 * 12)
