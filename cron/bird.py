@@ -25,7 +25,7 @@ def readPipe(messagesQueue,last=""):
         os.mkfifo(f"{path}/pipe")
     while True:
         with open(f'{path}/pipe', 'r') as f:
-            time.sleep(1)
+            time.sleep(0.1)
             data = f.read()
             if data and data != last: 
                 messagesQueue.put(data)
