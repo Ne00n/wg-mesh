@@ -8,6 +8,7 @@ from pathlib import Path
 
 tokens = []
 connectMutex = threading.Lock()
+updateMutex = threading.Lock()
 folder = os.path.dirname(os.path.realpath(__file__))
 #wireguard
 wg = Wireguard(folder)
@@ -223,8 +224,14 @@ def index():
         return HTTPResponse(status=400, body="invalid public key")
     #update
     wg.setInterface(payload['interface'],"down")
+    #since cost adjustments go through a pipe, there needs to be a mutex
+    if "cost" in payload: updateMutex.acquire()
     wg.updateLink(payload['interface'],payload)
     wg.setInterface(payload['interface'],"up")
+    #the pipe is fetched every 100ms, make sure we wait until the data is fetched
+    if "cost" in payload:
+        time.sleep(0.1)
+        updateMutex.release()
     return HTTPResponse(status=200, body="link updated")
 
 @route('/disconnect', method='POST')
