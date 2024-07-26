@@ -56,3 +56,6 @@ systemctl enable wgmesh-bird && systemctl start wgmesh-bird
 #systemd pipe service
 cp /opt/wg-mesh/configs/wgmesh-pipe.service /etc/systemd/system/wgmesh-pipe.service
 systemctl enable wgmesh-pipe
+#systemd roate service
+#cp /opt/wg-mesh/configs/wgmesh-rotate.service /etc/systemd/system/wgmesh-rotate.service
+#systemctl enable wgmesh-rotate && systemctl start wgmesh
