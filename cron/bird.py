@@ -20,11 +20,11 @@ latency = Latency(path,logger)
 bird = Bird(path,logger)
 
 def readPipe(messagesQueue,last=""):
-    if not os.path.exists(f"{path}pipe"): 
-        print(f"Creating pipe {path}pipe")
-        os.mkfifo(f"{path}pipe")
+    if not os.path.exists(f"{path}/pipe"): 
+        print(f"Creating pipe {path}/pipe")
+        os.mkfifo(f"{path}/pipe")
     while True:
-        with open(f'{path}pipe', 'r') as f:
+        with open(f'{path}/pipe', 'r') as f:
             time.sleep(1)
             data = f.read()
             if data and data != last: 
@@ -35,14 +35,14 @@ messagesQueue = queue.Queue()
 pipeThread = threading.Thread(target=readPipe, args=(messagesQueue,))
 pipeThread.start()
 
-path,links = f'{path}/links/',[]
+pathToLinks,links = f'{path}/links/',[]
 
 skip,skipUntil = 0,0
 restartCooldown = regenCooldown = int(time.time()) + 1800
 
 while True:
     for runs in range(6):
-        currentLinks = os.listdir(path)
+        currentLinks = os.listdir(pathToLinks)
         #filter out specific links
         currentLinks = [x for x in currentLinks if bird.filter(x)]
         if links != currentLinks:
