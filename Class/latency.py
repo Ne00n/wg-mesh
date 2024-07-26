@@ -137,7 +137,7 @@ class Latency(Base):
         if not "running" in bird:
             self.logger.warning("bird not running")
             return -1
-        self.logger.info("Processing messages")
+        self.debug.info("Processing messages")
         for rawMessage in messages:
             message = json.loads(rawMessage)
             self.logger.info(f"{message['link']} set cost to {message['cost']}")
