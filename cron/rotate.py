@@ -44,7 +44,7 @@ while True:
                     logger.info(f"Failed to increase cost")
                     continue
                 logger.info(f"{link} waiting 300s for cost to apply")
-                time.sleep(500)
+                time.sleep(300)
                 logger.info(f"{link} shutting link down")
                 wg.setInterface(link,"down")
                 logger.info(f"{link} updating remote xor keys")
