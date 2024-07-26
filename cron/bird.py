@@ -20,7 +20,9 @@ latency = Latency(path,logger)
 bird = Bird(path,logger)
 
 def readPipe(messagesQueue,last=""):
-    if not os.path.exists(f"{path}/pipe"): os.mkfifo(f"{path}/pipe")
+    if not os.path.exists(f"{path}/pipe"): 
+        print(f"Creating pipe {path}/pipe")
+        os.mkfifo(f"{path}/pipe")
     while True:
         with open(f'{path}/pipe', 'r') as f:
             time.sleep(1)
