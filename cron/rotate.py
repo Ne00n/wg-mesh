@@ -66,7 +66,7 @@ while True:
                 logger.info(f"{link} removing local cost")
                 wg.setCost(link,0)
                 logger.info(f"{link} done swapping xor keys")
-        #run this once per hour
-        waitUntil = currentTime + 3600
+        #run this twice per day
+        waitUntil = currentTime + (3600 * 12)
     else:
         time.sleep(30)
