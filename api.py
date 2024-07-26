@@ -7,7 +7,7 @@ from threading import Thread
 from pathlib import Path
 
 tokens = []
-mutex = threading.Lock()
+connectMutex = threading.Lock()
 folder = os.path.dirname(os.path.realpath(__file__))
 #wireguard
 wg = Wireguard(folder)
@@ -169,7 +169,7 @@ def index():
     if os.path.isfile(f"{folder}/links/{interface}.sh") or os.path.isfile(f"{folder}/links/{interface}Serv.sh"):
         return HTTPResponse(status=412, body="link already exists")
     #block any other requests to prevent issues regarding port and ip assignment
-    mutex.acquire()
+    connectMutex.acquire()
     #generate new key pair
     privateKeyServer, publicKeyServer = wg.genKeys()
     preSharedKey = wg.genPreShared()
@@ -196,7 +196,7 @@ def index():
         wg.saveFile(dummyConfig,f"{folder}/links/dummy.sh")
         logging.debug(f"dummy up")
         wg.setInterface("dummy","up")
-    mutex.release()
+    connectMutex.release()
     logging.info(f"{interface} created for {requestIP}")
     return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id'],'lastbyte':lastbyte,'port':port,'connectivity':config['connectivity']})
 
