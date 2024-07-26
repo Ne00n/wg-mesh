@@ -30,7 +30,7 @@ while True:
         for link, data in links.items():
             link = wg.filterInterface(link)
             if targetInterface and link != targetInterface: continue
-            if "XOR" in data['config']:
+            if "XOR" in data['config'] and "endpoint" in data['config']:
                 logger.info(f"{link} swapping xor keys")
                 interfaceRemote = wg.getInterfaceRemote(link)
                 logger.info(f"{link} increasing remote cost")
