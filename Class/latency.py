@@ -170,6 +170,10 @@ class Latency(Base):
         return self.noWait
 
     def setLatencyData(self,latencyData,peers):
+        #fill linkState
+        for data in latencyData:
+            if not data['nic'] in self.linkState: self.linkState[data['nic']] = {"state":1,"cost":0}
+        #copy dicts
         self.latencyData = copy.deepcopy(latencyData)
         self.latencyDataState = copy.deepcopy(latencyData)
         self.peers = peers
@@ -193,7 +197,6 @@ class Latency(Base):
     def notifications(self,latencyData):
         for index,row in enumerate(latencyData):
             nic = row['nic']
-            if not nic in self.linkState: self.linkState[nic] = {"state":1,"cost":0}
             if not self.linkState[nic]['state'] and row['cost'] != 65535:
                 self.linkState[row['nic']]['state'] = 1
                 self.logger.warning(f"Link {row['nic']} is up")
