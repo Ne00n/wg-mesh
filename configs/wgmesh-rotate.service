@@ -1,0 +1,14 @@
+[Unit]
+Description=wgmesh-rotate service
+Wants=network-online.target wgmesh-pipe.service bird.service
+After=network-online.target wgmesh-pipe.service bird.service
+[Service]
+User=wg-mesh
+Group=wg-mesh
+Type=simple
+StandardOutput=null
+Environment=PYTHONUNBUFFERED=1
+WorkingDirectory=/opt/wg-mesh/cron
+ExecStart=/usr/bin/python3 rotate.py -u
+[Install]
+WantedBy=multi-user.target
