@@ -10,6 +10,6 @@ Restart=on-failure
 StandardOutput=null
 Environment=PYTHONUNBUFFERED=1
 WorkingDirectory=/opt/wg-mesh/cron
-ExecStart=/usr/bin/python3 rotate.py -u
+ExecStart=/usr/bin/python3 rotate.py
 [Install]
 WantedBy=multi-user.target
