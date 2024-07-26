@@ -445,6 +445,7 @@ class Wireguard(Base):
                 print("Pipe not found, did you start wgmesh-bird?")
                 return
             with open(f"{self.path}/pipe", 'w') as f: f.write(json.dumps({"link":link,"cost":cost}))
+            return True
         else:
             print(f"Unable to find file: {self.path}/links/{link}.sh")
 
