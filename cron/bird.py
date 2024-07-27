@@ -59,7 +59,7 @@ while True:
         run = [0,3]
         if runs in run:
             if links:
-                logger.info("Grabbing messages")
+                logger.debug("Grabbing messages")
                 messages = []
                 while not messagesQueue.empty(): messages.append(messagesQueue.get())
                 logger.info("Running latency")
