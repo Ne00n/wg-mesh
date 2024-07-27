@@ -15,6 +15,7 @@ class Latency(Base):
         self.logger = logger
         self.linkState = {}
         self.path = path
+        self.lastReload = int(time.time()) + 600
         self.currentLinks = self.wg.getLinks()
         self.config = self.readJson(f'{path}/configs/config.json')
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
@@ -155,13 +156,13 @@ class Latency(Base):
             #write
             self.saveFile(birdConfig,'/etc/bird/bird.conf')
             #reload bird with updates only every 10 minutes or if reload is greater than 1
-            restart = [0,10,20,30,40,50]
-            if (datetime.now().minute in restart and runs == 0) or self.reload > 0:
+            if int(time.time()) > self.lastReload or self.reload > 0:
                 #keep a copy with the current values in the bird config
                 self.latencyDataState = copy.deepcopy(self.latencyData)
                 #reload
                 self.logger.info("Reloading bird")
                 self.cmd('sudo systemctl reload bird')
+                self.lastReload = int(time.time()) + 600
             else:
                 self.logger.debug(f"{datetime.now().minute} not in window.")
         #however save any packetloss or jitter detected
