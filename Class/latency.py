@@ -143,6 +143,8 @@ class Latency(Base):
             message = json.loads(rawMessage)
             self.logger.info(f"{message['link']} set cost to {message['cost']}")
             self.linkState[message['link']]['cost'] = message['cost']
+            #reset lastReload to trigger a reload, otherwise we have to wait up to 10 minutes
+            self.lastReload = int(time.time())
         self.logger.debug("Running fping")
         latencyData = self.getLatency(self.latencyData,5)
         if not latencyData:
