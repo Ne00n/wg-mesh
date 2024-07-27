@@ -226,6 +226,7 @@ def index():
     wg.setInterface(payload['interface'],"down")
     #since cost adjustments go through a pipe, there needs to be a mutex
     if "cost" in payload: updateMutex.acquire()
+    logging.info(f"{payload['interface']} updating link")
     wg.updateLink(payload['interface'],payload)
     wg.setInterface(payload['interface'],"up")
     #the pipe is fetched every 100ms, make sure we wait until the data is fetched
