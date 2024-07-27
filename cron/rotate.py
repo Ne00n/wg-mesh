@@ -44,7 +44,9 @@ while True:
                 logger.info(f"{link} increasing local cost")
                 result = wg.setCost(link,5000)
                 if not result:
-                    logger.warning(f"Failed to increase cost")
+                    logger.warning(f"Failed to increase local cost")
+                    req = setRemoteCost(0)
+                    if not req: logger.warning(f"{link} Failed to remove remote cost")
                     continue
                 logger.info(f"{link} waiting 60s for cost to apply")
                 time.sleep(60)
