@@ -90,4 +90,4 @@ while not shutdown:
         #run this twice per day
         waitUntil = currentTime + (3600 * 12)
     else:
-        time.sleep(30)
+        time.sleep(10)
