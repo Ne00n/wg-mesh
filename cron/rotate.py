@@ -53,13 +53,13 @@ while not shutdown:
                 req = setRemoteCost(5000)
                 if not req:
                     logger.warning(f"{link} Failed to increase remote cost")
-                    wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"{link} Failed to increase remote cost")
+                    wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"Node {config['id']} Failed to increase remote cost")
                     continue
                 logger.info(f"{link} increasing local cost")
                 result = wg.setCost(link,5000)
                 if not result:
                     logger.warning(f"Failed to increase local cost")
-                    wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"{link} Failed to increase local cost")
+                    wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"Node {config['id']} Failed to increase local cost")
                     req = setRemoteCost(0)
                     if not req: logger.warning(f"{link} Failed to remove remote cost")
                     continue
@@ -72,7 +72,7 @@ while not shutdown:
                 req = wg.call(f'http://{data["vxlan"]}:{config["listenPort"]}/update',{"xorKey":xorKey,"publicKeyServer":data['publicKey'],"interface":interfaceRemote},'PATCH')
                 if not req:
                     logger.warning(f"{link} Failed to update remote xor keys")
-                    wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"{link} Failed to update remote xor keys")
+                    wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"Node {config['id']} Failed to update remote xor keys")
                     logger.info(f"{link} restoring link state")
                     wg.setCost(link,0)
                     wg.setInterface(link,"up")
@@ -87,18 +87,18 @@ while not shutdown:
                 req = setRemoteCost(0)
                 if not req: 
                     logger.warning(f"{link} Failed to remove remote cost")
-                    wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"{link} Failed to remove remote cost")
+                    wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"Node {config['id']} Failed to remove remote cost")
                 logger.info(f"{link} removing local cost")
                 result = wg.setCost(link,0)
                 if not result: 
                     logger.warning(f"{link} Failed to remove local cost")
-                    wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"{link} Failed to remove local cost")
+                    wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"Node {config['id']} Failed to remove local cost")
                 logger.info(f"{link} Testing connectivity")
                 time.sleep(2)
                 latency =  wg.fping([data['remote']],5,True)
                 if not latency:
                     logger.warning(f"{link} Unable to verify connectivity")
-                    wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"{link} Unable to verify connectivity")
+                    wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"Node {config['id']} Unable to verify connectivity")
                 logger.info(f"{link} done swapping xor keys")
         #run this twice per day
         waitUntil = currentTime + (3600 * 12)
