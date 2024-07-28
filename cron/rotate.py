@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import logging, secrets, signal, time, sys, os
+import logging, secrets, signal, random, time, sys, os
 sys.path.append("..") # Adds higher directory to python modules path.
 from logging.handlers import RotatingFileHandler
 from Class.wireguard import Wireguard
@@ -101,6 +101,6 @@ while not shutdown:
                     wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"Node {config['id']} Unable to verify connectivity")
                 logger.info(f"{link} done swapping xor keys")
         #run this twice per day
-        waitUntil = currentTime + (3600 * 12)
+        waitUntil = currentTime + random.randint(3600 * 11, 3600 * 12)
     else:
         time.sleep(10)
