@@ -1,8 +1,9 @@
 #!/usr/bin/python3
-import logging, secrets, time, sys, os
+import logging, secrets, signal, time, sys, os
 sys.path.append("..") # Adds higher directory to python modules path.
 from logging.handlers import RotatingFileHandler
 from Class.wireguard import Wireguard
+import systemd.daemon
 
 path = os.path.dirname(os.path.realpath(__file__))
 path = path.replace("/cron","")
@@ -25,8 +26,20 @@ if len(sys.argv) == 2: targetInterface = sys.argv[1]
 def setRemoteCost(cost=0):
     return wg.call(f'http://{data["vxlan"]}:{config["listenPort"]}/update',{"cost":cost,"publicKeyServer":data['publicKey'],"interface":interfaceRemote},'PATCH')
 
+shutdown = False
+def gracefulExit(signal_number,stack_frame):
+    systemd.daemon.notify('STOPPING=1')
+    logger.info(f"Stopping")
+    global shutdown
+    shutdown = True
+
+signal.signal(signal.SIGINT, gracefulExit)
+signal.signal(signal.SIGTERM, gracefulExit)
+systemd.daemon.notify('READY=1')
+logger.info(f"Ready")
+
 waitUntil = 0
-while True:
+while not shutdown:
     currentTime = int(time.time())
     if currentTime > waitUntil:
         links = wg.getLinks()

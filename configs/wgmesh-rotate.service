@@ -5,7 +5,8 @@ After=network-online.target wgmesh-pipe.service bird.service
 [Service]
 User=wg-mesh
 Group=wg-mesh
-Type=simple
+Type=notify
+TimeoutSec=300
 Restart=on-failure
 StandardOutput=null
 Environment=PYTHONUNBUFFERED=1
