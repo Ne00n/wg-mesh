@@ -93,6 +93,12 @@ while not shutdown:
                 if not result: 
                     logger.warning(f"{link} Failed to remove local cost")
                     wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"{link} Failed to remove local cost")
+                logger.info(f"{link} Testing connectivity")
+                time.sleep(2)
+                latency =  wg.fping([data['remote']],5,True)
+                if not latency:
+                    logger.warning(f"{link} Unable to verify connectivity")
+                    wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"{link} Unable to verify connectivity")
                 logger.info(f"{link} done swapping xor keys")
         #run this twice per day
         waitUntil = currentTime + (3600 * 12)
