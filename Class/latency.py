@@ -175,7 +175,7 @@ class Latency(Base):
     def setLatencyData(self,latencyData,peers):
         #fill linkState
         for data in latencyData:
-            if not data['nic'] in self.linkState: self.linkState[data['nic']] = {"state":1,"cost":0}
+            if not data['nic'] in self.linkState: self.linkState[data['nic']] = {"state":1,"cost":0,"outages":0}
         #copy dicts
         self.latencyData = copy.deepcopy(latencyData)
         self.latencyDataState = copy.deepcopy(latencyData)
@@ -195,7 +195,7 @@ class Latency(Base):
         if status:
             self.notify(notifications['gotifyUp'],f"Node {self.config['id']}: {row['nic']} is up",f"{mtr[0]}")
         else:
-            self.notify(notifications['gotifyDown'],f"Node {self.config['id']}: {row['nic']} is down",f"{mtr[0]}")
+            self.notify(notifications['gotifyDown'],f"Node {self.config['id']}: {row['nic']} is down ({self.linkState[row['nic']]['outages']})",f"{mtr[0]}")
 
     def notifications(self,latencyData):
         for index,row in enumerate(latencyData):
@@ -209,6 +209,7 @@ class Latency(Base):
                     sendMessage.start()
             elif self.linkState[nic]['state'] and row['cost'] == 65535:
                 self.linkState[row['nic']]['state'] = 0
+                self.linkState[row['nic']]['outages'] += 1
                 self.logger.warning(f"Link {row['nic']} is down")
                 notifications = self.config['notifications']
                 if notifications['enabled']:
