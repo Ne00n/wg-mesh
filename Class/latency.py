@@ -193,7 +193,7 @@ class Latency(Base):
                 mtr = ["No public ip available for mtr",""]
         notifications = self.config['notifications']
         if status:
-            self.notify(notifications['gotifyUp'],f"Node {self.config['id']}: {row['nic']} is up",f"{mtr[0]}")
+            self.notify(notifications['gotifyUp'],f"Node {self.config['id']}: {row['nic']} is up",f"{row['nic']} has been down {self.linkState[row['nic']]['outages']} times")
         else:
             self.notify(notifications['gotifyDown'],f"Node {self.config['id']}: {row['nic']} is down ({self.linkState[row['nic']]['outages']})",f"{mtr[0]}")
 
