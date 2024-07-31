@@ -69,9 +69,9 @@ def validatePrefix(prefix):
 def validateConnectivity(connectivity):
     if "ipv4" not in connectivity or "ipv6" not in connectivity: return False
     try:
-        if connectivity['ipv4'] is not None:
+        if connectivity['ipv4']:
             ip_obj = ipaddress.ip_address(connectivity['ipv4'])
-        if connectivity['ipv6'] is not None:
+        if connectivity['ipv6']:
             ip_obj = ipaddress.ip_address(connectivity['ipv6'])
     except ValueError:
         return False
