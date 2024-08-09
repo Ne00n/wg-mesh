@@ -49,8 +49,8 @@ class Latency(Base):
             if int(event) > int(time.time()): 
                 eventCount += 1
                 eventScore += details['peak']
-            #delete events after 60 minutes
-            elif (int(time.time()) - 3600) > int(event):
+            #delete events after 120 minutes
+            elif (int(time.time()) - 7200) > int(event):
                 del self.network[entry][eventType][event]
         return eventCount,round(eventScore,1)
 
