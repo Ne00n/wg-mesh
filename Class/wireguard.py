@@ -174,6 +174,9 @@ class Wireguard(Base):
         for findex, filename in enumerate(files):
             if not filename.endswith(".sh") or filename == "dummy.sh": continue
             config = self.readFile(f"{self.path}/links/{filename}")
+            if not config:
+                print(f"{filename} is empty!")
+                continue
             link = filename.replace(".sh","")
             linkConfig = self.readJson(f"{self.path}/links/{link}.json")
             if linkConfig:
@@ -200,13 +203,13 @@ class Wireguard(Base):
                 linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
                 destination = f"{subnetPrefix}.{linkID}.1"
             #get remote endpoint
-            parsed, remote = self.getRemote(config,subnetPrefixSplitted)
+            local, remote = self.getRemote(config,subnetPrefixSplitted)
             #grab publickey
             publicKey = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)[0]
             #grab area
             area = re.findall(f"Area\s([0-9]+)",config,re.MULTILINE)
             area = int(area[0]) if area else 0
-            links[filename] = {"filename":filename,"vxlan":destination,"local":parsed[0],"remote":remote,'remotePublic':remotePublic,'publicKey':publicKey,"area":area,"config":config}
+            links[filename] = {"filename":filename,"vxlan":destination,"local":local,"remote":remote,'remotePublic':remotePublic,'publicKey':publicKey,"area":area,"config":config}
         return links
 
     def AskProtocol(self,dest,token=""):
