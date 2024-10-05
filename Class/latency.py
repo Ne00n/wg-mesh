@@ -16,7 +16,7 @@ class Latency(Base):
         self.linkState = {}
         self.path = path
         self.lastReload = int(time.time()) + 600
-        self.currentLinks = self.wg.getLinks()
+        self.currentLinks = self.wg.getLinks(False)
         self.config = self.readJson(f'{path}/configs/config.json')
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
         self.network = self.readJson(f"{path}/configs/network.json")

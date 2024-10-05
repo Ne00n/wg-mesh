@@ -367,9 +367,9 @@ class Wireguard(Base):
         files = os.listdir(f"{self.path}/links/")
         return [x for x in files if self.filter(x)]
 
-    def getLinks(self):
+    def getLinks(self,shouldExit=True):
         links = self.filesToLinks(self.getFiles())
-        if not links: exit("No links found.")
+        if not links and shouldExit: exit("No links found.")
         return links
 
     def groupByArea(self,latencyData):
