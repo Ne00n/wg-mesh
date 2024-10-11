@@ -154,7 +154,7 @@ class Wireguard(Base):
         offline,online = self.checkLinks(links)
         for link in offline:
             data = links[link]
-            parsed, remote = self.getRemote(data['local'],self.subnetPrefixSplitted)
+            parsed, remote = self.getRemote(data['config'],self.subnetPrefixSplitted)
             print(f"Found dead link {link} ({remote})")
             pings = self.fping([data['vxlan']],3,True)
             if ignoreEndpoint or not pings or not pings[data['vxlan']]:
