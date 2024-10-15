@@ -5,6 +5,7 @@ class Templator:
     def genServer(self,interface,config,payload,serverIP,serverPort,wgobfsSharedKey=""):
         clientPublicKey,linkType,prefix,area,connectivity = payload['clientPublicKey'],payload['linkType'],payload['prefix'],payload['area'],payload['connectivity']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
+        wgPrefix = "awg" if linkType == "amneziawg" else "wg"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
         if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I OUTPUT -p udp -d {connectivity["ipv4"]} -j XOR --keys "{wgobfsSharedKey}";\n'
@@ -18,7 +19,7 @@ if [ "$1" == "up" ];  then
     sudo ip link add dev {interface} type wireguard
     sudo ip address add dev {interface} {prefix}.{config["id"]}.{serverIP}/31
     sudo ip -6 address add dev {interface} fe82:{config["id"]}::{serverIP}/127
-    sudo wg set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {clientPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0
+    sudo {wgPrefix} set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {clientPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
 else
@@ -30,6 +31,7 @@ fi'''
     def genClient(self,interface,config,resp,serverIPExternal,linkType="default",prefix="10.0",peerPrefix="172.31"):
         serverID,serverIP,serverPort,serverPublicKey,wgobfsSharedKey = resp['id'],resp['lastbyte'],resp['port'],resp['publicKeyServer'],resp['wgobfsSharedKey']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
+        wgPrefix = "awg" if linkType == "amneziawg" else "wg"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
         if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I OUTPUT -p udp -d {serverIPExternal} -j XOR --keys "{wgobfsSharedKey}";\n'
@@ -43,7 +45,7 @@ if [ "$1" == "up" ];  then
     sudo ip link add dev {interface} type wireguard
     sudo ip address add dev {interface} {prefix}.{serverID}.{int(serverIP)+1}/31
     sudo ip -6 address add dev {interface} fe82:{serverID}::{int(serverIP)+1}/127
-    sudo wg set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0 endpoint {serverIPExternal}:{serverPort}
+    sudo {wgPrefix} set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0 endpoint {serverIPExternal}:{serverPort}
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
 else
