@@ -30,7 +30,7 @@
 - [x] Active Latency optimisation
 - [x] Packet loss detection & rerouting
 - [x] High Jitter detection & rerouting
-- [x] Support for wgobfs and ipt_xor
+- [x] Support for wgobfs, ipt_xor and AmneziaWG
 - [x] Push notifications via gotify
 
 **Requirements**<br>
