@@ -57,7 +57,7 @@ def validateNetwork(network):
     return True
 
 def validateLinkType(linkType):
-    linkTypes = ["default","wgobfs","ipt_xor"]
+    linkTypes = ["default","wgobfs","ipt_xor","amneziawg"]
     if linkType in linkTypes: return True
     return False
 
