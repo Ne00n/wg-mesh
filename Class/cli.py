@@ -149,6 +149,8 @@ class CLI(Base):
             print("You still need to install ipt_xor with: bash /opt/wg-mesh/tools/xor.sh")
         elif "amneziawg" in option:
             if not "amneziawg" in config['linkTypes']: config['linkTypes'].append("amneziawg")
+            print("Amneziawg still needs to be added to sudo with:")
+            print('echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/awg set*" >> /etc/sudoers.d/wg-mesh')
             print("You still need to install amneziawg with: bash /opt/wg-mesh/tools/amnezia.sh")
         else:
             print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg, client, notifications")
