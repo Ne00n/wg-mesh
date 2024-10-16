@@ -6,3 +6,4 @@ echo "deb https://ppa.launchpadcontent.net/amnezia/ppa/ubuntu focal main" | sudo
 echo "deb-src https://ppa.launchpadcontent.net/amnezia/ppa/ubuntu focal main" | sudo tee -a /etc/apt/sources.list
 apt-get update
 apt-get install -y amneziawg
+echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/awg set*" >> /etc/sudoers.d/wg-mesh
