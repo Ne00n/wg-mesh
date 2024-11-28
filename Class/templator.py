@@ -106,7 +106,8 @@ protocol bgp '''+peer["nic"]+''' {
         isRouter = "yes" if config['bird']['client'] else "no"
         subnetPrefix = ".".join(config['subnet'].split(".")[:2])
         routerID = f"{subnetPrefix}.{config['id']}.1"
-        template = f'log "/etc/bird/bird.log" all;\nrouter id {routerID}; #generated {int(time.time())}'
+        logLevels = "{ warning, fatal}"
+        template = f'log "/etc/bird/bird.log" {logLevels};\nrouter id {routerID}; #generated {int(time.time())}'
         template += "\n\nprotocol device {\n\tscan time 10;\n}\n"
 
         localPTP = ""
