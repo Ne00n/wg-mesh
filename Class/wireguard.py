@@ -32,6 +32,7 @@ class Wireguard(Base):
         if not "area" in self.config['bird']: self.config['bird']['area'] = 0
         if not "tick" in self.config['bird']: self.config['bird']['tick'] = 1
         if not "client" in self.config['bird']: self.config['bird']['client'] = False
+        if not "loglevel" in self.config['bird']: self.config['bird']['loglevel'] = "{ warning, fatal}"
         if not "vxlan" in self.config: self.config['vxlan'] = 251
         if not "notifications" in self.config: self.config['notifications'] = {"enabled":False,"gotifyUp":"","gotifyDown":""}
         if not "gotifyError" in self.config['notifications']: self.config['notifications']['gotifyError'] = ""
