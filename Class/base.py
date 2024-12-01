@@ -1,4 +1,4 @@
-import subprocess, requests, netaddr, time, json, re, os
+import subprocess, requests, netaddr, shutil, time, json, re, os
 from ipaddress import ip_network
 
 class Base:
@@ -39,6 +39,10 @@ class Base:
             return ""
 
     def saveFile(self,data,path):
+        #Prevent file corruption
+        total, used, free = shutil.disk_usage("/")
+        usagePercent = (used / total) * 100
+        if usagePercent >= 98: return False
         try:
             with open(path, 'w') as file: file.write(data)
         except Exception as e:
@@ -46,6 +50,10 @@ class Base:
         return True
 
     def saveJson(self,data,path):
+        #Prevent file corruption
+        total, used, free = shutil.disk_usage("/")
+        usagePercent = (used / total) * 100
+        if usagePercent >= 98: return False
         try:
             with open(path, 'w') as f: json.dump(data, f, indent=4)
         except Exception as e:
