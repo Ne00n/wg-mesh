@@ -42,7 +42,7 @@ restartCooldown = regenCooldown = int(time.time()) + 1800
 
 total, used, free = shutil.disk_usage("/")
 usagePercent = (used / total) * 100
-logger.info(f"Current disk space usage {usagePercent}")
+logger.info(f"Current disk space usage {round(usagePercent,1)}")
 
 while True:
     for runs in range(6):
