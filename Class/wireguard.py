@@ -353,7 +353,7 @@ class Wireguard(Base):
         if cutoff == 0: 
             print(result)
             return True
-        for ip,latency in latencyDif not "loglevel" in self.config['bird']: self.config['bird']['loglevel'] = "{ warning, fatal}"ata.items():
+        for ip,latency in latencyData.items():
             if latency > float(cutoff): continue 
             targetSplit = ips[ip].split(".")
             #reserve 10.0.200+ for clients, don't mesh
