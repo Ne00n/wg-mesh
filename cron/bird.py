@@ -42,7 +42,8 @@ restartCooldown = regenCooldown = int(time.time()) + 1800
 
 total, used, free = shutil.disk_usage("/")
 usagePercent = (used / total) * 100
-logger.info(f"Current disk space usage {round(usagePercent,1)}")
+logger.info(f"Current disk space usage {round(usagePercent,1)}%")
+if usagePercent > 90: logger.warning("If you hit 98%, wg-mesh will stop writing any files.")
 
 while True:
     for runs in range(6):
