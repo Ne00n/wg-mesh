@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import logging, threading, queue, time, sys, os
+import logging, threading, shutil, queue, time, sys, os
 sys.path.append("..") # Adds higher directory to python modules path.
 from logging.handlers import RotatingFileHandler
 from Class.latency import Latency
@@ -39,6 +39,10 @@ pathToLinks,links = f'{path}/links/',[]
 
 skip,skipUntil = 0,0
 restartCooldown = regenCooldown = int(time.time()) + 1800
+
+total, used, free = shutil.disk_usage("/")
+usagePercent = (used / total) * 100
+logger.info(f"Current disk space usage {usagePercent}")
 
 while True:
     for runs in range(6):
