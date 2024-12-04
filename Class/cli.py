@@ -160,7 +160,7 @@ class CLI(Base):
         print("You should reload the services to apply any config changes")
 
     def setOption(self,options):
-        validOptions = ["area","prefix","defaultLinkType","basePort","tick","subnet","vxlan","AllowedPeers","gotifyUp","gotifyDown","gotifyError"]
+        validOptions = ["area","prefix","defaultLinkType","basePort","tick","subnet","subnetVXLAN","AllowedPeers","gotifyUp","gotifyDown","gotifyError"]
         if len(sys.argv) == 0:
             print(f"Valid options: {', '.join(validOptions)}")
         else:
@@ -170,7 +170,7 @@ class CLI(Base):
                 if not config:
                     print(f"Unable to read config.json")
                     return
-                if key == "basePort" or key == "vxlan":
+                if key == "basePort":
                     config[key] = int(value)
                 elif key == "area" or key == "tick":
                     config['bird'][key] = int(value)
@@ -188,7 +188,7 @@ class CLI(Base):
                     print("Failed to save config.json")
                     return
                 print("You should reload the services to apply any config changes")
-                if key == "subnet" or key == "vxlan":        
+                if key == "subnet" or key == "subnetVXLAN":        
                     print("Reconfiguring dummy")
                     self.wg = Wireguard(self.path)
                     self.wg.reconfigureDummy()
