@@ -22,6 +22,7 @@ class Wireguard(Base):
         if not "listenPort" in self.config: self.config['listenPort'] = 8080
         if not "subnet" in self.config: self.config['subnet'] = "10.0.0.0/16"
         if not "subnetPeer" in self.config: self.config['subnetPeer'] = "172.31.0.0/16"
+        if not "vxlanSubnet" in self.config: self.config['vxlanSubnet'] = "10.0.251.0/24"
         if not "AllowedPeers" in self.config: self.config['AllowedPeers'] = []
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
@@ -33,7 +34,6 @@ class Wireguard(Base):
         if not "tick" in self.config['bird']: self.config['bird']['tick'] = 1
         if not "client" in self.config['bird']: self.config['bird']['client'] = False
         if not "loglevel" in self.config['bird']: self.config['bird']['loglevel'] = "{ warning, fatal}"
-        if not "vxlan" in self.config: self.config['vxlan'] = 251
         if not "notifications" in self.config: self.config['notifications'] = {"enabled":False,"gotifyUp":"","gotifyDown":""}
         if not "gotifyError" in self.config['notifications']: self.config['notifications']['gotifyError'] = ""
         self.saveJson(self.config,f"{self.path}/configs/config.json")
@@ -87,8 +87,8 @@ class Wireguard(Base):
         #config
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
-        config = {"listen":listen,"listenPort":8080,"basePort":51820,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16","AllowedPeers":[],
-        "prefix":"pipe","id":id,'vxlan':251,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
+        config = {"listen":listen,"listenPort":8080,"basePort":51820,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16","vxlanSubnet":"10.0.251.0/24","AllowedPeers":[],
+        "prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"area":0,"tick":1,"client":False,"loglevel":"{ warning, fatal}"},"notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":""}}
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response: exit("Unable to save config.json")
@@ -104,7 +104,7 @@ class Wireguard(Base):
     def reconfigureDummy(self):
         self.setInterface("dummy","down")
         self.cleanInterface("dummy",False)
-        dummyConfig = self.Templator.genDummy(self.config,self.config['connectivity'],self.subnetPrefix)
+        dummyConfig = self.Templator.genDummy(self.config,self.config['connectivity'])
         self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
         self.setInterface("dummy","up")
 
