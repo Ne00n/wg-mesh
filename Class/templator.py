@@ -57,7 +57,7 @@ fi'''
         return template
 
     def genDummy(self,config,connectivity):
-        serverID = config['id']
+        serverID = int(config['id'])
         serverID += config['vxlanOffset']
         #has to be done better at some point
         subnet, prefix = config['subnetVXLAN'].split("0/")
