@@ -27,8 +27,12 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%d.%
 tokens = {"connect":[],"peer":[]}
 for i in range(3):
     token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=18))
-    logging.info(f"Adding Token {token}")
+    logging.info(f"Adding connect token {token}")
     tokens['connect'].append(token)
+for i in range(3):
+    token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=18))
+    logging.info(f"Adding peer token {token}")
+    tokens['peer'].append(token)
 try:
     wg.saveJson(tokens,f"{folder}/tokens.json")
 except:
