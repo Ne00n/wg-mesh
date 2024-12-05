@@ -170,7 +170,7 @@ class CLI(Base):
                 if not config:
                     print(f"Unable to read config.json")
                     return
-                if key == "basePort" or "vxlanOffset":
+                if key == "basePort" or key == "vxlanOffset":
                     config[key] = int(value)
                 elif key == "area" or key == "tick":
                     config['bird'][key] = int(value)
