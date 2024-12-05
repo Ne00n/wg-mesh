@@ -93,7 +93,7 @@ class Wireguard(Base):
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
         config = {"listen":listen,"listenPort":8080,"basePort":51820,"vxlanOffset":0,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16","subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],
-        "prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
+        "prefix":"pipe","id":int(id),"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"area":0,"tick":1,"client":False,"loglevel":"{ warning, fatal}"},"notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":""}}
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response: exit("Unable to save config.json")
