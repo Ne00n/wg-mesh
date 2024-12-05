@@ -75,7 +75,7 @@ if [ "$1" == "up" ];  then
     sudo ip -6 link add vxlan1v6 type vxlan id 2 dstport 1790 local fd10:0:{serverID}::1;
     sudo ip link set vxlan1 up; sudo ip -6 link set vxlan1v6 up;
     sudo ip addr add {vxlanSubnet} dev vxlan1;
-    sudo ip -6 addr add fd10:{vxlanID}::{serverID}/64 dev vxlan1v6;
+    sudo ip -6 addr add fd10:251::{serverID}/64 dev vxlan1v6;
 else
     {masqueradeReverse}
     sudo ip addr del {prefix}.{serverID}.1/30 dev lo;
