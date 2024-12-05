@@ -21,6 +21,7 @@ class Wireguard(Base):
         reconfigureDummy = False
         if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
         if not "listenPort" in self.config: self.config['listenPort'] = 8080
+        if not "vxlanOffset" in self.config: self.config['vxlanOffset'] = 0
         if not "subnet" in self.config: self.config['subnet'] = "10.0.0.0/16"
         if not "subnetPeer" in self.config: self.config['subnetPeer'] = "172.31.0.0/16"
         if not "subnetVXLAN" in self.config: 
@@ -91,7 +92,7 @@ class Wireguard(Base):
         #config
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
-        config = {"listen":listen,"listenPort":8080,"basePort":51820,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16","subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],
+        config = {"listen":listen,"listenPort":8080,"basePort":51820,"vxlanOffset":0,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16","subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],
         "prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"area":0,"tick":1,"client":False,"loglevel":"{ warning, fatal}"},"notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":""}}
         response = self.saveJson(config,f"{self.path}/configs/config.json")
