@@ -60,8 +60,11 @@ fi'''
         serverID = int(config['id'])
         serverID += config['vxlanOffset']
         #has to be done better at some point
-        subnet, prefix = config['subnetVXLAN'].split("0/")
-        vxlanSubnet = f"{subnet}{serverID}/{prefix}"
+        subnet, host = config['subnetVXLAN'].split("/")
+        sSubnet = subnet.split(".")
+        prefix = f"{sSubnet[0]}.{sSubnet[1]}"
+        subnet = f"{sSubnet[0]}.{sSubnet[1]}.{sSubnet[2]}"
+        vxlanSubnet = f"{subnet}.{serverID}/{host}"
         masquerade = ""
         if connectivity['ipv4']: masquerade += "sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
         if connectivity['ipv6']: masquerade += "sudo ip6tables -t nat -A POSTROUTING -o $(ip -6 route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
