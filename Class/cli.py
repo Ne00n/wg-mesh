@@ -64,7 +64,8 @@ class CLI(Base):
     def token(self):
         tokens = self.readJson(f"{self.path}/tokens.json")
         if tokens:
-            print(f"Connect/Peer: {', '.join(tokens['connect'])}")
+            print(f"Connect: {', '.join(tokens['connect'])}")
+            print(f"Peer: {', '.join(tokens['peer'])}")
         else:
             print("Unable to load the tokens.json")
 
