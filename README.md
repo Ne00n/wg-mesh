@@ -157,22 +157,6 @@ wgmesh down && bash /opt/wg-mesh/deinstall.sh
 wgmesh update && wgmesh migrate && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
 
-**wgobfs**<br>
-Install wgbofs with
-```
-bash /opt/wg-mesh/tools/wgobfs.sh
-```
-To enable wgobfs connections run.<br>
-```
-#add wgobfs to linkTypes
-wgmesh enable wgobfs 
-#To override the defaultLinkType, if you want to prefer wgobfs over normal wg.
-wgmesh set defaultLinkType wgobfs
-systemctl restart wgmesh
-```
-
-If the remote has wgbofs not in linkeTypes, default will be used.<br>
-
 **Limitations**<br>
 Connecting multiple nodes at once, without waiting for the other node to finish, will result in double links.<br>
 By default, when a new node joins, it checks which connections it does not have, which with a new node would be everything.<br>
