@@ -10,7 +10,7 @@ To enable ipt_xor connections run.<br>
 ```
 #add ipt_xor to linkTypes
 wgmesh ipt_xor wgobfs 
-#To override the defaultLinkType, if you want to prefer wgobfs over normal wg.
+#To override the defaultLinkType, if you want to prefer ipt_xor over normal wg.
 wgmesh set defaultLinkType ipt_xor
 systemctl restart wgmesh
 ```
