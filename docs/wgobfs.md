@@ -1,5 +1,7 @@
-**wgobfs**<br>
-https://github.com/infinet/xt_wgobfs<br>
+##wgobfs
+
+Github repository: https://github.com/infinet/xt_wgobfs<br>
+
 Install wgbofs with
 ```
 bash /opt/wg-mesh/tools/wgobfs.sh
