@@ -1,4 +1,4 @@
-##wgobfs
+## wgobfs
 
 Github repository: https://github.com/infinet/xt_wgobfs<br>
 

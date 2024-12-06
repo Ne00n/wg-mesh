@@ -1,4 +1,4 @@
-##Peering*
+## Peering
 
 Peering works like Connect, its technically the same.<br>
 For example.<br>
