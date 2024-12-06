@@ -87,7 +87,7 @@ curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.s
 #Install wg-mesh and initialize the third node
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 3
 ```
-Grab the Token from Node 1 with
+Grab the Token from Node 1 with 
 ```
 wgmesh token
 ```
@@ -116,24 +116,6 @@ Internal requests from 10.0.0.0/8 don't need a token (connectivity, connect and 
 - /connect needs a valid token, otherwise the service will refuse to setup a wg link<br>
 - /update needs a valid wg public key and link name, otherwise it will not update the wg link<br>
 - /disconnect needs a valid wg public key and link name, otherwise will refuse to disconnect a specific link<br>
-
-**Shutdown/Startup**
-```
-wgmesh down
-wgmesh up && systemctl restart wgmesh
-```
-
-**Disconnect**<br>
-To disconnect all links on a Node
-```
-wgmesh disconnect
-#disconnect all links despite untable to reach API endpoint
-wgmesh disconnect force
-#disconnect a specific link e.g pipe250, pipe250v6
-wgmesh disconnect pipe250
-#disconnect a specific link with force
-wgmesh disconnect pipe250 force
-```
 
 **Removal**
 ```
