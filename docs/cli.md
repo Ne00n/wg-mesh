@@ -80,6 +80,19 @@ To view all possible commands just run set without any parameters
 wgmesh set defaultLinkType wgobfs
 ```
 
+**Examples**
+Use a random wireguard port for each link
+```
+wgmesh set basePort 0 && systemctl restart wgmesh-bird && systemctl restart wgmesh
+#or a different e.g
+wgmesh set basePort 5000 && systemctl restart wgmesh-bird && systemctl restart wgmesh
+```
+
+Disable automatic meshing, apply this before connecting
+```
+wgmesh disable mesh && systemctl restart wgmesh-bird
+```
+
 ## Used
 
 Prints out the used id's
