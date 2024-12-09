@@ -14,7 +14,6 @@ class Templator:
         wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
 #Area {area}
-#Peer {prefix}.{config["id"]}.1
 if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type {wgProtocol}
@@ -41,7 +40,6 @@ fi'''
         wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
 #Area {config['bird']["area"]}
-#Peer {peerPrefix}.{serverID}.1
 if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type {wgProtocol}
