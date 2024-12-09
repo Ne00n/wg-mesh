@@ -185,29 +185,31 @@ class Wireguard(Base):
                 continue
             link = filename.replace(".sh","")
             linkConfig = self.readJson(f"{self.path}/links/{link}.json")
+            subnetPrefix,subnetPrefixSplitted = self.subnetSwitch(filename)
             if linkConfig:
                 remotePublic = linkConfig['remotePublic']
+                destination = linkConfig['remote']
             else:
                 remotePublic = ""
-            subnetPrefix,subnetPrefixSplitted = self.subnetSwitch(filename)
-            #grab wg server ip from client wg config
-            if "endpoint" in config:
-                remotePublic = re.findall(f'endpoint\s(.*):',config, re.MULTILINE)[0]
-                destination = re.findall(f'({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.)',config, re.MULTILINE)
-                if not destination:
-                    print(f"Ignoring {filename}")
-                    continue
-                destination = f"{destination[0]}1"
-            elif "Peer" in filename:
-                peerIP = re.findall("Peer\s([0-9.]+)",config, re.MULTILINE)
-                if not peerIP:
-                    print(f"Unable to figure out peer for {filename}")
-                    continue
-                destination = peerIP[0]
-            elif "listen-port" in config:
-                #grab ID from filename
-                linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
-                destination = f"{subnetPrefix}.{linkID}.1"
+                destination = ""
+                #grab wg server ip from client wg config
+                if "endpoint" in config:
+                    remotePublic = re.findall(f'endpoint\s(.*):',config, re.MULTILINE)[0]
+                    destination = re.findall(f'({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.)',config, re.MULTILINE)
+                    if not destination:
+                        print(f"Ignoring {filename}")
+                        continue
+                    destination = f"{destination[0]}1"
+                elif "Peer" in filename:
+                    peerIP = re.findall("Peer\s([0-9.]+)",config, re.MULTILINE)
+                    if not peerIP:
+                        print(f"Unable to figure out peer for {filename}")
+                        continue
+                    destination = peerIP[0]
+                elif "listen-port" in config:
+                    #grab ID from filename
+                    linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
+                    destination = f"{subnetPrefix}.{linkID}.1"
             #get remote endpoint
             local, remote = self.getRemote(config,subnetPrefixSplitted)
             #grab publickey
