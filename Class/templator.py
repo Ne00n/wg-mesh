@@ -2,8 +2,10 @@ import time
 
 class Templator:
 
-    def genServer(self,interface,config,payload,serverIP,serverPort,wgobfsSharedKey=""):
+    def genServer(self,interface,config,payload,freeSubnet,serverPort,wgobfsSharedKey=""):
         clientPublicKey,linkType,prefix,area,connectivity = payload['clientPublicKey'],payload['linkType'],payload['prefix'],payload['area'],payload['connectivity']
+        #temp workaround
+        serverIP = re.findall(f"([0-9]+)\/",freeSubnet, re.MULTILINE)[0]
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         wgPrefix = "awg" if linkType == "amneziawg" else "wg"
         wgProtocol = "amneziawg" if linkType == "amneziawg" else "wireguard"
@@ -17,7 +19,7 @@ class Templator:
 if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type {wgProtocol}
-    sudo ip address add dev {interface} {prefix}.{config["id"]}.{serverIP}/31
+    sudo ip address add dev {interface} {freeSubnet}
     sudo ip -6 address add dev {interface} fe82:{config["id"]}::{serverIP}/127
     sudo {wgPrefix} set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {clientPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0
     sudo ip link set {interface} mtu {mtu}
@@ -29,7 +31,9 @@ fi'''
         return template
 
     def genClient(self,interface,config,resp,serverIPExternal,linkType="default",prefix="10.0",peerPrefix="172.31"):
-        serverID,serverIP,serverPort,serverPublicKey,wgobfsSharedKey = resp['id'],resp['lastbyte'],resp['port'],resp['publicKeyServer'],resp['wgobfsSharedKey']
+        serverID,freeSubnet,serverPort,serverPublicKey,wgobfsSharedKey = resp['id'],resp['freeSubnet'],resp['freePort'],resp['publicKeyServer'],resp['wgobfsSharedKey']
+        #temp workaround
+        serverIP = re.findall(f"([0-9]+)\/",freeSubnet, re.MULTILINE)[0]
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         wgPrefix = "awg" if linkType == "amneziawg" else "wg"
         wgProtocol = "amneziawg" if linkType == "amneziawg" else "wireguard"
@@ -43,7 +47,7 @@ fi'''
 if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type {wgProtocol}
-    sudo ip address add dev {interface} {prefix}.{serverID}.{int(serverIP)+1}/31
+    sudo ip address add dev {interface} {freeSubnet}
     sudo ip -6 address add dev {interface} fe82:{serverID}::{int(serverIP)+1}/127
     sudo {wgPrefix} set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0 endpoint {serverIPExternal}:{serverPort}
     sudo ip link set {interface} mtu {mtu}
