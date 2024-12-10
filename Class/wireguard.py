@@ -113,12 +113,14 @@ class Wireguard(Base):
         self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
         self.setInterface("dummy","up")
 
-    def getPeerSubnets(self):
+    def getNodeSubnet(self):
         if self.config['subnet'].startswith("10."):
-            nodeSubnet = f"{self.subnetPrefix}.{self.config['id']}.0/23"
+            return f"{self.subnetPrefix}.{self.config['id']}.0/23"
         else:
-            nodeSubnet = f"{self.subnetPrefix}.{self.config['id']}.0/24"
+            return f"{self.subnetPrefix}.{self.config['id']}.0/24"
 
+    def getPeerSubnets(self):
+        nodeSubnet = self.getNodeSubnet()
         network = ipaddress.ip_network(nodeSubnet)
         subnets = list(network.subnets(new_prefix=31))
 
