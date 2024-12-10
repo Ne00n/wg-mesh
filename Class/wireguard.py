@@ -1,5 +1,5 @@
 from Class.templator import Templator
-import urllib.request, requests, random, string, json, time, re, os
+import urllib.request, ipaddress, requests, random, string, json, time, re, os
 from Class.base import Base
 
 class Wireguard(Base):
@@ -112,6 +112,21 @@ class Wireguard(Base):
         dummyConfig = self.Templator.genDummy(self.config,self.config['connectivity'])
         self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
         self.setInterface("dummy","up")
+
+    def getPeerSubnets(self):
+        if self.config['subnet'].startswith("10."):
+            nodeSubnet = f"{self.subnetPrefix}.{self.config['id']}.0/23"
+        else:
+            nodeSubnet = f"{self.subnetPrefix}.{self.config['id']}.0/24"
+
+        network = ipaddress.ip_network(nodeSubnet)
+        subnets = list(network.subnets(new_prefix=31))
+
+        peerSubnets = []
+        for index, subnet in enumerate(subnets):
+            if index < 2: continue
+            peerSubnets.append(str(subnet))
+        return peerSubnets
 
     def findLowest(self,min,list):
         for i in range(min,min + 400):
