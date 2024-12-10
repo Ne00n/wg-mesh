@@ -15,6 +15,7 @@
 
 **Network**<br />
 - By default 10.0.x.x/16 is used.<br>
+If 10.0.x.x/16 is used, a /23 is reserved per Node.
 - 10.0.id.1 Node /30<br>
 - 10.0.id.4-255 peers /31<br>
 - 10.0.251.1-255 vxlan /32<br>

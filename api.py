@@ -169,7 +169,7 @@ def index():
         routes = wg.cmd("birdc show route")[0]
         subnetPrefixSplitted = payload['prefix'].split(".")
         targets = re.findall(f"({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
-        if f"{payload['prefix']}.{payload['id']}.0/30" in targets: 
+        if f"{payload['prefix']}.{payload['id']}.0/30" in targets or (payload['prefix'] == "10.0" and f"{payload['prefix']}.{int(payload['id'])+1}.0/30" in targets): 
             logging.info(f"ID Collision from {requestIP}")
             return HTTPResponse(status=416, body="Collision")
     #generate interface name
