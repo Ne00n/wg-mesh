@@ -149,7 +149,7 @@ class Wireguard(Base):
         #Find usable subnets
         freeSubnets = peerSubnets - usedSubnets
         for subnet in sorted(freeSubnets, key=lambda x: int(x.network_address)):
-            freeSubnet = subnet
+            freeSubnet = str(subnet)
             break
         return freeSubnet,freePort
 
