@@ -208,7 +208,7 @@ def index():
         wg.setInterface("dummy","up")
     connectMutex.release()
     logging.info(f"{interface} created for {requestIP}")
-    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id'],'freeSubnet':freeSubnet,'freePort':freePort,'connectivity':config['connectivity']})
+    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id'],'freeSubnet':wg.getHost(freeSubnet),'freePort':freePort,'connectivity':config['connectivity']})
 
 @route('/update', method='PATCH')
 def index():

@@ -126,6 +126,10 @@ class Wireguard(Base):
         subnets = subnets[2:]
         return subnets
 
+    def getHost(self,freeSubnet):
+        peerSubnet = ipaddress.ip_network(freeSubnet)
+        return f"{list(peerSubnet.hosts())[1]}/31"
+
     def findLowest(self,min,list):
         for i in range(min,min + 400):
             if i not in list and i % 2 == 0: return i
