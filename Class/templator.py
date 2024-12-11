@@ -18,7 +18,7 @@ if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type {wgProtocol}
     sudo ip address add dev {interface} {freeSubnet}
-    sudo ip -6 address add dev {interface} {config['subnetLinkLocal']}::1/127
+    sudo ip -6 address add dev {interface} {config['subnetLinkLocal']}:{config['id']}::1/127
     sudo {wgPrefix} set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {clientPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
@@ -44,7 +44,7 @@ if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type {wgProtocol}
     sudo ip address add dev {interface} {freeSubnet}
-    sudo ip -6 address add dev {interface} {config['subnetLinkLocal']}::2/127
+    sudo ip -6 address add dev {interface} {config['subnetLinkLocal']}:{serverID}::2/127
     sudo {wgPrefix} set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0 endpoint {serverIPExternal}:{serverPort}
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
