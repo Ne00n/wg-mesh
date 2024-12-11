@@ -1,4 +1,4 @@
-import time
+import ipaddress, time
 
 class Templator:
 
@@ -54,15 +54,16 @@ else
 fi'''
         return template
 
+    def getNodeVXLAN(self,config):
+        vxlanSubnet = ipaddress.ip_network(config['subnetVXLAN'])
+        for index,host in enumerate(list(vxlanSubnet.hosts())):
+            if index == int(config['id']): return f"{str(host)}/24"
+
     def genDummy(self,config,connectivity):
         serverID = int(config['id'])
         serverID += config['vxlanOffset']
-        #has to be done better at some point
-        subnet, host = config['subnetVXLAN'].split("/")
-        sSubnet = subnet.split(".")
-        prefix = f"{sSubnet[0]}.{sSubnet[1]}"
-        subnet = f"{sSubnet[0]}.{sSubnet[1]}.{sSubnet[2]}"
-        vxlanSubnet = f"{subnet}.{serverID}/{host}"
+        vxlanID = config['subnetVXLAN'].split(".")[2]
+        prefix = ".".join(config['subnet'].split(".")[:2])
         masquerade = ""
         if connectivity['ipv4']: masquerade += "sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
         if connectivity['ipv6']: masquerade += "sudo ip6tables -t nat -A POSTROUTING -o $(ip -6 route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
@@ -75,8 +76,8 @@ if [ "$1" == "up" ];  then
     sudo ip link add vxlan1 type vxlan id 1 dstport 1789 local {prefix}.{serverID}.1;
     sudo ip -6 link add vxlan1v6 type vxlan id 2 dstport 1790 local fd10:0:{serverID}::1;
     sudo ip link set vxlan1 up; sudo ip -6 link set vxlan1v6 up;
-    sudo ip addr add {vxlanSubnet} dev vxlan1;
-    sudo ip -6 addr add fd10:{sSubnet[2]}::{serverID}/64 dev vxlan1v6;
+    sudo ip addr add {self.getNodeVXLAN(config)} dev vxlan1;
+    sudo ip -6 addr add fd10:{vxlanID}::{serverID}/64 dev vxlan1v6;
 else
     {masqueradeReverse}
     sudo ip addr del {prefix}.{serverID}.1/30 dev lo;
