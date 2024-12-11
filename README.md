@@ -56,12 +56,12 @@ Grab the Token from Node 0<br>
 ```
 wgmesh token
 ```
-Connect Node 2 to Node 0
+Connect Node 1 to Node 0
 ```
-wgmesh connect http://<node2IP>:8080 <token>
+wgmesh connect http://<node1IP>:8080 <token>
 ```
 After connecting successfully, a dummy.sh will be created, which assigns a 10.0.nodeID.0/30 to lo.<br>
-This will be picked up by bird, so on booth nodes on 10.0.1.1 and 10.0.2.1 should be reachable after bird ran.<br>
+This will be picked up by bird, so on booth nodes on 10.0.0.1 and 10.0.1.1 should be reachable after bird ran.<br>
 Regarding NAT or in general behind Firewalls, the "connector" is always a Client, the endpoint the Server.<br>
 
 **Example 2+ nodes**<br>
