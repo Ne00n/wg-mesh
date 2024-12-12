@@ -152,7 +152,7 @@ class Wireguard(Base):
         #Convert to IPv4Network objects
         usedSubnets = {ipaddress.ip_network(subnet) for subnet in usedSubnets}
         #Find usable subnets
-        freeSubnets = peerSubnets - usedSubnets
+        freeSubnets = set(peerSubnets) - usedSubnets
         for subnet in sorted(freeSubnets, key=lambda x: int(x.network_address)):
             freeSubnet = str(subnet)
             break
