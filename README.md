@@ -45,6 +45,7 @@ Keep in mind that some containers such as OVZ or LXC, depending on kernel versio
 The ID needs to be unique, otherwise it will result in collisions.<br>
 Keep in mind, ID's 200 and higher are reserved for clients, they won't get meshed.<br>
 Public is used to expose the API to all interfaces, by default it listens only local on 10.0.id.1.<br>
+Depending on what Subnet you are using, you either have to increment the ID's by 2 (10.) or by 1 (192/172.)<br>
 ```
 #Install wg-mesh and initialize the first node
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 0 public
@@ -55,12 +56,12 @@ Grab the Token from Node 0<br>
 ```
 wgmesh token
 ```
-Connect Node 2 to Node 0
+Connect Node 1 to Node 0
 ```
-wgmesh connect http://<node2IP>:8080 <token>
+wgmesh connect http://<node1IP>:8080 <token>
 ```
 After connecting successfully, a dummy.sh will be created, which assigns a 10.0.nodeID.0/30 to lo.<br>
-This will be picked up by bird, so on booth nodes on 10.0.1.1 and 10.0.2.1 should be reachable after bird ran.<br>
+This will be picked up by bird, so on booth nodes on 10.0.0.1 and 10.0.1.1 should be reachable after bird ran.<br>
 Regarding NAT or in general behind Firewalls, the "connector" is always a Client, the endpoint the Server.<br>
 
 **Example 2+ nodes**<br>

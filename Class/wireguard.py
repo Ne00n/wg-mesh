@@ -27,6 +27,7 @@ class Wireguard(Base):
         if not "subnetVXLAN" in self.config: 
             self.config['subnetVXLAN'] = "10.0.251.0/24"
             reconfigureDummy = True
+        if not "subnetLinkLocal" in self.config: self.config['subnetLinkLocal'] = "fe82::"
         if not "AllowedPeers" in self.config: self.config['AllowedPeers'] = []
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
@@ -92,8 +93,8 @@ class Wireguard(Base):
         #config
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
-        config = {"listen":listen,"listenPort":8080,"basePort":51820,"vxlanOffset":0,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16","subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],
-        "prefix":"pipe","id":int(id),"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
+        config = {"listen":listen,"listenPort":8080,"basePort":51820,"vxlanOffset":0,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16",
+        "subnetVXLAN":"10.0.251.0/24","subnetLinkLocal":"fe82::","AllowedPeers":[],"prefix":"pipe","id":int(id),"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"area":0,"tick":1,"client":False,"loglevel":"{ warning, fatal}"},"notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":""}}
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response: exit("Unable to save config.json")
@@ -123,30 +124,39 @@ class Wireguard(Base):
         nodeSubnet = self.getNodeSubnet()
         network = ipaddress.ip_network(nodeSubnet)
         subnets = list(network.subnets(new_prefix=31))
+        subnets = subnets[2:]
+        return subnets
 
-        peerSubnets = []
-        for index, subnet in enumerate(subnets):
-            if index < 2: continue
-            peerSubnets.append(str(subnet))
-        return peerSubnets
+    def getHost(self,freeSubnet):
+        peerSubnet = ipaddress.ip_network(freeSubnet)
+        return f"{list(peerSubnet.hosts())[1]}/31"
 
     def findLowest(self,min,list):
         for i in range(min,min + 400):
             if i not in list and i % 2 == 0: return i
 
-    def minimal(self,files,lastbyte=4,port=51820):
-        ips,ports = [],[]
+    def minimal(self,files,port=51820):
+        ports,usedSubnets,freeSubnet = [],[],""
         if port == 0: port = random.randint(1500, 55000)
         for file in files:
             config = self.readFile(f"{self.path}/links/{file}")
             configPort = re.findall(f"listen-port\s([0-9]+)",config, re.MULTILINE)
-            configIP = re.findall(f"ip address add dev.*?([0-9]+)\/",config, re.MULTILINE)
-            if configPort:
-                ports.append(int(configPort[0]))
-                ips.append(int(configIP[0]))
-        port = self.findLowest(port,ports)
-        lastbyte = self.findLowest(lastbyte,ips)
-        return lastbyte,port
+            configIP = re.findall(f"ip address add dev.*?([0-9.]+\/31)",config, re.MULTILINE)
+            #Clients are ignored since they use a different subnet
+            if not configPort: continue
+            ports.append(int(configPort[0]))
+            usedSubnets.append(configIP[0])
+        freePort = self.findLowest(port,ports)
+        #Get available subnets
+        peerSubnets = self.getPeerSubnets()
+        #Convert to IPv4Network objects
+        usedSubnets = {ipaddress.ip_network(subnet) for subnet in usedSubnets}
+        #Find usable subnets
+        freeSubnets = peerSubnets - usedSubnets
+        for subnet in sorted(freeSubnets, key=lambda x: int(x.network_address)):
+            freeSubnet = str(subnet)
+            break
+        return freeSubnet,freePort
 
     def getInterface(self,id,type="",network=""):
         return f"{self.prefix}{network}{id}{type}"

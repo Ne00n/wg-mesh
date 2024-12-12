@@ -186,9 +186,9 @@ def index():
     wgobfsSharedKey = secrets.token_urlsafe(24)
     #load configs
     configs = wg.getConfigs(False)
-    lastbyte,port = wg.minimal(configs,4,payload['basePort'])
+    freeSubnet,freePort = wg.minimal(configs,payload['basePort'])
     #generate wireguard config
-    serverConfig = templator.genServer(interface,config,payload,lastbyte,port,wgobfsSharedKey)
+    serverConfig = templator.genServer(interface,config,payload,freeSubnet,freePort,wgobfsSharedKey)
     #save
     logging.debug(f"Creating wireguard link {interface}")
     wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
@@ -208,7 +208,7 @@ def index():
         wg.setInterface("dummy","up")
     connectMutex.release()
     logging.info(f"{interface} created for {requestIP}")
-    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id'],'lastbyte':lastbyte,'port':port,'connectivity':config['connectivity']})
+    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id'],'freeSubnet':wg.getHost(freeSubnet),'freePort':freePort,'connectivity':config['connectivity']})
 
 @route('/update', method='PATCH')
 def index():

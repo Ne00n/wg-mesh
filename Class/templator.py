@@ -1,8 +1,8 @@
-import time
+import ipaddress, time
 
 class Templator:
 
-    def genServer(self,interface,config,payload,serverIP,serverPort,wgobfsSharedKey=""):
+    def genServer(self,interface,config,payload,freeSubnet,serverPort,wgobfsSharedKey=""):
         clientPublicKey,linkType,prefix,area,connectivity = payload['clientPublicKey'],payload['linkType'],payload['prefix'],payload['area'],payload['connectivity']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         wgPrefix = "awg" if linkType == "amneziawg" else "wg"
@@ -17,8 +17,8 @@ class Templator:
 if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type {wgProtocol}
-    sudo ip address add dev {interface} {prefix}.{config["id"]}.{serverIP}/31
-    sudo ip -6 address add dev {interface} fe82:{config["id"]}::{serverIP}/127
+    sudo ip address add dev {interface} {freeSubnet}
+    sudo ip -6 address add dev {interface} {config['subnetLinkLocal']}:{config['id']}::1/127
     sudo {wgPrefix} set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {clientPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
@@ -29,7 +29,7 @@ fi'''
         return template
 
     def genClient(self,interface,config,resp,serverIPExternal,linkType="default",prefix="10.0",peerPrefix="172.31"):
-        serverID,serverIP,serverPort,serverPublicKey,wgobfsSharedKey = resp['id'],resp['lastbyte'],resp['port'],resp['publicKeyServer'],resp['wgobfsSharedKey']
+        serverID,freeSubnet,serverPort,serverPublicKey,wgobfsSharedKey = resp['id'],resp['freeSubnet'],resp['freePort'],resp['publicKeyServer'],resp['wgobfsSharedKey']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         wgPrefix = "awg" if linkType == "amneziawg" else "wg"
         wgProtocol = "amneziawg" if linkType == "amneziawg" else "wireguard"
@@ -43,8 +43,8 @@ fi'''
 if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type {wgProtocol}
-    sudo ip address add dev {interface} {prefix}.{serverID}.{int(serverIP)+1}/31
-    sudo ip -6 address add dev {interface} fe82:{serverID}::{int(serverIP)+1}/127
+    sudo ip address add dev {interface} {freeSubnet}
+    sudo ip -6 address add dev {interface} {config['subnetLinkLocal']}:{serverID}::2/127
     sudo {wgPrefix} set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0 endpoint {serverIPExternal}:{serverPort}
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
@@ -54,15 +54,16 @@ else
 fi'''
         return template
 
+    def getNodeVXLAN(self,config):
+        vxlanSubnet = ipaddress.ip_network(config['subnetVXLAN'])
+        for index,host in enumerate(list(vxlanSubnet.hosts())):
+            if index == int(config['id']): return f"{str(host)}/24"
+
     def genDummy(self,config,connectivity):
         serverID = int(config['id'])
         serverID += config['vxlanOffset']
-        #has to be done better at some point
-        subnet, host = config['subnetVXLAN'].split("/")
-        sSubnet = subnet.split(".")
-        prefix = f"{sSubnet[0]}.{sSubnet[1]}"
-        subnet = f"{sSubnet[0]}.{sSubnet[1]}.{sSubnet[2]}"
-        vxlanSubnet = f"{subnet}.{serverID}/{host}"
+        vxlanID = config['subnetVXLAN'].split(".")[2]
+        prefix = ".".join(config['subnet'].split(".")[:2])
         masquerade = ""
         if connectivity['ipv4']: masquerade += "sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
         if connectivity['ipv6']: masquerade += "sudo ip6tables -t nat -A POSTROUTING -o $(ip -6 route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
@@ -75,8 +76,8 @@ if [ "$1" == "up" ];  then
     sudo ip link add vxlan1 type vxlan id 1 dstport 1789 local {prefix}.{serverID}.1;
     sudo ip -6 link add vxlan1v6 type vxlan id 2 dstport 1790 local fd10:0:{serverID}::1;
     sudo ip link set vxlan1 up; sudo ip -6 link set vxlan1v6 up;
-    sudo ip addr add {vxlanSubnet} dev vxlan1;
-    sudo ip -6 addr add fd10:{sSubnet[2]}::{serverID}/64 dev vxlan1v6;
+    sudo ip addr add {self.getNodeVXLAN(config)} dev vxlan1;
+    sudo ip -6 addr add fd10:{vxlanID}::{serverID}/64 dev vxlan1v6;
 else
     {masqueradeReverse}
     sudo ip addr del {prefix}.{serverID}.1/30 dev lo;
