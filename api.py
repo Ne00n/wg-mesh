@@ -177,7 +177,8 @@ def index():
     interface = wg.getInterface(payload['id'],interfaceType,payload['network'])
     #check if interface exists
     if os.path.isfile(f"{folder}/links/{interface}.sh") or os.path.isfile(f"{folder}/links/{interface}Serv.sh"):
-        return HTTPResponse(status=412, body="link already exists")
+        logging.info(f"Link already exists, {requestIP}")
+        return HTTPResponse(status=412, body="Link already exists")
     #block any other requests to prevent issues regarding port and ip assignment
     connectMutex.acquire()
     #generate new key pair
@@ -189,6 +190,7 @@ def index():
     freeSubnet,freePort = wg.minimal(configs,payload['basePort'])
     if not freeSubnet:
         connectMutex.release()
+        logging.info(f"Unable to allocate subnet for wireguard link, {requestIP}")
         return HTTPResponse(status=500, body="Unable to allocate subnet for wireguard link.")
     #generate wireguard config
     serverConfig = templator.genServer(interface,config,payload,freeSubnet,freePort,wgobfsSharedKey)
