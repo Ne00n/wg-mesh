@@ -187,6 +187,9 @@ def index():
     #load configs
     configs = wg.getConfigs(False)
     freeSubnet,freePort = wg.minimal(configs,payload['basePort'])
+    if not freeSubnet:
+        connectMutex.release()
+        return HTTPResponse(status=500, body="Unable to allocate subnet for wireguard link.")
     #generate wireguard config
     serverConfig = templator.genServer(interface,config,payload,freeSubnet,freePort,wgobfsSharedKey)
     #save

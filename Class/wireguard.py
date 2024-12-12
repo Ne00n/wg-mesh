@@ -147,16 +147,19 @@ class Wireguard(Base):
             ports.append(int(configPort[0]))
             usedSubnets.append(configIP[0])
         freePort = self.findLowest(port,ports)
-        #Get available subnets
-        peerSubnets = self.getPeerSubnets()
-        #Convert to IPv4Network objects
-        usedSubnets = {ipaddress.ip_network(subnet) for subnet in usedSubnets}
-        #Find usable subnets
-        freeSubnets = set(peerSubnets) - usedSubnets
-        for subnet in sorted(freeSubnets, key=lambda x: int(x.network_address)):
-            freeSubnet = str(subnet)
-            break
-        return freeSubnet,freePort
+        try:
+            #Get available subnets
+            peerSubnets = self.getPeerSubnets()
+            #Convert to IPv4Network objects
+            usedSubnets = {ipaddress.ip_network(subnet) for subnet in usedSubnets}
+            #Find usable subnets
+            freeSubnets = set(peerSubnets) - usedSubnets
+            for subnet in sorted(freeSubnets, key=lambda x: int(x.network_address)):
+                freeSubnet = str(subnet)
+                break
+            return freeSubnet,freePort
+        except:
+            return "",0
 
     def getInterface(self,id,type="",network=""):
         return f"{self.prefix}{network}{id}{type}"
