@@ -2,7 +2,7 @@ import ipaddress
 
 class Network:
 
-    def __init__(self,path):
+    def __init__(self,config):
         self.config = config
         self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
 
