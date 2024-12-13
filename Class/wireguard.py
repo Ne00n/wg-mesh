@@ -116,39 +116,47 @@ class Wireguard(Base):
         self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
         self.setInterface("dummy","up")
 
-    def getHost(self,freeSubnet):
+    def getHost(self,freeSubnet,suffix="31"):
         peerSubnet = ipaddress.ip_network(freeSubnet)
-        return f"{list(peerSubnet.hosts())[1]}/31"
+        return f"{list(peerSubnet.hosts())[1]}/{suffix}"
 
     def findLowest(self,min,list):
         for i in range(min,min + 400):
             if i not in list and i % 2 == 0: return i
 
     def minimal(self,files,port=51820):
-        ports,usedSubnets,freeSubnet = [],[],""
+        ports,usedSubnets,usedSubnetsv6,freeSubnet = [],[],[],""
         if port == 0: port = random.randint(1500, 55000)
         for file in files:
             config = self.readFile(f"{self.path}/links/{file}")
             configPort = re.findall(f"listen-port\s([0-9]+)",config, re.MULTILINE)
             configIP = re.findall(f"ip address add dev.*?([0-9.]+\/31)",config, re.MULTILINE)
+            configIPv6 = re.findall(f"ip -6 address add dev.*?([a-zA-Z0-9:]+\/127)",config,re.MULTILINE)
             #Clients are ignored since they use a different subnet
             if not configPort: continue
             ports.append(int(configPort[0]))
             usedSubnets.append(configIP[0])
+            usedSubnetsv6.append(configIPv6[0])
         freePort = self.findLowest(port,ports)
         try:
             #Get available subnets
             peerSubnets = self.Network.getPeerSubnets()
-            #Convert to IPv4Network objects
+            peerSubnetsv6 = self.Network.getPeerSubnetsv6()
+            #Convert to network objects
             usedSubnets = {ipaddress.ip_network(subnet) for subnet in usedSubnets}
+            usedSubnetsv6 = {ipaddress.ip_network(subnet) for subnet in usedSubnetsv6}
             #Find usable subnets
             freeSubnets = set(peerSubnets) - usedSubnets
+            freeSubnetsv6 = set(peerSubnetsv6) - usedSubnetsv6
             for subnet in sorted(freeSubnets, key=lambda x: int(x.network_address)):
                 freeSubnet = str(subnet)
                 break
-            return freeSubnet,freePort
+            for subnet in sorted(freeSubnetsv6, key=lambda x: int(x.network_address)):
+                freeSubnetv6 = str(subnet)
+                break
+            return freeSubnet,freeSubnetsv6,freePort
         except:
-            return "",0
+            return "","",0
 
     def getInterface(self,id,type="",network=""):
         return f"{self.prefix}{network}{id}{type}"

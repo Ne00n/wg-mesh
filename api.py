@@ -187,13 +187,13 @@ def index():
     wgobfsSharedKey = secrets.token_urlsafe(24)
     #load configs
     configs = wg.getConfigs(False)
-    freeSubnet,freePort = wg.minimal(configs,payload['basePort'])
+    freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,payload['basePort'])
     if not freeSubnet:
         connectMutex.release()
         logging.info(f"Unable to allocate subnet for wireguard link, {requestIP}")
         return HTTPResponse(status=500, body="Unable to allocate subnet for wireguard link.")
     #generate wireguard config
-    serverConfig = templator.genServer(interface,config,payload,freeSubnet,freePort,wgobfsSharedKey)
+    serverConfig = templator.genServer(interface,config,payload,freeSubnet,freeSubnetv6,freePort,wgobfsSharedKey)
     #save
     logging.debug(f"Creating wireguard link {interface}")
     wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
@@ -213,7 +213,8 @@ def index():
         wg.setInterface("dummy","up")
     connectMutex.release()
     logging.info(f"{interface} created for {requestIP}")
-    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id'],'freeSubnet':wg.getHost(freeSubnet),'freePort':freePort,'connectivity':config['connectivity']})
+    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id']
+    ,'freeSubnet':wg.getHost(freeSubnet),"freeSubnetv6":wg.getHost(freeSubnetv6,"127"),'freePort':freePort,'connectivity':config['connectivity']})
 
 @route('/update', method='PATCH')
 def index():

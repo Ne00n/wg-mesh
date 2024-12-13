@@ -2,7 +2,7 @@ import ipaddress, time
 
 class Templator:
 
-    def genServer(self,interface,config,payload,freeSubnet,serverPort,wgobfsSharedKey=""):
+    def genServer(self,interface,config,payload,freeSubnet,freeSubnetv6,serverPort,wgobfsSharedKey=""):
         clientPublicKey,linkType,prefix,area,connectivity = payload['clientPublicKey'],payload['linkType'],payload['prefix'],payload['area'],payload['connectivity']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         wgPrefix = "awg" if linkType == "amneziawg" else "wg"
@@ -18,7 +18,7 @@ if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type {wgProtocol}
     sudo ip address add dev {interface} {freeSubnet}
-    sudo ip -6 address add dev {interface} {config['subnetLinkLocal']}:{config['id']}::1/127
+    sudo ip -6 address add dev {interface} {freeSubnetv6}
     sudo {wgPrefix} set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {clientPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
@@ -29,7 +29,7 @@ fi'''
         return template
 
     def genClient(self,interface,config,resp,serverIPExternal,linkType="default",prefix="10.0",peerPrefix="172.31"):
-        serverID,freeSubnet,serverPort,serverPublicKey,wgobfsSharedKey = resp['id'],resp['freeSubnet'],resp['freePort'],resp['publicKeyServer'],resp['wgobfsSharedKey']
+        serverID,freeSubnet,freeSubnetv6,serverPort,serverPublicKey,wgobfsSharedKey = resp['id'],resp['freeSubnet'],resp['freeSubnetv6'],resp['freePort'],resp['publicKeyServer'],resp['wgobfsSharedKey']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         wgPrefix = "awg" if linkType == "amneziawg" else "wg"
         wgProtocol = "amneziawg" if linkType == "amneziawg" else "wireguard"
@@ -44,7 +44,7 @@ if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type {wgProtocol}
     sudo ip address add dev {interface} {freeSubnet}
-    sudo ip -6 address add dev {interface} {config['subnetLinkLocal']}:{serverID}::2/127
+    sudo ip -6 address add dev {interface} {freeSubnetv6}
     sudo {wgPrefix} set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0 endpoint {serverIPExternal}:{serverPort}
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
