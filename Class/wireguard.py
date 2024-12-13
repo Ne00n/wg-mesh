@@ -1,5 +1,6 @@
-from Class.templator import Templator
 import urllib.request, ipaddress, requests, random, string, json, time, re, os
+from Class.templator import Templator
+from Class.network import Network
 from Class.base import Base
 
 class Wireguard(Base):
@@ -11,6 +12,7 @@ class Wireguard(Base):
         if not os.path.isfile(f"{self.path}/configs/config.json"): exit("Config missing")
         self.config = self.readJson(f'{self.path}/configs/config.json')
         if onlyConfig: return
+        self.Network = Network(self.config)
         self.prefix = self.config['prefix']
         self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
@@ -27,7 +29,7 @@ class Wireguard(Base):
         if not "subnetVXLAN" in self.config: 
             self.config['subnetVXLAN'] = "10.0.251.0/24"
             reconfigureDummy = True
-        if not "subnetLinkLocal" in self.config: self.config['subnetLinkLocal'] = "fe82::"
+        if not "subnetLinkLocal" in self.config: self.config['subnetLinkLocal'] = "fe82:"
         if not "AllowedPeers" in self.config: self.config['AllowedPeers'] = []
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
@@ -94,7 +96,7 @@ class Wireguard(Base):
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
         config = {"listen":listen,"listenPort":8080,"basePort":51820,"vxlanOffset":0,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16",
-        "subnetVXLAN":"10.0.251.0/24","subnetLinkLocal":"fe82::","AllowedPeers":[],"prefix":"pipe","id":int(id),"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
+        "subnetVXLAN":"10.0.251.0/24","subnetLinkLocal":"fe82:","AllowedPeers":[],"prefix":"pipe","id":int(id),"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"area":0,"tick":1,"client":False,"loglevel":"{ warning, fatal}"},"notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":""}}
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response: exit("Unable to save config.json")
@@ -114,14 +116,8 @@ class Wireguard(Base):
         self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
         self.setInterface("dummy","up")
 
-    def getNodeSubnet(self):
-        if self.config['subnet'].startswith("10."):
-            return f"{self.subnetPrefix}.{self.config['id']}.0/23"
-        else:
-            return f"{self.subnetPrefix}.{self.config['id']}.0/24"
-
     def getPeerSubnets(self):
-        nodeSubnet = self.getNodeSubnet()
+        nodeSubnet = self.Network.getNodeSubnet()
         network = ipaddress.ip_network(nodeSubnet)
         subnets = list(network.subnets(new_prefix=31))
         subnets = subnets[2:]
