@@ -1,3 +1,5 @@
+import ipaddress
+
 class Network:
 
     def __init__(self,path):
@@ -12,3 +14,10 @@ class Network:
 
     def getNodeSubnetv6(self):
         return f"fe82:{self.config['id']}::/32"
+
+    def getPeerSubnets(self):
+        nodeSubnet = self.getNodeSubnet()
+        network = ipaddress.ip_network(nodeSubnet)
+        subnets = list(network.subnets(new_prefix=31))
+        subnets = subnets[2:]
+        return subnets

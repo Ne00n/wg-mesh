@@ -116,13 +116,6 @@ class Wireguard(Base):
         self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
         self.setInterface("dummy","up")
 
-    def getPeerSubnets(self):
-        nodeSubnet = self.Network.getNodeSubnet()
-        network = ipaddress.ip_network(nodeSubnet)
-        subnets = list(network.subnets(new_prefix=31))
-        subnets = subnets[2:]
-        return subnets
-
     def getHost(self,freeSubnet):
         peerSubnet = ipaddress.ip_network(freeSubnet)
         return f"{list(peerSubnet.hosts())[1]}/31"
@@ -145,7 +138,7 @@ class Wireguard(Base):
         freePort = self.findLowest(port,ports)
         try:
             #Get available subnets
-            peerSubnets = self.getPeerSubnets()
+            peerSubnets = self.Network.getPeerSubnets()
             #Convert to IPv4Network objects
             usedSubnets = {ipaddress.ip_network(subnet) for subnet in usedSubnets}
             #Find usable subnets
