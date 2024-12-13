@@ -4,6 +4,8 @@ systemctl disable wgmesh && systemctl stop wgmesh
 rm /etc/systemd/system/wgmesh.service
 systemctl disable wgmesh-bird && systemctl stop wgmesh-bird
 rm /etc/systemd/system/wgmesh-bird.service
+systemctl disable wgmesh-rotate && systemctl stop wgmesh-rotate
+rm /etc/systemd/system/wgmesh-rotate.service
 systemctl disable wgmesh-pipe
 rm /etc/systemd/system/wgmesh-pipe.service
 wgmesh down
