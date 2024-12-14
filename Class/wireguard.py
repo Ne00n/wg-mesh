@@ -202,7 +202,7 @@ class Wireguard(Base):
         for filename, row in links.items():
             if row['remote'] == remote: return filename
 
-    def filesToLinks(self,files):
+    def filesToLinks(self,files,useJSON=True):
         links = {}
         for findex, filename in enumerate(files):
             if not filename.endswith(".sh") or filename == "dummy.sh": continue
@@ -213,7 +213,7 @@ class Wireguard(Base):
             link = filename.replace(".sh","")
             linkConfig = self.readJson(f"{self.path}/links/{link}.json")
             subnetPrefix,subnetPrefixSplitted = self.subnetSwitch(filename)
-            if linkConfig:
+            if linkConfig and useJSON:
                 remotePublic = linkConfig['remotePublic']
                 destination = linkConfig['remote']
             else:
