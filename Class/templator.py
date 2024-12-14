@@ -56,8 +56,9 @@ fi'''
 
     def getNodeVXLAN(self,config):
         vxlanSubnet = ipaddress.ip_network(config['subnetVXLAN'])
-        for index,host in enumerate(list(vxlanSubnet.hosts())):
-            if index == int(config['id']): return f"{str(host)}/24"
+        for index,host in enumerate(list(vxlanSubnet.hosts()),start=1):
+            #if /23 is used, override 0 to 1 since the VXLAN can't use a zero, 1 can't be used anyway since blocked by collision detection
+            if index == int(config['id']) or (int(config['id']) == 0 and index == 1): return f"{str(host)}/24"
 
     def genDummy(self,config,connectivity):
         serverID = int(config['id'])
