@@ -13,7 +13,7 @@ class Network:
             return f"{self.subnetPrefix}.{self.config['id']}.0/24"
 
     def getNodeSubnetv6(self):
-        return f"fe82{self.config['id']}::/112"
+        return f"{self.config['subnetLinkLocal']}{self.config['id']}::/112"
 
     def getPeerSubnets(self):
         nodeSubnet = self.getNodeSubnet()
