@@ -45,9 +45,9 @@ class CLI(Base):
     def update(self):
         subprocess.run("cd; git pull",shell=True)
 
-    def clean(self,ignoreEndpoint):
+    def clean(self,ignoreJSON,ignoreEndpoint):
         self.wg = Wireguard(self.path)
-        self.wg.clean(ignoreEndpoint)
+        self.wg.clean(ignoreJSON,ignoreEndpoint)
 
     def migrate(self):
         self.wg = Wireguard(self.path,False,True)

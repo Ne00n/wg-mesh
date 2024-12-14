@@ -182,8 +182,8 @@ class Wireguard(Base):
         self.setInterface(interface,"down")
         self.cleanInterface(interface)
 
-    def clean(self,ignoreEndpoint):
-        links =  self.getLinks()
+    def clean(self,ignoreJSON,ignoreEndpoint):
+        links =  self.getLinks(True,ignoreJSON)
         offline,online = self.checkLinks(links)
         for link in offline:
             data = links[link]
