@@ -154,7 +154,7 @@ class Wireguard(Base):
             for subnet in sorted(freeSubnetsv6, key=lambda x: int(x.network_address)):
                 freeSubnetv6 = str(subnet)
                 break
-            return freeSubnet,freeSubnetsv6,freePort
+            return freeSubnet,freeSubnetv6,freePort
         except:
             return "","",0
 
