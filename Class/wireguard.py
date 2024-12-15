@@ -272,21 +272,21 @@ class Wireguard(Base):
         subnetPrefix,subnetPrefixSplitted = self.subnetSwitch(network)
         links = self.getBirdLinks(configs,self.prefix,subnetPrefixSplitted)
         isInitial = False if links else True
+        status = {"v4":False,"v6":False}
         #ask remote about available protocols
         data = self.AskProtocol(dest,token)
-        if not data: return False
+        if not data: return status
         #start with the protocol which is available
         if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']: isv6 = False
         elif data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']: isv6 = True
         #if neither of these are available, leave it
-        else: return False
+        else: return status
         #linkType
         if linkType == "":
             if self.config['defaultLinkType'] in data['linkTypes']:
                 linkType = self.config['defaultLinkType']
             else:
                 linkType = "default"
-        status = {"v4":False,"v6":False}
         for run in range(2):
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
