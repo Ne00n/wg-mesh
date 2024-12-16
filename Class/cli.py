@@ -104,6 +104,8 @@ class CLI(Base):
             return
         if "mesh" in option:
             self.wg.saveJson({},f"{self.path}/configs/state.json")
+        elif "optimize" in option:
+            config['optimize'] = False
         elif "ospfv2" in option:
             config['bird']['ospfv2'] = False
         elif "ospfv3" in option:
@@ -119,7 +121,7 @@ class CLI(Base):
         elif "amneziawg" in option:
             if "amneziawg" in config['linkTypes']: config['linkTypes'].remove("amneziawg")
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg, client, notifications")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg, client, notifications, optimize")
             return
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response:
@@ -134,6 +136,8 @@ class CLI(Base):
             return
         if "mesh" in option:
             if os.path.isfile(f"{self.path}/configs/state.json"): os.remove(f"{self.path}/configs/state.json")
+        elif "optimize" in option:
+            config['optimize'] = True
         elif "ospfv2" in option:
             config['bird']['ospfv2'] = True
         elif "ospfv3" in option:
@@ -152,7 +156,7 @@ class CLI(Base):
             if not "amneziawg" in config['linkTypes']: config['linkTypes'].append("amneziawg")
             print("You still need to install amneziawg with: bash /opt/wg-mesh/tools/amnezia.sh")
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg, client, notifications")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg, client, notifications, optimize")
             return
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response:

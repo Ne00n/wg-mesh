@@ -138,38 +138,41 @@ class Latency(Base):
         if not "running" in bird:
             self.logger.warning("bird not running")
             return -1
-        self.logger.debug("Processing messages")
-        for rawMessage in messages:
-            message = json.loads(rawMessage)
-            self.logger.info(f"{message['link']} set cost to {message['cost']}")
-            self.linkState[message['link']]['cost'] = message['cost']
-            #reset lastReload to trigger a reload, otherwise we have to wait up to 10 minutes
-            self.lastReload = int(time.time())
-        self.logger.debug("Running fping")
-        latencyData = self.getLatency(self.latencyData,5)
-        if not latencyData:
-            self.logger.warning("Nothing todo")
-        else:
-            #save in memory so we don't have to read the config file again
-            self.notifications(latencyData)
-            self.latencyData = latencyData
-            latencyData = self.wg.groupByArea(latencyData)
-            birdConfig = self.Templator.genBird(latencyData,self.peers,self.config)
-            #write
-            self.saveFile(birdConfig,'/etc/bird/bird.conf')
-            #reload bird with updates only every 10 minutes or if reload is greater than 1
-            if int(time.time()) > self.lastReload or self.reload > 0:
-                #keep a copy with the current values in the bird config
-                self.latencyDataState = copy.deepcopy(self.latencyData)
-                #reload
-                self.logger.info("Reloading bird")
-                self.cmd('sudo systemctl reload bird')
-                self.lastReload = int(time.time()) + 600
+        if self.config['optimize']:
+            self.logger.debug("Processing messages")
+            for rawMessage in messages:
+                message = json.loads(rawMessage)
+                self.logger.info(f"{message['link']} set cost to {message['cost']}")
+                self.linkState[message['link']]['cost'] = message['cost']
+                #reset lastReload to trigger a reload, otherwise we have to wait up to 10 minutes
+                self.lastReload = int(time.time())
+            self.logger.debug("Running fping")
+            latencyData = self.getLatency(self.latencyData,5)
+            if not latencyData:
+                self.logger.warning("Nothing todo")
             else:
-                self.logger.debug(f"{datetime.now().minute} not in window.")
-        #however save any packetloss or jitter detected
-        self.saveJson(self.network,f"{self.path}/configs/network.json")
-        time.sleep(5)
+                #save in memory so we don't have to read the config file again
+                self.notifications(latencyData)
+                self.latencyData = latencyData
+                latencyData = self.wg.groupByArea(latencyData)
+                birdConfig = self.Templator.genBird(latencyData,self.peers,self.config)
+                #write
+                self.saveFile(birdConfig,'/etc/bird/bird.conf')
+                #reload bird with updates only every 10 minutes or if reload is greater than 1
+                if int(time.time()) > self.lastReload or self.reload > 0:
+                    #keep a copy with the current values in the bird config
+                    self.latencyDataState = copy.deepcopy(self.latencyData)
+                    #reload
+                    self.logger.info("Reloading bird")
+                    self.cmd('sudo systemctl reload bird')
+                    self.lastReload = int(time.time()) + 600
+                else:
+                    self.logger.debug(f"{datetime.now().minute} not in window.")
+            #however save any packetloss or jitter detected
+            self.saveJson(self.network,f"{self.path}/configs/network.json")
+            time.sleep(5)
+        else:
+            time.sleep(10)
         return self.noWait
 
     def setLatencyData(self,latencyData,peers):
