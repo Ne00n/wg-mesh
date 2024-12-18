@@ -53,6 +53,18 @@ class CLI(Base):
         self.wg = Wireguard(self.path,False,True)
         self.wg.updateConfig()
 
+    def geo(self):
+        geoDataRaw = self.call("https://ipgeolocation.io/api/ipgeolocation")
+        if geoDataRaw:
+            geoData = geoDataRaw.json()
+            config = self.readJson(f'{self.path}/configs/config.json')
+            if not "geo" in config: config['geo'] = {}
+            config['geo']['countryCode'] = geoData['country_code2']
+            config['geo']['country'] = geoData['country_name']
+            config['geo']['city'] = geoData['state_prov']
+            print(f"Updated geodata {config['geo']}")
+            self.saveJson(config,f"{self.path}/configs/config.json")
+
     def recover(self):
         stream_handler = logging.StreamHandler()
         stream_handler.setLevel(logging.DEBUG)

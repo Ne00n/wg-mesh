@@ -50,6 +50,8 @@ elif sys.argv[1] == "token":
     cli.token()
 elif sys.argv[1] == "update":
     cli.update()
+elif sys.argv[1] == "geo":
+    cli.geo()
 elif sys.argv[1] == "disable":
     sys.argv = sys.argv[2:]
     cli.disable(sys.argv)
