@@ -61,7 +61,7 @@ class CLI(Base):
             if not "geo" in config: config['geo'] = {}
             config['geo']['countryCode'] = geoData['ip']['country_code2']
             config['geo']['country'] = geoData['ip']['country_name']
-            config['geo']['city'] = geoData['ip']['state_prov']
+            config['geo']['city'] = geoData['ip']['city']
             print(f"Updated geodata {config['geo']}")
             self.saveJson(config,f"{self.path}/configs/config.json")
 
