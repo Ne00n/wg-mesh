@@ -112,7 +112,8 @@ def index():
     if not isInternal and not validateToken(payload): 
         logging.info(f"Invalid Token from {requestIP}")
         return HTTPResponse(status=401, body="Invalid Token")
-    return HTTPResponse(status=200, body={'connectivity':config['connectivity'],'linkTypes':config['linkTypes'],'subnetPrefix':subnetPrefix})
+    geo = config['geo'] if config['geo'] else {}
+    return HTTPResponse(status=200, body={'connectivity':config['connectivity'],'geo':geo,'linkTypes':config['linkTypes'],'subnetPrefix':subnetPrefix})
 
 @route('/connect', method='POST')
 def index():
