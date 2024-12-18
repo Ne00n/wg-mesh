@@ -57,15 +57,16 @@ menu = {continent}
 title = {continent}
 
 """
-    for city, data in details.items():
-        id = data[0][0].split(".")[2:3][0]
-        smokeping += f"""
-++ {data[0][1]}{id}
+    for city, nodes in details.items():
+        for node in nodes:
+            id = str(node[0].split(".")[2:3][0]).zfill(3)
+            smokeping += f"""
+    ++ {node[1]}{id}
 
-menu = {data[0][1]}{id} | {city}
-title = {data[0][1]}{id} | {city}
-host = {data[0][0]}
-alerts = startloss,someloss,bigloss,rttdetect,hostdown,lossdetect
-"""
+    menu = {node[1]}{id} | {city}
+    title = {node[1]}{id} | {city}
+    host = {node[0]}
+    alerts = startloss,someloss,bigloss,rttdetect,hostdown,lossdetect
+    """
 
 base.saveFile(smokeping,"/etc/smokeping/config.d/Targets")
