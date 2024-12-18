@@ -60,6 +60,7 @@ class CLI(Base):
             config = self.readJson(f'{self.path}/configs/config.json')
             if not "geo" in config: config['geo'] = {}
             config['geo']['countryCode'] = geoData['ip']['country_code2']
+            config['geo']['continent'] = geoData['ip']['continent_name']
             config['geo']['country'] = geoData['ip']['country_name']
             config['geo']['city'] = geoData['ip']['city']
             print(f"Updated geodata {config['geo']}")
