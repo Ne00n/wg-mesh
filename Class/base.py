@@ -113,6 +113,8 @@ class Base:
             try:
                 if method == "POST":
                     req = requests.post(url, json=payload, timeout=(5,5))
+                elif method == "GET":
+                    req = requests.get(url, timeout=(5,5))
                 else:
                     req = requests.patch(url, json=payload, timeout=(5,5))
                 if req.status_code in allowedCodes: return req
