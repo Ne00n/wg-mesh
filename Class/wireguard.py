@@ -492,5 +492,5 @@ class Wireguard(Base):
     def getConfig(self):
         return self.config
 
-    def getInitial(self)
+    def getInitial(self):
         return self.isInitial
