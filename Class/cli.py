@@ -28,7 +28,7 @@ class CLI(Base):
         self.wg.connect(dest,token,linkType,port,network)
         if self.wg.getInitial:
             print("Waiting for meshing to complete.")
-            for i in range(1, 120):
+            for i in range(1, 200):
                 if os.path.isfile(f"{self.path}/configs/state.json"): break
                 time.sleep(1)
             print("Meshing seems to have failed.")
