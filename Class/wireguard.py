@@ -8,6 +8,7 @@ class Wireguard(Base):
 
     def __init__(self,path,skip=False,onlyConfig=False):
         self.path = path
+        self.isInitial = False
         if skip: return
         if not os.path.isfile(f"{self.path}/configs/config.json"): exit("Config missing")
         self.config = self.readJson(f'{self.path}/configs/config.json')
@@ -272,7 +273,7 @@ class Wireguard(Base):
         configs = self.cmd('ip addr show')[0]
         subnetPrefix,subnetPrefixSplitted = self.subnetSwitch(network)
         links = self.getBirdLinks(configs,self.prefix,subnetPrefixSplitted)
-        isInitial = False if links else True
+        self.isInitial = False if links else True
         status = {"v4":False,"v6":False}
         #ask remote about available protocols
         data = self.AskProtocol(dest,token)
@@ -291,7 +292,7 @@ class Wireguard(Base):
         for run in range(2):
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
-            "ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
+            "ipv6":isv6,"initial":self.isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
             if port != 51820: payload["port"] = port
             req = self.call(f'{dest}/connect',payload)
             if req == False: return status
@@ -490,3 +491,6 @@ class Wireguard(Base):
 
     def getConfig(self):
         return self.config
+
+    def getInitial(self)
+        return self.isInitial
