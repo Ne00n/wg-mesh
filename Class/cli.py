@@ -25,8 +25,11 @@ class CLI(Base):
 
     def connect(self,dest,token,linkType="default",port=51820,network=""):
         self.wg = Wireguard(self.path)
-        self.wg.connect(dest,token,linkType,port,network)
+        status = self.wg.connect(dest,token,linkType,port,network)
         if self.wg.getInitial:
+            if not status['v4'] and not status['v6']:
+                print(f"Initial link wasn't setup.")
+                return 
             print("Waiting for meshing to complete.")
             for i in range(1, 200):
                 if os.path.isfile(f"{self.path}/configs/state.json"): break
