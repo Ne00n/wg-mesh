@@ -32,7 +32,7 @@ class CLI(Base):
                 return 
             print("Waiting for meshing to complete.")
             for i in range(1, 200):
-                if os.path.isfile(f"{self.path}/configs/state.json"): break
+                if os.path.isfile(f"{self.path}/configs/state.json"): return
                 time.sleep(1)
             print("Meshing seems to have failed.")
 
