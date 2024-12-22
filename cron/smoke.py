@@ -20,6 +20,7 @@ for index, target in enumerate(targets):
     target = target.replace("0/30","1")
     print(f"Getting {index} of {len(targets) -1}")
     resp = wireguard.AskProtocol(f'http://{target}:8080','')
+    if not resp: continue
     if not "geo" in resp: 
         print(f"No geo from {target}")
         continue
