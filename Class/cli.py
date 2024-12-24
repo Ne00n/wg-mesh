@@ -64,7 +64,7 @@ class CLI(Base):
 
     def geo(self):
         headers = {"Origin":"https://ip-api.com"}
-        geoDataRaw = self.call("https://demo.ip-api.com/json/",{},"GET",headers)
+        geoDataRaw = self.call("https://demo.ip-api.com/json/?fields=66842623",{},"GET",headers)
         if geoDataRaw:
             geoData = geoDataRaw.json()
             config = self.readJson(f'{self.path}/configs/config.json')
