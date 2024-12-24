@@ -107,14 +107,14 @@ class Base:
             latency[ip].append([ms,loss])
         return latency
 
-    def call(self,url,payload,method="POST",max=5):
+    def call(self,url,payload,method="POST",headers={},max=5):
         allowedCodes = [200,412]
         for run in range(1,max):
             try:
                 if method == "POST":
                     req = requests.post(url, json=payload, timeout=(5,5))
                 elif method == "GET":
-                    req = requests.get(url, timeout=(5,5))
+                    req = requests.get(url, headers=headers timeout=(5,5))
                 else:
                     req = requests.patch(url, json=payload, timeout=(5,5))
                 if req.status_code in allowedCodes: return req
