@@ -28,7 +28,7 @@ WantedBy=multi-user.target
 EOF2
 systemctl restart bird
 systemctl enable bird
-EOF1""",10)
+EOF1""",30)
     print(resp)
 
 print("END")
