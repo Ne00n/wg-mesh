@@ -63,14 +63,15 @@ class CLI(Base):
         self.wg.updateConfig()
 
     def geo(self):
-        geoDataRaw = self.call("https://ipgeolocation.io/api/ipgeolocation",{},"GET")
+        headers = {"Origin":"https://ip-api.com"}
+        geoDataRaw = self.call("https://demo.ip-api.com/json/",{},"GET",headers)
         if geoDataRaw:
             geoData = geoDataRaw.json()
             config = self.readJson(f'{self.path}/configs/config.json')
             if not "geo" in config: config['geo'] = {}
-            config['geo']['countryCode'] = geoData['ip']['country_code2']
-            config['geo']['continent'] = geoData['ip']['continent_name']
-            config['geo']['country'] = geoData['ip']['country_name']
+            config['geo']['countryCode'] = geoData['ip']['countryCode']
+            config['geo']['continent'] = geoData['ip']['continent']
+            config['geo']['country'] = geoData['ip']['country']
             config['geo']['city'] = geoData['ip']['city']
             print(f"Updated geodata {config['geo']}")
             self.saveJson(config,f"{self.path}/configs/config.json")
