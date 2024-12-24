@@ -69,10 +69,10 @@ class CLI(Base):
             geoData = geoDataRaw.json()
             config = self.readJson(f'{self.path}/configs/config.json')
             if not "geo" in config: config['geo'] = {}
-            config['geo']['countryCode'] = geoData['ip']['countryCode']
-            config['geo']['continent'] = geoData['ip']['continent']
-            config['geo']['country'] = geoData['ip']['country']
-            config['geo']['city'] = geoData['ip']['city']
+            config['geo']['countryCode'] = geoData['countryCode']
+            config['geo']['continent'] = geoData['continent']
+            config['geo']['country'] = geoData['country']
+            config['geo']['city'] = geoData['city']
             print(f"Updated geodata {config['geo']}")
             self.saveJson(config,f"{self.path}/configs/config.json")
 
