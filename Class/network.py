@@ -26,3 +26,7 @@ class Network:
         nodeSubnet = self.getNodeSubnetv6()
         network = ipaddress.ip_network(nodeSubnet)
         return list(network.subnets(new_prefix=127))
+
+    def getHost(self,freeSubnet,suffix="31"):
+        peerSubnet = ipaddress.ip_network(freeSubnet)
+        return f"{list(peerSubnet.hosts())[1]}/{suffix}"

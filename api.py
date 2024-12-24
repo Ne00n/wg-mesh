@@ -215,7 +215,7 @@ def index():
     connectMutex.release()
     logging.info(f"{interface} created for {requestIP}")
     return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id']
-    ,'freeSubnet':wg.getHost(freeSubnet),"freeSubnetv6":wg.getHost(freeSubnetv6,"127"),'freePort':freePort,'connectivity':config['connectivity']})
+    ,'freeSubnet':wg.Network.getHost(freeSubnet),"freeSubnetv6":wg.Network.getHost(freeSubnetv6,"127"),'freePort':freePort,'connectivity':config['connectivity']})
 
 @route('/update', method='PATCH')
 def index():

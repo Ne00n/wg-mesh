@@ -118,10 +118,6 @@ class Wireguard(Base):
         self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
         self.setInterface("dummy","up")
 
-    def getHost(self,freeSubnet,suffix="31"):
-        peerSubnet = ipaddress.ip_network(freeSubnet)
-        return f"{list(peerSubnet.hosts())[1]}/{suffix}"
-
     def findLowest(self,min,list):
         for i in range(min,min + 400):
             if i not in list and i % 2 == 0: return i
