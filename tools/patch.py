@@ -4,7 +4,7 @@ sys.path.append("..") # Adds higher directory to python modules path.
 from Class.base import Base
 B = Base()
 
-for i in range(1,100):
+for i in range(0,250):
     print("Updating",f"10.0.{i}.1")
     resp = B.cmd(f"""ssh root@10.0.{i}.1 <<EOF1
 SYSTEMD_EDITOR=tee systemctl edit --full bird <<'EOF2'
