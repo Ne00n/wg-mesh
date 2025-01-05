@@ -242,6 +242,10 @@ def index():
 def index():
     requestIP = getReqIP()
     payload = json.load(request.body)
+    #check blocklist
+    if block(requestIP,check=True):
+        logging.info(f"{requestIP} in blocklist")
+        return HTTPResponse(status=403, body="IP Blocked")
     #validate interface name
     interface = re.findall(r"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
     if not interface: 
@@ -258,6 +262,7 @@ def index():
     #check if they match
     if payload['publicKeyServer'] != publicKeyServer:
         logging.info(f"Invalid public key from {requestIP}")
+        block(requestIP)
         return HTTPResponse(status=400, body="invalid public key")
     #update
     wg.setInterface(payload['interface'],"down")
@@ -276,6 +281,10 @@ def index():
 def index():
     requestIP = getReqIP()
     payload = json.load(request.body)
+    #check blocklist
+    if block(requestIP,check=True):
+        logging.info(f"{requestIP} in blocklist")
+        return HTTPResponse(status=403, body="IP Blocked")
     #validate interface name
     interface = re.findall(r"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
     if not interface:
@@ -294,6 +303,7 @@ def index():
     #check if they match
     if payload['publicKeyServer'] != publicKeyServer:
         logging.info(f"Invalid public key from {requestIP}")
+        block(requestIP)
         return HTTPResponse(status=400, body="invalid public key")
     #terminate the link
     if "wait" in payload and payload['wait'] == False:
