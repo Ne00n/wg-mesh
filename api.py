@@ -4,9 +4,9 @@ from logging.handlers import RotatingFileHandler
 from Class.wireguard import Wireguard
 from Class.templator import Templator
 from threading import Thread
+from random import randint
 from pathlib import Path
 
-tokens = []
 connectMutex = threading.Lock()
 updateMutex = threading.Lock()
 folder = os.path.dirname(os.path.realpath(__file__))
@@ -23,6 +23,7 @@ levels = {'critical': logging.CRITICAL,'error': logging.ERROR,'warning': logging
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(levels[level])
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%d.%m.%Y %H:%M:%S',level=levels[level],handlers=[RotatingFileHandler(maxBytes=10000000,backupCount=5,filename=f"{folder}/logs/api.log"),stream_handler])
+blocklist = {}
 #token
 tokens = {"connect":[],"peer":[]}
 for i in range(3):
@@ -47,6 +48,16 @@ def validateToken(payload):
     else:
         if payload['token'] not in tokens['connect']: return False
     return True
+
+def block(requestIP,check=False):
+    if check and requestIP not in blocklist:
+        return False
+    elif not requestIP in blocklist:
+        blocklist[requestIP] = int(time.time()) + randint(120,300)
+    elif time.time() > blocklist[requestIP]:
+        del blocklist[requestIP]
+    else:
+        return True
 
 def validateID(id):
     result = re.findall(r"^[0-9]{1,4}$",str(id),re.MULTILINE | re.DOTALL)
@@ -108,9 +119,14 @@ def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
     payload = json.load(request.body)
+    #check blocklist
+    if block(requestIP,check=True):
+        logging.info(f"{requestIP} in blocklist")
+        return HTTPResponse(status=403, body="IP Blocked")
     #validate token
     if not isInternal and not validateToken(payload): 
         logging.info(f"Invalid Token from {requestIP}")
+        block(requestIP)
         return HTTPResponse(status=401, body="Invalid Token")
     geo = config['geo'] if "geo" in config else {}
     return HTTPResponse(status=200, body={'connectivity':config['connectivity'],'geo':geo,'linkTypes':config['linkTypes'],'subnetPrefix':subnetPrefix})
@@ -120,9 +136,14 @@ def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
     payload = json.load(request.body)
+    #check blocklist
+    if block(requestIP,check=True):
+        logging.info(f"{requestIP} in blocklist")
+        return HTTPResponse(status=403, body="IP Blocked")
     #validate token
     if not isInternal and not validateToken(payload): 
         logging.info(f"Invalid Token from {requestIP}")
+        block(requestIP)
         return HTTPResponse(status=401, body="Invalid Token")
     #validate id
     if not 'id' in payload or not validateID(payload['id']): 
