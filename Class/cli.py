@@ -31,7 +31,7 @@ class CLI(Base):
                 print(f"Initial link wasn't setup.")
                 return 
             print("Waiting for meshing to complete.")
-            for i in range(1, 200):
+            for i in range(1, 300):
                 if os.path.isfile(f"{self.path}/configs/state.json"): return
                 time.sleep(1)
             print("Meshing seems to have failed.")
