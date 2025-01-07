@@ -210,7 +210,7 @@ def index():
     #load configs
     configs = wg.getConfigs(False)
     freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,payload['basePort'])
-    if not freeSubnet:
+    if not freeSubnet or not freeSubnetv6:
         connectMutex.release()
         logging.info(f"Unable to allocate subnet for wireguard link, {requestIP}")
         return HTTPResponse(status=500, body="Unable to allocate subnet for wireguard link.")
@@ -257,7 +257,7 @@ def index():
         return HTTPResponse(status=400, body="invalid link")
     #read private key
     with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
-    #get public key from private key
+    #get public key from private keyrequestIP
     publicKeyServer = wg.getPublic(privateKeyServer)
     #check if they match
     if payload['publicKeyServer'] != publicKeyServer:
