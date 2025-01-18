@@ -15,6 +15,7 @@ class Latency(Base):
         self.logger = logger
         self.linkState = {}
         self.path = path
+        self.noWait = 0
         self.lastReload = int(time.time()) + 600
         self.currentLinks = self.wg.getLinks(False)
         self.config = self.readJson(f'{path}/configs/config.json')
