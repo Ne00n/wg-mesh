@@ -56,7 +56,7 @@ class Bird(Base):
                     time.sleep(random.randint(2,10))
                 else:
                     if row['target'] in todo: todo.remove(row['target'])
-                    row['cost'] = speed
+                    row['cost'] = 20000 - speed
             #when list is empty, exit
             if not todo: break
         return targets
