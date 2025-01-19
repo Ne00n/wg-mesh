@@ -51,7 +51,7 @@ class Bird(Base):
                 self.logger.info(f"{speed}Mbit's for {row['target']}")
                 if speed == 0:
                     #if we fail to run the iperf, put on list
-                    todo.add(row['target'])
+                    todo.append(row['target'])
                     row['cost'] = 20000
                     time.sleep(random.randint(2,10))
                 else:
