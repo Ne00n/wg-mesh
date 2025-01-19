@@ -60,6 +60,7 @@ while True:
                 latencyData,peers = bird.bird()
                 latency.setLatencyData(latencyData,peers)
                 links = currentLinks
+                logger.info(f"Ready")
         #every 30s
         run = [0,3]
         if runs in run:
