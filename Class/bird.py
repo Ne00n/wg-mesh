@@ -38,11 +38,27 @@ class Bird(Base):
         return targets
 
     def getIPerf(self,targets):
-        for row in targets:
-            self.logger.info(f"Running IPerf to {row['target']}")
-            speed = int(self.iperf(row['target']))
-            row['cost'] = 20000
-            if speed != 0: row['cost'] -= speed
+        random.shuffle(targets)
+        todo = []
+        #we try to iperf a link 5 times
+        for i in range(5):
+            for row in targets:
+                #skip already benchmarked links
+                if 'cost' in row: continue
+                #benchmark
+                self.logger.info(f"Running IPerf to {row['target']}")
+                speed = int(self.iperf(row['target']))
+                self.logger.info(f"{speed}Mbit's for {row['target']}")
+                if speed == 0:
+                    #if we fail to run the iperf, put on list
+                    todo.add(row['target'])
+                    row['cost'] = 20000
+                    time.sleep(random.randint(2,10))
+                else:
+                    if row['target'] in todo: todo.remove(row['target'])
+                    row['cost'] = speed
+            #when list is empty, exit
+            if not todo: break
         return targets
 
     def genTargets(self,links):
