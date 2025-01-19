@@ -37,6 +37,14 @@ class Bird(Base):
         if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
         return targets
 
+    def getIPerf(self,targets):
+        for row in targets:
+            self.logger.info(f"Running IPerf to {row['target']}")
+            speed = int(self.iperf(row['target']))
+            row['cost'] = 20000
+            if speed != 0: row['cost'] -= speed
+        return targets
+
     def genTargets(self,links):
         result,peers = [],[]
         for link in links:
@@ -68,13 +76,17 @@ class Bird(Base):
             return False
         self.logger.info("Getting Network targets")
         nodes,peers = self.genTargets(links)
-        self.logger.info("Latency messurement")
-        latencyData = self.getLatency(nodes)
-        if not latencyData: return False
-        #if client adjust base latency to avoid transit
-        for data in latencyData:
-            linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",data['nic'], re.MULTILINE)[0]
-            if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65535: data['cost'] += 10000
+        if self.config['operationMode'] != 1:
+            self.logger.info("Latency messurement")
+            latencyData = self.getLatency(nodes)
+            if not latencyData: return False
+            #if client adjust base latency to avoid transit
+            for data in latencyData:
+                linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",data['nic'], re.MULTILINE)[0]
+                if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65535: data['cost'] += 10000
+        elif self.config['operationMode'] == 1:
+            self.logger.info("IPerf messurement")
+            latencyData = self.getIPerf(nodes)
         latencyDataNoGroup = latencyData
         latencyData = self.wg.groupByArea(latencyData)
         self.logger.info("Generating config")
