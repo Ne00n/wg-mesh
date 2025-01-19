@@ -67,7 +67,6 @@ while True:
                 logger.debug("Grabbing messages")
                 messages = []
                 while not messagesQueue.empty(): messages.append(messagesQueue.get())
-                logger.info("Running latency")
                 skip = latency.run(runs,messages)
                 if skip > 0: 
                     skipUntil = time.time() + 60

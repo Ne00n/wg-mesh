@@ -140,6 +140,7 @@ class Latency(Base):
             self.logger.warning("bird not running")
             return -1
         if self.config['optimize']:
+            self.logger.info("Running latency")
             self.logger.debug("Processing messages")
             for rawMessage in messages:
                 message = json.loads(rawMessage)
