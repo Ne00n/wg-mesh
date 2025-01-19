@@ -127,8 +127,6 @@ class CLI(Base):
             return
         if "mesh" in option:
             self.wg.saveJson({},f"{self.path}/configs/state.json")
-        elif "optimize" in option:
-            config['optimize'] = False
         elif "ospfv2" in option:
             config['bird']['ospfv2'] = False
         elif "ospfv3" in option:
@@ -144,7 +142,7 @@ class CLI(Base):
         elif "amneziawg" in option:
             if "amneziawg" in config['linkTypes']: config['linkTypes'].remove("amneziawg")
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg, client, notifications, optimize")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg, client, notifications")
             return
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response:
@@ -159,8 +157,6 @@ class CLI(Base):
             return
         if "mesh" in option:
             if os.path.isfile(f"{self.path}/configs/state.json"): os.remove(f"{self.path}/configs/state.json")
-        elif "optimize" in option:
-            config['optimize'] = True
         elif "ospfv2" in option:
             config['bird']['ospfv2'] = True
         elif "ospfv3" in option:
@@ -179,7 +175,7 @@ class CLI(Base):
             if not "amneziawg" in config['linkTypes']: config['linkTypes'].append("amneziawg")
             print("You still need to install amneziawg with: bash /opt/wg-mesh/tools/amnezia.sh")
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg, client, notifications, optimize")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg, client, notifications")
             return
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response:
@@ -188,7 +184,7 @@ class CLI(Base):
         print("You should reload the services to apply any config changes")
 
     def setOption(self,options):
-        validOptions = ["area","prefix","defaultLinkType","basePort","tick","vxlanOffset","subnet","subnetVXLAN","subnetLinkLocal","AllowedPeers","gotifyUp","gotifyDown","gotifyError"]
+        validOptions = ["area","prefix","defaultLinkType","basePort","tick","operationMode","vxlanOffset","subnet","subnetVXLAN","subnetLinkLocal","AllowedPeers","gotifyUp","gotifyDown","gotifyError"]
         if len(sys.argv) == 0:
             print(f"Valid options: {', '.join(validOptions)}")
         else:
@@ -198,7 +194,7 @@ class CLI(Base):
                 if not config:
                     print(f"Unable to read config.json")
                     return
-                if key == "basePort" or key == "vxlanOffset":
+                if key == "basePort" or key == "vxlanOffset" or key == "operationMode":
                     config[key] = int(value)
                 elif key == "area" or key == "tick":
                     config['bird'][key] = int(value)

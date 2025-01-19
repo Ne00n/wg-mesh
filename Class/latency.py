@@ -139,7 +139,7 @@ class Latency(Base):
         if not "running" in bird:
             self.logger.warning("bird not running")
             return -1
-        if self.config['optimize']:
+        if self.config['operationMode'] == 0:
             self.logger.info("Running latency")
             self.logger.debug("Processing messages")
             for rawMessage in messages:
