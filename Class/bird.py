@@ -92,7 +92,8 @@ class Bird(Base):
             return False
         self.logger.info("Getting Network targets")
         nodes,peers = self.genTargets(links)
-        if self.config['operationMode'] != 1 or skipIperf:
+        latencyModes = [0,1]
+        if self.config['operationMode'] in latencyModes or skipIperf:
             self.logger.info("Latency messurement")
             latencyData = self.getLatency(nodes)
             if not latencyData: return False
@@ -100,7 +101,7 @@ class Bird(Base):
             for data in latencyData:
                 linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",data['nic'], re.MULTILINE)[0]
                 if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65535: data['cost'] += 10000
-        elif self.config['operationMode'] == 1:
+        elif self.config['operationMode'] == 2:
             self.logger.info("IPerf messurement")
             latencyData = self.getIPerf(nodes)
         latencyDataNoGroup = latencyData
