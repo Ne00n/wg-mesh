@@ -107,6 +107,13 @@ class Base:
             latency[ip].append([ms,loss])
         return latency
 
+    def iperf(self,target):
+        iperf = f"iperf3 -c {target}"
+        result = self.cmd(iperf)[0]
+        parsed = re.findall("([0-9]+) Mbits\/sec.*?sender",result, re.MULTILINE)
+        if not parsed: return 0
+        return parsed[0]
+
     def call(self,url,payload,method="POST",headers={},max=5):
         allowedCodes = [200,412]
         for run in range(1,max):
