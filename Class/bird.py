@@ -60,7 +60,7 @@ class Bird(Base):
             result.append({'nic':nic,'target':targetIP,'origin':origin})
         return result,peers
 
-    def bird(self,override=False):
+    def bird(self,override=False,skipIperf=False):
         #check if bird is running
         bird = self.cmd("systemctl status bird")[0]
         if not "running" in bird and override == False:
@@ -76,7 +76,7 @@ class Bird(Base):
             return False
         self.logger.info("Getting Network targets")
         nodes,peers = self.genTargets(links)
-        if self.config['operationMode'] != 1:
+        if self.config['operationMode'] != 1 or skipIperf:
             self.logger.info("Latency messurement")
             latencyData = self.getLatency(nodes)
             if not latencyData: return False

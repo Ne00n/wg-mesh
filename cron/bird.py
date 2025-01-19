@@ -55,7 +55,7 @@ while True:
             difference = list(set(links) - set(currentLinks))
             logger.info(f"Difference {difference}")
             #hold until bird reports success
-            if bird.bird():
+            if bird.bird(skipIperf=True):
                 bird.mesh()
                 latencyData,peers = bird.bird()
                 latency.setLatencyData(latencyData,peers)
