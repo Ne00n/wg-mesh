@@ -167,7 +167,7 @@ class Latency(Base):
                     #reload
                     self.logger.info("Reloading bird")
                     self.cmd('sudo systemctl reload bird')
-                    self.lastReload = int(time.time()) + 600
+                    self.lastReload = int(time.time()) + self.config['bird']['reloadInterval']
                 else:
                     self.logger.debug(f"{datetime.now().minute} not in window.")
             #however save any packetloss or jitter detected
