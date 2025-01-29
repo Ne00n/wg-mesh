@@ -41,7 +41,7 @@ class Latency(Base):
         percentage = round((abs(float(old) - latency) / latency) * 100.0,1)
         #needs to be higher than 15% and 20+ difference
         self.logger.info(f"{nic} Current percentage: {percentage}%, needed 15% (current {latency}, earlier {old}, diff {diff})")
-        if diff <= 20 or percentage <= 15: return False
+        if percentage <= 15: return False
         return True
 
     def countEvents(self,entry,eventType):
