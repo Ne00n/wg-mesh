@@ -39,9 +39,9 @@ class Latency(Base):
         if latency <= float(old): return False
         diff = latency - float(old)
         percentage = round((abs(float(old) - latency) / latency) * 100.0,1)
-        #needs to be higher than 15% and 20+ difference
-        self.logger.info(f"{nic} Current percentage: {percentage}%, needed 15% (current {latency}, earlier {old}, diff {diff})")
-        if percentage <= 15: return False
+        #needs to be higher than 15% (default)
+        self.logger.info(f"{nic} Current percentage: {percentage}%, needed {self.config['bird']['reloadPercentage']}% (current {latency}, earlier {old}, diff {diff})")
+        if percentage < self.config['bird']['reloadPercentage']: return False
         return True
 
     def countEvents(self,entry,eventType):
