@@ -80,9 +80,12 @@ class Latency(Base):
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
                     #Packetloss
                     hasLoss,peakLoss = len(row) < pings -1,(pings -1) - len(row)
+                    #Pull the eventCount earlier, so we can multiply the expiry
+                    eventCount,eventScore = self.countEvents(entry,'packetloss')
                     if hasLoss:
-                        #keep packet loss events for 30 minutes
-                        self.network[entry]['packetloss'][int(time.time()) + randint(1700,2100)] = {"peak":peakLoss,"latency":current}
+                        #keep packet loss events for roughly 15 minutes * eventCount, so if a link has regular loss it keeps it for longer
+                        expiry = randint(700,1000) * eventCount
+                        self.network[entry]['packetloss'][int(time.time()) + expiry] = {"peak":peakLoss,"latency":current}
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
 
                     eventCount,eventScore = self.countEvents(entry,'packetloss')
