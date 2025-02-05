@@ -40,7 +40,7 @@ class Latency(Base):
         diff = int(latency - float(old))
         percentage = round((abs(float(old) - latency) / latency) * 100.0,1)
         #needs to be higher than 15% (default)
-        self.logger.info(f"{nic} Current percentage: {percentage}%, needed {self.config['bird']['reloadPercentage']}% (current {latency}, earlier {old}, diff {diff})")
+        self.logger.debug(f"{nic} Current percentage: {percentage}%, needed {self.config['bird']['reloadPercentage']}% (current {latency}, earlier {old}, diff {diff})")
         if percentage < self.config['bird']['reloadPercentage']: return False
         return True
 
