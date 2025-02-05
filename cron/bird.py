@@ -71,7 +71,7 @@ while True:
                 skip = latency.run(runs,messages)
                 if skip > 0: 
                     skipUntil = time.time() + 60
-                    logger.info(f"Skipping 10s wait until {skipUntil}")
+                    logger.info(f"Skipping 10s wait for 60s")
                 elif skip == -1 and int(time.time()) > restartCooldown:
                     logger.info(f"Triggering bird restart")
                     os.system("sudo systemctl restart bird")
