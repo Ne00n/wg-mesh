@@ -37,7 +37,7 @@ class Latency(Base):
         if latency > 20000 and float(old) > 20000: return False
         #ignore any negative changes
         if latency <= float(old): return False
-        diff = latency - float(old)
+        diff = int(latency - float(old))
         percentage = round((abs(float(old) - latency) / latency) * 100.0,1)
         #needs to be higher than 15% (default)
         self.logger.info(f"{nic} Current percentage: {percentage}%, needed {self.config['bird']['reloadPercentage']}% (current {latency}, earlier {old}, diff {diff})")
