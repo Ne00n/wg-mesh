@@ -257,7 +257,7 @@ def index():
         return HTTPResponse(status=400, body="invalid link")
     #read private key
     with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
-    #get public key from private keyrequestIP
+    #get public key from private key
     publicKeyServer = wg.getPublic(privateKeyServer)
     #check if they match
     if payload['publicKeyServer'] != publicKeyServer:
