@@ -16,4 +16,6 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%d.%
 logger = logging.getLogger()
 
 diag = Diag(path,logger)
-diag.run()
+while True:
+    diag.run()
+    time.sleep(7200)
