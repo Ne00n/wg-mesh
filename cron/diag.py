@@ -31,6 +31,7 @@ logger.info(f"Ready")
 diag = Diag(path,logger)
 waitUntil = 0
 while not shutdown:
+    currentTime = int(time.time())
     if currentTime > waitUntil:
         #check for lock file
         if os.path.isfile(f"{path}/cron/lock"): 
