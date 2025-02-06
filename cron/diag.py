@@ -29,14 +29,19 @@ systemd.daemon.notify('READY=1')
 logger.info(f"Ready")
 
 diag = Diag(path,logger)
+waitUntil = 0
 while not shutdown:
-    #check for lock file
-    if os.path.isfile(f"{path}/cron/lock"): 
-        time.sleep(60)
-        continue
-    #we need a lock file, since roatate and diag could conflict with each other
-    open(f"{path}/cron/lock",'w').close()
-    diag.run()
-    #clear lock file
-    os.unlink(f"{path}/cron/lock")
-    time.sleep(7200)
+    if currentTime > waitUntil:
+        #check for lock file
+        if os.path.isfile(f"{path}/cron/lock"): 
+            time.sleep(60)
+            continue
+        #we need a lock file, since roatate and diag could conflict with each other
+        open(f"{path}/cron/lock",'w').close()
+        diag.run()
+        #clear lock file
+        os.unlink(f"{path}/cron/lock")
+        #run this twice per day
+        waitUntil = currentTime + random.randint(3600 * 11, 3600 * 12)
+    else:
+        time.sleep(10)
