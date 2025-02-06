@@ -10,6 +10,8 @@ class Diag(Base):
         self.path = path
         self.diagnostic = self.readJson(f"{self.path}/configs/diagnostic.json")
         self.network = self.readJson(f"{self.path}/configs/network.json")
+        self.config = self.readJson(f'{self.path}/configs/config.json')
+        self.subnetPrefixSplitted = self.config['subnet'].split(".")
 
     def run(self):
         self.logger.info("Starting diagnostic")
@@ -26,7 +28,7 @@ class Diag(Base):
         for link in offline:
             if "Serv" in link: continue
             count, data, current = 0, links[link], int(time.time())
-            parsed, remote = self.getRemote(data['local'])
+            parsed, remote = self.getRemote(data['local'],self.subnetPrefixSplitted)
             self.logger.info(f"Found dead link {link} ({remote})")
             if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0}
             if self.diagnostic[remote]['cooldown'] > current: continue
