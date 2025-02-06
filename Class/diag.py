@@ -8,8 +8,8 @@ class Diag(Base):
         self.logger = logger
         self.wg = Wireguard(path)
         self.path = path
-        self.diagnostic = self.readConfig(f"{self.path}/configs/diagnostic.json")
-        self.network = self.readConfig(f"{self.path}/configs/network.json")
+        self.diagnostic = self.readJson(f"{self.path}/configs/diagnostic.json")
+        self.network = self.readJson(f"{self.path}/configs/network.json")
 
     def run(self):
         self.logger.info("Starting diagnostic")
