@@ -62,5 +62,6 @@ class Diag(Base):
                 self.logger.info(f"Reconnected {link} ({remote}) with Port {port}")
             else:
                 self.logger.info(f"Could not reconnect {link} ({remote})")
+        self.logger.info(f"Loop done")
         self.saveJson(self.diagnostic,f"{self.path}/configs/diagnostic.json")
         return True
