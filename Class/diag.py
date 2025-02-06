@@ -28,7 +28,7 @@ class Diag(Base):
         for link in offline:
             if "Serv" in link: continue
             count, data, current = 0, links[link], int(time.time())
-            parsed, remote = self.getRemote(data['local'],self.subnetPrefixSplitted)
+            parsed, remote = self.getRemote(data['config'],self.subnetPrefixSplitted)
             self.logger.info(f"Found dead link {link} ({remote})")
             if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0}
             if self.diagnostic[remote]['cooldown'] > current: continue
