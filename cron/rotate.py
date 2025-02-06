@@ -45,7 +45,7 @@ while not shutdown:
         if os.path.isfile(f"{path}/cron/lock"): 
             time.sleep(60)
             continue
-        os.open(f"{path}/cron/lock",'w').close()
+        open(f"{path}/cron/lock",'w').close()
         links = wg.getLinks()
         for link, data in links.items():
             link = wg.filterInterface(link)
