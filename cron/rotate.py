@@ -42,6 +42,10 @@ waitUntil = 0
 while not shutdown:
     currentTime = int(time.time())
     if currentTime > waitUntil:
+        if os.path.isfile(f"{path}/cron/lock"): 
+            time.sleep(60)
+            continue
+        os.open(f"{path}/cron/lock", os.O_CREAT | os.O_EXCL)
         links = wg.getLinks()
         for link, data in links.items():
             link = wg.filterInterface(link)
@@ -102,5 +106,6 @@ while not shutdown:
                 logger.info(f"{link} done swapping xor keys")
         #run this twice per day
         waitUntil = currentTime + random.randint(3600 * 11, 3600 * 12)
+        os.unlink(f"{path}/cron/lock")
     else:
         time.sleep(10)

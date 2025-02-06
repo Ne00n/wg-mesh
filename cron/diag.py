@@ -17,5 +17,13 @@ logger = logging.getLogger()
 
 diag = Diag(path,logger)
 while True:
+    #check for lock file
+    if os.path.isfile(f"{path}/cron/lock"): 
+        time.sleep(60)
+        continue
+    #we need a lock file, since roatate and diag could conflict with each other
+    os.open(f"{path}/cron/lock", os.O_CREAT | os.O_EXCL)
     diag.run()
+    #clear lock file
+    os.unlink(f"{path}/cron/lock")
     time.sleep(7200)
