@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import logging, signal, time, sys, os
+import logging, random, signal, time, sys, os
 sys.path.append("..") # Adds higher directory to python modules path.
 from logging.handlers import RotatingFileHandler
 from Class.diag import Diag
