@@ -34,7 +34,7 @@ class Diag(Base):
             if self.diagnostic[remote]['cooldown'] > current: 
                 self.logger.info(f"Skipping {link} due to cooldown")
                 continue
-            self.diagnostic[remote]['cooldown'] = current + 21600 # set a cooldown of 6 hours
+            self.diagnostic[remote]['cooldown'] = current + random.randint(43200,57600)
             for event,row in list(self.network[remote]['packetloss'].items()):
                 if int(event) > int(time.time()) and row['peak'] == 4: count += 1
             if count < 20: 
