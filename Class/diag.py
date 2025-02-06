@@ -58,7 +58,7 @@ class Diag(Base):
             self.logger.info(f"Reconnecting {link}")
             port = random.randint(1024, 50000)
             status = self.wg.connect(f"http://{endpoint}:8080","dummy","",port)
-            if status:
+            if status['v4'] or status['v6']:
                 self.logger.info(f"Reconnected {link} ({remote}) with Port {port}")
             else:
                 self.logger.info(f"Could not reconnect {link} ({remote})")
