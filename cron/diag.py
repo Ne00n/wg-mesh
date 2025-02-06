@@ -42,7 +42,6 @@ while not shutdown:
         diag.run()
         #clear lock file
         os.unlink(f"{path}/cron/lock")
-        #run this twice per day
-        waitUntil = currentTime + random.randint(3600 * 11, 3600 * 12)
+        waitUntil = currentTime + random.randint(3600,7200)
     else:
         time.sleep(10)
