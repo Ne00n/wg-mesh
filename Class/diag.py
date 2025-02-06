@@ -15,11 +15,11 @@ class Diag(Base):
         self.logger.info("Starting diagnostic")
         if not os.path.isfile(f"{self.path}/configs/state.json"):
             self.logger.warning("state.json does not exist")
-            exit()
+            return False
         targets = self.getRoutes()
         if not targets: 
             self.logger.warning("bird returned no routes, did you setup bird?")
-            exit()
+            return False
         links = self.wg.getLinks()
         self.logger.info("Checking Links")
         offline,online = self.wg.checkLinks(links)
@@ -56,3 +56,4 @@ class Diag(Base):
             else:
                 self.logger.info(f"Could not reconnect {link} ({remote})")
         self.saveJson(self.diagnostic,f"{self.path}/configs/diagnostic.json")
+        return True
