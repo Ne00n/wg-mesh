@@ -28,6 +28,11 @@ class Diag(Base):
         for link in offline:
             count, data, current = 0, links[link], int(time.time())
             if not "endpoint" in data['config']: continue
+            linkConfig = self.readJson(f'{self.path}/links/{data['filename']}.json')
+            #have to check the linkType, currently no logic for different link types so we just skip them for now
+            if "linkType" in linkConfig and linkConfig['linkType'] != "default":
+                self.logger.warning(f"{link} has non default linkType, skipping")
+                continue
             parsed, remote = self.getRemote(data['config'],self.subnetPrefixSplitted)
             self.logger.info(f"Found dead link {link} ({remote})")
             if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0}
