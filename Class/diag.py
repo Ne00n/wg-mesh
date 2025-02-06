@@ -35,6 +35,9 @@ class Diag(Base):
                 self.logger.info(f"Skipping {link} due to cooldown")
                 continue
             self.diagnostic[remote]['cooldown'] = current + random.randint(43200,57600)
+            if not remote in self.network:
+                self.logger.warning(f"{link} no data in network.json, skipping")
+                continue
             for event,row in list(self.network[remote]['packetloss'].items()):
                 if int(event) > int(time.time()) and row['peak'] == 4: count += 1
             if count < 20: 
