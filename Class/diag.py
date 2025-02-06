@@ -35,11 +35,12 @@ class Diag(Base):
                 continue
             parsed, remote = self.getRemote(data['config'],self.subnetPrefixSplitted)
             self.logger.info(f"Found dead link {link} ({remote})")
-            if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0}
+            if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0,"retries":0}
             if self.diagnostic[remote]['cooldown'] > current: 
                 self.logger.info(f"Skipping {link} due to cooldown")
                 continue
             self.diagnostic[remote]['cooldown'] = current + random.randint(43200,57600)
+            self.diagnostic[remote]['retries'] += 1
             if not remote in self.network:
                 self.logger.warning(f"{link} no data in network.json, skipping")
                 continue
