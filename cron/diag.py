@@ -22,7 +22,7 @@ while True:
         time.sleep(60)
         continue
     #we need a lock file, since roatate and diag could conflict with each other
-    os.open(f"{path}/cron/lock", os.O_CREAT | os.O_EXCL)
+    os.open(f"{path}/cron/lock",'w').close()
     diag.run()
     #clear lock file
     os.unlink(f"{path}/cron/lock")
