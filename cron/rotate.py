@@ -42,6 +42,7 @@ waitUntil = 0
 while not shutdown:
     currentTime = int(time.time())
     if currentTime > waitUntil:
+        #we need a lock file, since rotate and diag could conflict with each other
         if os.path.isfile(f"{path}/cron/lock"): 
             time.sleep(60)
             continue

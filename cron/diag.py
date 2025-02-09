@@ -37,7 +37,7 @@ while not shutdown:
         if os.path.isfile(f"{path}/cron/lock"): 
             time.sleep(10)
             continue
-        #we need a lock file, since roatate and diag could conflict with each other
+        #we need a lock file, since rotate and diag could conflict with each other
         open(f"{path}/cron/lock",'w').close()
         diag.run()
         #clear lock file
