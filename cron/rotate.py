@@ -114,7 +114,7 @@ while not shutdown:
                 logger.info(f"{link} done swapping xor keys")
         #run every hour
         waitUntil = currentTime + 3600
-        wg.saveJson(rotate,f"{self.path}/configs/rotate.json")
+        wg.saveJson(rotate,f"{path}/configs/rotate.json")
         os.unlink(f"{path}/cron/lock")
     else:
         time.sleep(10)
