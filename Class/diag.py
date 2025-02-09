@@ -61,6 +61,7 @@ class Diag(Base):
             status = self.wg.disconnect([link])
             if not status[link]:
                 self.logger.warning(f"Failed to disconnect {link} ({remote})")
+                if notifications['enabled']: self.wg.notify(self.config['notifications']['gotifyDiag'],f"{link} disconnect failure",f"Node {self.config['id']} failed to disconnect {link}")
                 continue
             time.sleep(3)
             self.logger.info(f"Reconnecting {link}")
