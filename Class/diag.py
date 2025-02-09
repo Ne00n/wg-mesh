@@ -14,6 +14,7 @@ class Diag(Base):
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
 
     def run(self):
+        notifications = self.config['notifications']
         self.logger.info("Starting diagnostic")
         if not os.path.isfile(f"{self.path}/configs/state.json"):
             self.logger.warning("state.json does not exist")
@@ -55,7 +56,7 @@ class Diag(Base):
                 self.logger.info(f"Unable to reach endpoint {link} ({endpoint})")
                 continue
             self.logger.info(f"Dead link confirmed {link} ({remote})")
-            self.wg.notify(self.config['notifications']['gotifyDiag'],f"{link} disconnecting",f"Node {config['id']} disconnecting {link}")
+            if notifications['enabled']: self.wg.notify(self.config['notifications']['gotifyDiag'],f"{link} disconnecting",f"Node {config['id']} disconnecting {link}")
             self.logger.info(f"Disconnecting {link}")
             status = self.wg.disconnect([link])
             if not status[link]:
@@ -67,10 +68,10 @@ class Diag(Base):
             status = self.wg.connect(f"http://{endpoint}:8080","dummy","",port)
             if status['v4'] or status['v6']:
                 self.logger.info(f"Reconnected {link} ({remote}) with Port {port}")
-                self.wg.notify(self.config['notifications']['gotifyDiag'],f"{link} reconnected",f"Node {config['id']} reconnected {link}")
+                if notifications['enabled']: self.wg.notify(self.config['notifications']['gotifyDiag'],f"{link} reconnected",f"Node {config['id']} reconnected {link}")
             else:
                 self.logger.info(f"Could not reconnect {link} ({remote})")
-                self.wg.notify(self.config['notifications']['gotifyDiag'],f"{link} reconnect failure",f"Node {config['id']} failed to reconnect {link}")
+                if notifications['enabled']: self.wg.notify(self.config['notifications']['gotifyDiag'],f"{link} reconnect failure",f"Node {config['id']} failed to reconnect {link}")
         self.logger.info(f"Loop done")
         self.saveJson(self.diagnostic,f"{self.path}/configs/diagnostic.json")
         return True
