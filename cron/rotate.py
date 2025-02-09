@@ -19,7 +19,6 @@ logger = logging.getLogger()
 wg = Wireguard(path)
 config = wg.getConfig()
 notifications = config['notifications']
-path,links = f'{path}/links/',[]
 
 targetInterface = ""
 if len(sys.argv) == 2: targetInterface = sys.argv[1]
