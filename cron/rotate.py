@@ -18,6 +18,7 @@ logger = logging.getLogger()
 
 wg = Wireguard(path)
 config = wg.getConfig()
+rotate = wg.readJson(f"{self.path}/configs/rotate.json")
 notifications = config['notifications']
 
 targetInterface = ""
@@ -52,6 +53,12 @@ while not shutdown:
             link = wg.filterInterface(link)
             if targetInterface and link != targetInterface: continue
             if "XOR" in data['config'] and "endpoint" in data['config']:
+                if not link in rotate: rotate[link] = {"cooldown":0}
+                if rotate[link]['cooldown'] > int(time.time()): 
+                    logger.info(f"Skipping {link} due to cooldown")
+                    continue
+                #rotate every 5 to 7 hours
+                rotate[link]['cooldown'] = int(time.time()) + random.randint(18000,25200)
                 logger.info(f"{link} swapping xor keys")
                 interfaceRemote = wg.getInterfaceRemote(link)
                 logger.info(f"{link} increasing remote cost")
@@ -105,8 +112,9 @@ while not shutdown:
                     logger.warning(f"{link} Unable to verify connectivity")
                     if notifications['enabled']: wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"Node {config['id']} Unable to verify connectivity")
                 logger.info(f"{link} done swapping xor keys")
-        #run this twice per day
-        waitUntil = currentTime + random.randint(3600 * 11, 3600 * 12)
+        #run every hour
+        waitUntil = currentTime + 3600
+        wg.saveJson(rotate,f"{self.path}/configs/rotate.json")
         os.unlink(f"{path}/cron/lock")
     else:
         time.sleep(10)
