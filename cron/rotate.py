@@ -18,7 +18,7 @@ logger = logging.getLogger()
 
 wg = Wireguard(path)
 config = wg.getConfig()
-rotate = wg.readJson(f"{self.path}/configs/rotate.json")
+rotate = wg.readJson(f"{path}/configs/rotate.json")
 notifications = config['notifications']
 
 targetInterface = ""
