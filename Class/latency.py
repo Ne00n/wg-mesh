@@ -77,7 +77,7 @@ class Latency(Base):
                     #get average
                     node['cost'] = current = self.getAvrg(row,False)
                     if node['nic'] in self.linkState: node['cost'] += self.linkState[node['nic']]['cost']
-                    if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{}}
+                    if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{},"outages":0,"state":1}
                     #Packetloss
                     hasLoss,peakLoss = len(row) < pings -1,(pings -1) - len(row)
                     if hasLoss:
@@ -207,6 +207,7 @@ class Latency(Base):
             nic = row['nic']
             if not self.linkState[nic]['state'] and row['cost'] != 65535:
                 self.linkState[row['nic']]['state'] = 1
+                self.network[row['target']]['state'] = 1
                 self.logger.warning(f"Link {row['nic']} is up")
                 notifications = self.config['notifications']
                 if notifications['enabled']:
@@ -214,7 +215,9 @@ class Latency(Base):
                     sendMessage.start()
             elif self.linkState[nic]['state'] and row['cost'] == 65535:
                 self.linkState[row['nic']]['state'] = 0
+                self.network[row['target']]['state'] = 0
                 self.linkState[row['nic']]['outages'] += 1
+                self.network[row['target']]['outages'] += 1
                 self.logger.warning(f"Link {row['nic']} is down")
                 notifications = self.config['notifications']
                 if notifications['enabled']:
