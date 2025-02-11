@@ -24,9 +24,9 @@ class Diag(Base):
             self.logger.warning("bird returned no routes, did you setup bird?")
             return False
         links = self.wg.getLinks()
-        self.logger.info("Checking Links")
+        self.logger.info(f"Checking {len(links)} Links")
         offline,online = self.wg.checkLinks(links)
-        self.logger.info(f"Found {len(offline)} dead links")
+        self.logger.info(f"Found {len(offline)} dead link(s)")
         for link in offline:
             count, data, current = 0, links[link], int(time.time())
             if not "endpoint" in data['config']: continue
