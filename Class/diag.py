@@ -26,6 +26,7 @@ class Diag(Base):
         links = self.wg.getLinks()
         self.logger.info("Checking Links")
         offline,online = self.wg.checkLinks(links)
+        self.logger.info(f"Found {len(offline)} dead links")
         for link in offline:
             count, data, current = 0, links[link], int(time.time())
             if not "endpoint" in data['config']: continue
