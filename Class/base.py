@@ -97,9 +97,9 @@ class Base:
     def fping(self,targets,pings=3,dropTimeout = False):
         fping = f"fping -c {pings} "
         fping += " ".join(targets)
-        result = self.cmd(fping)[0]
-        parsed = re.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result, re.MULTILINE)
-        unreachable = re.findall("ICMP Host Unreachable from [0-9.]+ for ICMP Echo sent to ([0-9.]+)",result, re.MULTILINE)
+        result = self.cmd(fping)
+        parsed = re.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result[0], re.MULTILINE)
+        unreachable = re.findall("ICMP Host Unreachable from [0-9.]+ for ICMP Echo sent to ([0-9.]+)",result[1], re.MULTILINE)
         if not parsed: return {}
         latency =  {}
         for ip,ms,loss in parsed:
