@@ -106,7 +106,7 @@ class CLI(Base):
         if not network:
             print("Unable to load network.json")
             return
-        print("Destination\tPacketloss\tJitter")
+        print("Destination\tState\tPacketloss\tJitter")
         jittar,loss = 0,0
         for dest,data in network.items():
             hasLoss,hasJitter = "No","No"
@@ -117,7 +117,7 @@ class CLI(Base):
             if data['jitter']:
                 hasJitter = "Yes"
                 jittar += 1
-            print(f"{dest}\t{hasLoss}\t\t{hasJitter}")
+            print(f"{dest}\t{data['state']}\t{hasLoss}\t\t{hasJitter}")
         print(f"{len(network) -1}\t\t{loss}\t\t{jittar}")
 
     def disable(self,option):
