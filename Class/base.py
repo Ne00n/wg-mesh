@@ -99,12 +99,16 @@ class Base:
         fping += " ".join(targets)
         result = self.cmd(fping)[0]
         parsed = re.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result, re.MULTILINE)
+        unreachable = re.findall("ICMP Host Unreachable from [0-9.]+ for ICMP Echo sent to ([0-9.]+)",result, re.MULTILINE)
         if not parsed: return {}
         latency =  {}
         for ip,ms,loss in parsed:
             if ip not in latency: latency[ip] = []
             if dropTimeout and ms == "timed out": continue
             latency[ip].append([ms,loss])
+        for ip in unreachable:
+            if ip not in latency: latency[ip] = []
+            latency[ip].append([65000,100])
         return latency
 
     def iperf(self,target):
