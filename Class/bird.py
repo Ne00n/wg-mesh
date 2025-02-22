@@ -48,7 +48,7 @@ class Bird(Base):
                 #skip already benchmarked links
                 if 'cost' in row: continue
                 #benchmark
-                self.logger.info(f"Running IPerf to {row['target']}")
+                self.logger.info(f"Running IPerf to {row['target']} on {row['nic']}")
                 speed = int(self.iperf(row['target']))
                 self.logger.info(f"{speed}Mbit's for {row['target']}")
                 if speed == 0:
