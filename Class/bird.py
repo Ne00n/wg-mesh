@@ -46,7 +46,7 @@ class Bird(Base):
         for i in range(5):
             for row in targets:
                 #skip already benchmarked links
-                if 'cost' in row: continue
+                if 'cost' in row and row['cost'] != 20000: continue
                 #benchmark
                 self.logger.info(f"Running IPerf to {row['target']} on {row['nic']}")
                 speed = int(self.iperf(row['target']))
