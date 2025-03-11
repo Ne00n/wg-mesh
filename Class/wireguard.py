@@ -39,6 +39,7 @@ class Wireguard(Base):
         if not "bird" in self.config: self.config['bird'] = {}
         if not "ospfv2" in self.config['bird']: self.config['bird']['ospfv2'] = True
         if not "ospfv3" in self.config['bird']: self.config['bird']['ospfv3'] = True
+        if not "jitter" in self.config['bird']: self.config['bird']['jitter'] = True
         if not "area" in self.config['bird']: self.config['bird']['area'] = 0
         if not "tick" in self.config['bird']: self.config['bird']['tick'] = 1
         if not "client" in self.config['bird']: self.config['bird']['client'] = False
@@ -101,7 +102,7 @@ class Wireguard(Base):
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
         config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"vxlanOffset":0,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16",
         "subnetVXLAN":"10.0.251.0/24","subnetLinkLocal":"fe82:","AllowedPeers":[],"prefix":"pipe","id":int(id),"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
-        "bird":{"ospfv2":True,"ospfv3":True,"area":0,"tick":1,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600,"reloadPercentage":15},"notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":""}}
+        "bird":{"ospfv2":True,"ospfv3":True,"jitter":True,"area":0,"tick":1,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600,"reloadPercentage":15},"notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":""}}
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response: exit("Unable to save config.json")
         #load configs

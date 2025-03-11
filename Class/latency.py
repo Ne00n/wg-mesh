@@ -98,20 +98,21 @@ class Latency(Base):
                         ongoingLoss += 1
 
                     #Jitter
-                    hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
-                    if hasJitter:
-                        #keep jitter events for 30 minutes
-                        self.network[entry]['jitter'][int(time.time()) + randint(1700,2100)] = {"peak":peakJitter,"latency":current}
-                        self.logger.info(f"{node['nic']} ({entry}) High Jitter dectected")
+                    if self.config['bird']['jitter']:
+                        hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
+                        if hasJitter:
+                            #keep jitter events for 30 minutes
+                            self.network[entry]['jitter'][int(time.time()) + randint(1700,2100)] = {"peak":peakJitter,"latency":current}
+                            self.logger.info(f"{node['nic']} ({entry}) High Jitter dectected")
 
-                    eventCount,eventScore = self.countEvents(entry,'jitter')
-                    if eventCount > 0:
-                        node['cost'] += eventScore
-                        self.logger.debug(f"Jitter {node['nic']} ({entry}) Weight: {old}, Latency: {current}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
-                        if self.reloadPeacemaker(node['nic'],hasJitter,eventCount,node['cost'],old):
-                            self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
-                            self.reload += 1
-                        ongoingJitter += 1
+                        eventCount,eventScore = self.countEvents(entry,'jitter')
+                        if eventCount > 0:
+                            node['cost'] += eventScore
+                            self.logger.debug(f"Jitter {node['nic']} ({entry}) Weight: {old}, Latency: {current}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
+                            if self.reloadPeacemaker(node['nic'],hasJitter,eventCount,node['cost'],old):
+                                self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
+                                self.reload += 1
+                            ongoingJitter += 1
 
                     total += 1
                     #if within 200-255 range (client) adjust base cost/weight to avoid transit
