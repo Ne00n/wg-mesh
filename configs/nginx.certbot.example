@@ -1,0 +1,19 @@
+server {
+  listen 80;
+  listen [::]:80;
+  server_name wg.domain.com;
+  server_tokens off;
+
+   location '/.well-known/acme-challenge' {
+     default_type "text/plain";
+     root         /var/www/html/acme-challange;
+     autoindex    on;
+  }
+
+  location / {
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-Host $host;    
+    proxy_set_header X-Forwarded-Server $host;
+    proxy_pass http://10.0.1.1:8080;
+  }
+}

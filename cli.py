@@ -3,7 +3,7 @@
 from Class.cli import CLI
 import sys, os
 
-options = "init <id>, status, used, bender, migrate, recover, connect <http://IP/DOMAIN:8080> <token>, disconnect, up, down, clean, proximity, token, disable, enable, set"
+options = "init <id>, status, used, bender, migrate, recover, connect/peer <http://IP/DOMAIN:8080> <token>, disconnect, up, down, clean, proximity, token, disable, enable, set, cost"
 #path
 path = os.path.dirname(os.path.realpath(__file__))
 cli = CLI(path)
@@ -19,12 +19,13 @@ elif sys.argv[1] == "status":
     cli.status()
 elif sys.argv[1] == "bender":
     cli.bender()
-elif sys.argv[1] == "connect":
+elif sys.argv[1] == "connect" or sys.argv[1] == "peer":
     if len(sys.argv) <= 2: exit("URL is missing.")
     token = "dummy" if len(sys.argv) <= 3 else sys.argv[3]
-    linkType = "default" if len(sys.argv) <= 4 else sys.argv[4]
+    linkType = "" if len(sys.argv) <= 4 else sys.argv[4]
     port = 51820 if len(sys.argv) <= 5 else sys.argv[5]
-    cli.connect(sys.argv[2],token,linkType,port)
+    network = "Peer" if sys.argv[1] == "peer" else ""
+    cli.connect(sys.argv[2],token,linkType,port,network)
 elif sys.argv[1] == "proximity":
     cutoff = sys.argv[2] if len(sys.argv) == 3 else 0
     cli.proximity(cutoff)
@@ -38,7 +39,9 @@ elif sys.argv[1] == "disconnect":
 elif sys.argv[1] == "up" or sys.argv[1] == "down":
     cli.links(sys.argv[1])
 elif sys.argv[1] == "clean":
-    cli.clean()
+    ignoreJSON = False if len(sys.argv) <= 2 else True
+    ignoreEndpoint = False if len(sys.argv) <= 3 else True
+    cli.clean(ignoreJSON,ignoreEndpoint)
 elif sys.argv[1] == "migrate":
     cli.migrate()
 elif sys.argv[1] == "recover":
@@ -47,6 +50,8 @@ elif sys.argv[1] == "token":
     cli.token()
 elif sys.argv[1] == "update":
     cli.update()
+elif sys.argv[1] == "geo":
+    cli.geo()
 elif sys.argv[1] == "disable":
     sys.argv = sys.argv[2:]
     cli.disable(sys.argv)
@@ -56,5 +61,9 @@ elif sys.argv[1] == "enable":
 elif sys.argv[1] == "set":
     sys.argv = sys.argv[2:]
     cli.setOption(sys.argv)
+elif sys.argv[1] == "cost":
+    if len(sys.argv) <= 2: exit("link missing")
+    cost = None if len(sys.argv) <= 3 else int(sys.argv[3])
+    cli.cost(sys.argv[2],cost)
 else:
     print(options)

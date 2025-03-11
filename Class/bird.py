@@ -7,7 +7,7 @@ class Bird(Base):
     Templator = Templator()
 
     def __init__(self,path,logger):
-        self.config = self.readConfig(f'{path}/configs/config.json')
+        self.config = self.readJson(f'{path}/configs/config.json')
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
         self.prefix = self.config['prefix']
         self.wg = Wireguard(path)
@@ -30,15 +30,41 @@ class Bird(Base):
                     if len(row) < 5: self.logger.warning(f"Expected 5 pings, got {len(row)} from {data['target']}, possible Packetloss")
                     data['cost'] = self.getAvrg(row,False)
                     if data['cost'] == 65535: self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
+                    break
                 #apparently fping 4.2 and 5.0 result in different outputs, neat, so we keep this
                 elif data['target'] not in latency and not "latency" in data:
                     self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
                     data['cost'] = 65535
+                    break
         if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
         return targets
 
+    def getIPerf(self,targets):
+        random.shuffle(targets)
+        todo = []
+        #we try to iperf a link 5 times
+        for i in range(5):
+            for row in targets:
+                #skip already benchmarked links
+                if 'cost' in row and row['cost'] != 20000: continue
+                #benchmark
+                self.logger.info(f"Running IPerf to {row['target']} on {row['nic']}")
+                speed = int(self.iperf(row['target']))
+                self.logger.info(f"{speed}Mbit's for {row['target']}")
+                if speed == 0:
+                    #if we fail to run the iperf, put on list
+                    todo.append(row['target'])
+                    row['cost'] = 20000
+                    time.sleep(random.randint(2,10))
+                else:
+                    if row['target'] in todo: todo.remove(row['target'])
+                    row['cost'] = 20000 - speed
+            #when list is empty, exit
+            if not todo: break
+        return targets
+
     def genTargets(self,links):
-        result = []
+        result,peers = [],[]
         for link in links:
             nic,ip,lastByte = link[0],link[2],link[3]
             origin = ip+lastByte
@@ -48,10 +74,11 @@ class Bird(Base):
                 targetIP = f"{ip}{int(lastByte)+1}"
             else:
                 targetIP = f"{ip}{int(lastByte)-1}"
+            if "Peer" in nic: peers.append({'nic':nic,'target':targetIP,'origin':origin})
             result.append({'nic':nic,'target':targetIP,'origin':origin})
-        return result
+        return result,peers
 
-    def bird(self,override=False):
+    def bird(self,override=False,skipIperf=False):
         #check if bird is running
         bird = self.cmd("systemctl status bird")[0]
         if not "running" in bird and override == False:
@@ -59,24 +86,30 @@ class Bird(Base):
             return False
         self.logger.info("Collecting Network data")
         configs = self.cmd('ip addr show')[0]
-        links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet ({self.subnetPrefixSplitted[0]}[0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        links = re.findall(f"(({self.prefix})[A-Za-z0-9]+): <POINTOPOINT.*?inet ([0-9.]+\.)([0-9]+)",configs, re.MULTILINE | re.DOTALL)
         #filter out specific links
         links = [x for x in links if self.filter(x[0])]
         if not links: 
             self.logger.warning("No wireguard interfaces found") 
             return False
         self.logger.info("Getting Network targets")
-        nodes = self.genTargets(links)
-        self.logger.info("Latency messurement")
-        latencyData = self.getLatency(nodes)
-        if not latencyData: return False
-        #if client adjust base latency to avoid transit
-        for data in latencyData:
-            linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",data['nic'], re.MULTILINE)[0]
-            if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65535: data['cost'] += 10000
+        nodes,peers = self.genTargets(links)
+        latencyModes = [0,1]
+        if self.config['operationMode'] in latencyModes or skipIperf:
+            self.logger.info("Latency messurement")
+            latencyData = self.getLatency(nodes)
+            if not latencyData: return False
+            #if client adjust base latency to avoid transit
+            for data in latencyData:
+                linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",data['nic'], re.MULTILINE)[0]
+                if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65535: data['cost'] += 10000
+        elif self.config['operationMode'] == 2:
+            self.logger.info("IPerf messurement")
+            latencyData = self.getIPerf(nodes)
+        latencyDataNoGroup = latencyData
         latencyData = self.wg.groupByArea(latencyData)
         self.logger.info("Generating config")
-        bird = self.Templator.genBird(latencyData,self.config)
+        bird = self.Templator.genBird(latencyData,peers,self.config)
         if bird == "": 
             self.logger.warning("No bird config generated")
             return False
@@ -84,7 +117,7 @@ class Bird(Base):
         self.saveFile(bird,'/etc/bird/bird.conf')
         self.logger.info("Reloading bird")
         self.cmd("sudo systemctl reload bird")
-        return latencyData
+        return latencyDataNoGroup,peers
 
     def mesh(self):
         #check if bird is running
@@ -96,7 +129,7 @@ class Bird(Base):
         oldTargets,counter = [],0
         self.logger.info("Waiting for bird routes")
         for run in range(30):
-            targets = self.getRoutes()
+            targets = self.getRoutes(self.subnetPrefixSplitted)
             self.logger.debug(f"Run {run}/30, Counter {counter}, Got {targets} as targets")
             if oldTargets != targets:
                 oldTargets = targets
@@ -105,13 +138,6 @@ class Bird(Base):
                 counter += 1
                 if counter == 8: break
             time.sleep(5)
-        #fetch network interfaces and parse
-        configs = self.cmd('ip addr show')[0]
-        links = self.getBirdLinks(configs,self.prefix,self.subnetPrefixSplitted)
-        localIP = f"{'.'.join(self.config['subnet'].split('.')[:2])}.{self.config['id']}.1"
-        if not links: 
-            self.logger.warning("No wireguard interfaces found") 
-            return False
         #when targets empty, abort
         if not targets: 
             self.logger.warning("bird returned no routes, did you setup bird?")
@@ -124,28 +150,35 @@ class Bird(Base):
             if not ip in vxlan: 
                 self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1 dst {ip}")
                 self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1v6 dst fd10:0:{splitted[2]}::1")
-        #remove local machine from list
-        for ip in list(targets):
-            if self.resolve(localIP,ip.replace("/30",""),30):
-                targets.remove(ip)
-        #run against existing links
-        for ip in list(targets):
-            for link in links:
-                if self.resolve(link[1],ip.replace("/30",""),24):
-                    #multiple links in the same subnet
-                    if ip in targets: targets.remove(ip)
-        #run against local link names
-        for ip in list(targets):
-            for link in links:
-                splitted = ip.split(".")
-                if f"pipe{splitted[2]}" in link[0]:
-                    #multiple links in the same subnet
-                    if ip in targets: targets.remove(ip)
-        self.logger.info(f"Possible targets {targets}")
         #To prevent creating connections to new nodes joined afterwards, save state
         if os.path.isfile(f"{self.path}/configs/state.json"):
             self.logger.debug("state.json already exist, skipping")
         else:
+            #fetch network interfaces and parse
+            configs = self.cmd('ip addr show')[0]
+            links = self.getBirdLinks(configs,self.prefix,self.subnetPrefixSplitted)
+            localIP = f"{'.'.join(self.config['subnet'].split('.')[:2])}.{self.config['id']}.1"
+            if not links: 
+                self.logger.warning("No wireguard interfaces found") 
+                return False
+            #remove local machine from list
+            for ip in list(targets):
+                if self.resolve(localIP,ip.replace("/30",""),30):
+                    targets.remove(ip)
+            #run against existing links
+            for ip in list(targets):
+                for link in links:
+                    if self.resolve(link[1],ip.replace("/30",""),24):
+                        #multiple links in the same subnet
+                        if ip in targets: targets.remove(ip)
+            #run against local link names
+            for ip in list(targets):
+                for link in links:
+                    splitted = ip.split(".")
+                    if f"pipe{splitted[2]}" in link[0]:
+                        #multiple links in the same subnet
+                        if ip in targets: targets.remove(ip)
+            self.logger.info(f"Possible targets {targets}")
             #wireguard
             self.logger.info("meshing")
             results = {}

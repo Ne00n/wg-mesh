@@ -1,27 +1,38 @@
+import urllib.request, ipaddress, requests, random, string, json, time, re, os
 from Class.templator import Templator
-import urllib.request, requests, random, string, json, time, re, os
+from Class.network import Network
 from Class.base import Base
 
 class Wireguard(Base):
     Templator = Templator()
 
-    def __init__(self,path,skip=False):
+    def __init__(self,path,skip=False,onlyConfig=False):
         self.path = path
+        self.isInitial = False
         if skip: return
         if not os.path.isfile(f"{self.path}/configs/config.json"): exit("Config missing")
-        with open(f'{self.path}/configs/config.json') as f: self.config = json.load(f)
+        self.config = self.readJson(f'{self.path}/configs/config.json')
+        if onlyConfig: return
+        self.Network = Network(self.config)
         self.prefix = self.config['prefix']
-        if "subnet" in self.config:
-            self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
-            self.subnetPrefixSplitted = self.config['subnet'].split(".")
-        else:
-            self.subnetPrefix = "10.0"
-            self.subnetPrefixSplitted = [10,0]
+        self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
+        self.subnetPrefixSplitted = self.config['subnet'].split(".")
+        self.subnetPeerPrefix = ".".join(self.config['subnetPeer'].split(".")[:2])
+        self.subnetPeerPrefixSplitted = self.config['subnetPeer'].split(".")
 
     def updateConfig(self):
+        reconfigureDummy = False
         if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
         if not "listenPort" in self.config: self.config['listenPort'] = 8080
-        if not "subnet" in self.config: self.config['subnet'] = "10.0.0.0/8"
+        if not "operationMode" in self.config: self.config['operationMode'] = 0
+        if not "vxlanOffset" in self.config: self.config['vxlanOffset'] = 0
+        if not "subnet" in self.config: self.config['subnet'] = "10.0.0.0/16"
+        if not "subnetPeer" in self.config: self.config['subnetPeer'] = "172.31.0.0/16"
+        if not "subnetVXLAN" in self.config: 
+            self.config['subnetVXLAN'] = "10.0.251.0/24"
+            reconfigureDummy = True
+        if not "subnetLinkLocal" in self.config: self.config['subnetLinkLocal'] = "fe82:"
+        if not "AllowedPeers" in self.config: self.config['AllowedPeers'] = []
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
         if not os.path.isfile("/etc/bird/bgp.conf"): self.cmd('touch /etc/bird/bgp.conf')
@@ -31,7 +42,13 @@ class Wireguard(Base):
         if not "area" in self.config['bird']: self.config['bird']['area'] = 0
         if not "tick" in self.config['bird']: self.config['bird']['tick'] = 1
         if not "client" in self.config['bird']: self.config['bird']['client'] = False
-        with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(self.config, f ,indent=4)
+        if not "loglevel" in self.config['bird']: self.config['bird']['loglevel'] = "{ warning, fatal}"
+        if not "reloadInterval" in self.config['bird']: self.config['bird']['reloadInterval'] = 600
+        if not "reloadPercentage" in self.config['bird']: self.config['bird']['reloadPercentage'] = 15
+        if not "notifications" in self.config: self.config['notifications'] = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":""}
+        if not "gotifyDiag" in self.config['notifications']: self.config['notifications']['gotifyDiag'] = ""
+        self.saveJson(self.config,f"{self.path}/configs/config.json")
+        if reconfigureDummy: self.reconfigureDummy()
 
     def genKeys(self):
         keys = self.cmd('key=$(wg genkey) && echo $key && echo $key | wg pubkey')[0]
@@ -49,8 +66,7 @@ class Wireguard(Base):
 
     def loadConfigs(self,files):
         configs = []
-        for config in files:
-            with open(f'{self.path}/links/{config}') as f: configs.append(f.read())
+        for config in files: configs.append(self.readFile(f'{self.path}/links/{config}'))
         return configs
 
     def getConfigs(self,abort=True):
@@ -83,22 +99,24 @@ class Wireguard(Base):
         #config
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
-        config = {"listen":listen,"listenPort":8080,"basePort":51820,"subnet":"10.0.0.0/8","prefix":"pipe","id":id,"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
-        "bird":{"ospfv2":True,"ospfv3":True,"area":0,"tick":1,"client":False}}
-        with open(f"{self.path}/configs/config.json", 'w') as f: json.dump(config, f ,indent=4)
+        config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"vxlanOffset":0,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16",
+        "subnetVXLAN":"10.0.251.0/24","subnetLinkLocal":"fe82:","AllowedPeers":[],"prefix":"pipe","id":int(id),"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
+        "bird":{"ospfv2":True,"ospfv3":True,"area":0,"tick":1,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600,"reloadPercentage":15},"notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":""}}
+        response = self.saveJson(config,f"{self.path}/configs/config.json")
+        if not response: exit("Unable to save config.json")
         #load configs
         self.prefix = "pipe"
         configs = self.getConfigs(False)
         #dummy
         if not "dummy.sh" in configs:
-            dummyConfig = self.Templator.genDummy(id,connectivity)
+            dummyConfig = self.Templator.genDummy(config,connectivity)
             self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
             self.setInterface("dummy","up")
 
     def reconfigureDummy(self):
         self.setInterface("dummy","down")
         self.cleanInterface("dummy",False)
-        dummyConfig = self.Templator.genDummy(self.config['id'],self.config['connectivity'],self.subnetPrefix)
+        dummyConfig = self.Templator.genDummy(self.config,self.config['connectivity'])
         self.saveFile(dummyConfig,f"{self.path}/links/dummy.sh")
         self.setInterface("dummy","up")
 
@@ -106,19 +124,39 @@ class Wireguard(Base):
         for i in range(min,min + 400):
             if i not in list and i % 2 == 0: return i
 
-    def minimal(self,files,lastbyte=4,port=51820):
-        ips,ports = [],[]
+    def minimal(self,files,port=51820):
+        ports,usedSubnets,usedSubnetsv6,freeSubnet = [],[],[],""
         if port == 0: port = random.randint(1500, 55000)
         for file in files:
-            with open(f"{self.path}/links/{file}", 'r') as f: config = f.read()
+            config = self.readFile(f"{self.path}/links/{file}")
             configPort = re.findall(f"listen-port\s([0-9]+)",config, re.MULTILINE)
-            configIP = re.findall(f"ip address add dev.*?([0-9]+)\/",config, re.MULTILINE)
-            if configPort:
-                ports.append(int(configPort[0]))
-                ips.append(int(configIP[0]))
-        port = self.findLowest(port,ports)
-        lastbyte = self.findLowest(lastbyte,ips)
-        return lastbyte,port
+            configIP = re.findall(f"ip address add dev.*?([0-9.]+\/31)",config, re.MULTILINE)
+            configIPv6 = re.findall(f"ip -6 address add dev.*?([a-zA-Z0-9:]+\/127)",config,re.MULTILINE)
+            #Clients are ignored since they use a different subnet
+            if not configPort: continue
+            ports.append(int(configPort[0]))
+            usedSubnets.append(configIP[0])
+            usedSubnetsv6.append(configIPv6[0])
+        freePort = self.findLowest(port,ports)
+        try:
+            #Get available subnets
+            peerSubnets = self.Network.getPeerSubnets()
+            peerSubnetsv6 = self.Network.getPeerSubnetsv6()
+            #Convert to network objects
+            usedSubnets = {ipaddress.ip_network(subnet) for subnet in usedSubnets}
+            usedSubnetsv6 = {ipaddress.ip_network(subnet) for subnet in usedSubnetsv6}
+            #Find usable subnets
+            freeSubnets = set(peerSubnets) - usedSubnets
+            freeSubnetsv6 = set(peerSubnetsv6) - usedSubnetsv6
+            for subnet in sorted(freeSubnets, key=lambda x: int(x.network_address)):
+                freeSubnet = str(subnet)
+                break
+            for subnet in sorted(freeSubnetsv6, key=lambda x: int(x.network_address)):
+                freeSubnetv6 = str(subnet)
+                break
+            return freeSubnet,freeSubnetv6,freePort
+        except:
+            return "","",0
 
     def getInterface(self,id,type="",network=""):
         return f"{self.prefix}{network}{id}{type}"
@@ -138,20 +176,21 @@ class Wireguard(Base):
         if deleteKey:
             os.remove(f"{self.path}/links/{interface}.key")
             if os.path.isfile(f"{self.path}/links/{interface}.pre"): os.remove(f"{self.path}/links/{interface}.pre")
+            if os.path.isfile(f"{self.path}/links/{interface}.json"): os.remove(f"{self.path}/links/{interface}.json")
 
     def removeInterface(self,interface):
         self.setInterface(interface,"down")
         self.cleanInterface(interface)
 
-    def clean(self):
-        links =  self.getLinks()
+    def clean(self,ignoreJSON,ignoreEndpoint):
+        links =  self.getLinks(True,ignoreJSON)
         offline,online = self.checkLinks(links)
         for link in offline:
             data = links[link]
-            parsed, remote = self.getRemote(data['local'],self.subnetPrefixSplitted)
+            parsed, remote = self.getRemote(data['config'],self.subnetPrefixSplitted)
             print(f"Found dead link {link} ({remote})")
             pings = self.fping([data['vxlan']],3,True)
-            if not pings or not pings[data['vxlan']]:
+            if ignoreEndpoint or not pings or not pings[data['vxlan']]:
                 print(f"Unable to reach endpoint {link} ({data['vxlan']})")
                 print(f"Removing {link} ({data['vxlan']})")
                 interface = self.filterInterface(link)
@@ -163,30 +202,49 @@ class Wireguard(Base):
         for filename, row in links.items():
             if row['remote'] == remote: return filename
 
-    def filesToLinks(self,files):
+    def filesToLinks(self,files,useJSON=True):
         links = {}
         for findex, filename in enumerate(files):
             if not filename.endswith(".sh") or filename == "dummy.sh": continue
-            with open(f"{self.path}/links/{filename}", 'r') as file: config = file.read()
-            #grab wg server ip from client wg config
-            if "endpoint" in config:
-                destination = re.findall(f'({self.subnetPrefixSplitted[0]}\.{self.subnetPrefixSplitted[1]}\.[0-9]+\.)',config, re.MULTILINE)
-                if not destination:
-                    print(f"Ignoring {filename}")
-                    continue
-                destination = f"{destination[0]}1"
-            elif "listen-port" in config:
-                #grab ID from filename
-                linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
-                destination = f"{self.subnetPrefix}.{linkID}.1"
+            config = self.readFile(f"{self.path}/links/{filename}")
+            if not config:
+                print(f"{filename} is empty!")
+                continue
+            link = filename.replace(".sh","")
+            linkConfig = self.readJson(f"{self.path}/links/{link}.json")
+            subnetPrefix,subnetPrefixSplitted = self.subnetSwitch(filename)
+            if linkConfig and useJSON:
+                remotePublic = linkConfig['remotePublic']
+                destination = linkConfig['remote']
+            else:
+                remotePublic = ""
+                destination = ""
+                #grab wg server ip from client wg config
+                if "endpoint" in config:
+                    remotePublic = re.findall(f'endpoint\s(.*):',config, re.MULTILINE)[0]
+                    destination = re.findall(f'({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.)',config, re.MULTILINE)
+                    if not destination:
+                        print(f"Ignoring {filename}")
+                        continue
+                    destination = f"{destination[0]}1"
+                elif "Peer" in filename:
+                    peerIP = re.findall("Peer\s([0-9.]+)",config, re.MULTILINE)
+                    if not peerIP:
+                        print(f"Unable to figure out peer for {filename}")
+                        continue
+                    destination = peerIP[0]
+                elif "listen-port" in config:
+                    #grab ID from filename
+                    linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
+                    destination = f"{subnetPrefix}.{linkID}.1"
             #get remote endpoint
-            parsed, remote = self.getRemote(config,self.subnetPrefixSplitted)
+            local, remote = self.getRemote(config,subnetPrefixSplitted)
             #grab publickey
             publicKey = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)[0]
             #grab area
             area = re.findall(f"Area\s([0-9]+)",config,re.MULTILINE)
             area = int(area[0]) if area else 0
-            links[filename] = {"filename":filename,"vxlan":destination,"local":parsed[0],"remote":remote,'publicKey':publicKey,"area":area}
+            links[filename] = {"filename":filename,"vxlan":destination,"local":local,"remote":remote,'remotePublic':remotePublic,'publicKey':publicKey,"area":area,"config":config}
         return links
 
     def AskProtocol(self,dest,token=""):
@@ -194,38 +252,45 @@ class Wireguard(Base):
         req = self.call(f'{dest}/connectivity',{"token":token})
         if req == False: return False
         if req.status_code != 200:
-            print("Failed to request connectivity info, maybe wrong version?")
+            print("Failed to request connectivity info")
             return False
         data = req.json()
         return data
 
-    def connect(self,dest,token="",linkType="",port=51820):
+    def subnetSwitch(self,network=""):
+        if "Peer" in network:
+            return self.subnetPeerPrefix,self.subnetPeerPrefixSplitted
+        else:
+            return self.subnetPrefix,self.subnetPrefixSplitted
+
+    def connect(self,dest,token="",linkType="",port=51820,network=""):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
         #initial check
         configs = self.cmd('ip addr show')[0]
-        links = self.getBirdLinks(configs,self.prefix,self.subnetPrefixSplitted)
-        isInitial = False if links else True
+        subnetPrefix,subnetPrefixSplitted = self.subnetSwitch(network)
+        links = self.getBirdLinks(configs,self.prefix,subnetPrefixSplitted)
+        self.isInitial = False if links else True
+        status = {"v4":False,"v6":False}
         #ask remote about available protocols
         data = self.AskProtocol(dest,token)
-        if not data: return False
+        if not data: return status
         #start with the protocol which is available
         if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']: isv6 = False
         elif data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']: isv6 = True
         #if neither of these are available, leave it
-        else: return False
+        else: return status
         #linkType
         if linkType == "":
             if self.config['defaultLinkType'] in data['linkTypes']:
                 linkType = self.config['defaultLinkType']
             else:
                 linkType = "default"
-        status = {"v4":False,"v6":False}
         for run in range(2):
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
-            "ipv6":isv6,"initial":isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":self.subnetPrefix}
+            "ipv6":isv6,"initial":self.isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
             if port != 51820: payload["port"] = port
             req = self.call(f'{dest}/connect',payload)
             if req == False: return status
@@ -237,13 +302,15 @@ class Wireguard(Base):
                 interfaceType = "v6" if isv6 else ""
                 connectivity =  f"[{resp['connectivity']['ipv6']}]"  if isv6 else resp['connectivity']['ipv4']
                 #interface
-                interface = self.getInterface(resp['id'],interfaceType)
+                interface = self.getInterface(resp['id'],interfaceType,network)
                 #generate config
-                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,self.subnetPrefix)
+                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,subnetPrefix,data['subnetPrefix'])
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
                 self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
+                linkConfig = {'remote':f"{data['subnetPrefix']}.{resp['id']}.1",'remotePublic':connectivity.replace("[","").replace("]",""),"linkType":linkType}
+                self.saveJson(linkConfig,f"{self.path}/links/{interface}.json")
                 self.setInterface(interface,"up")
                 status["v6" if isv6 else "v4"] = True
             else:
@@ -257,17 +324,13 @@ class Wireguard(Base):
             isv6 = True
         return status
 
-    def updateServer(self,link,data):
-        with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
-        config = re.sub(f"listen-port ([0-9]+)", f"listen-port {data['port']}", config, 0, re.MULTILINE)
-        self.saveFile(config,f"{self.path}/links/{link}.sh")
-
-    def updateClient(self,link,port):
-        with open(f"{self.path}/links/{link}.sh", 'r') as file: config = file.read()
-        parsed = re.findall(f"(endpoint.*?:)([0-9]+)",config, re.MULTILINE)
-        oldEndPoint = ''.join(parsed[0])
-        newEndPoint = f"{parsed[0][0]}{port}"
-        config = re.sub(oldEndPoint, newEndPoint, config, 0, re.MULTILINE)
+    def updateLink(self,link,data):
+        config = self.readFile(f"{self.path}/links/{link}.sh")
+        if 'port' in data: config = re.sub(f"listen-port ([0-9]+)", f"listen-port {data['port']}", config, 0, re.MULTILINE)
+        if 'xorKey' in data: 
+            xorKey = data['xorKey']
+            config = re.sub(f'--keys."(.*?)"', f'--keys "{xorKey}"', config, 0, re.MULTILINE)
+        if 'cost' in data: self.setCost(link,data['cost'])
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
     def getUsedIDs(self):
@@ -335,11 +398,13 @@ class Wireguard(Base):
             if not details['vxlan'] in terminate: continue
             self.disconnect([link])
 
-    def getLinks(self):
+    def getFiles(self):
         files = os.listdir(f"{self.path}/links/")
-        files = [x for x in files if self.filter(x)]
-        links = self.filesToLinks(files)
-        if not links: exit("No links found.")
+        return [x for x in files if self.filter(x)]
+
+    def getLinks(self,shouldExit=True,useJSON=True):
+        links = self.filesToLinks(self.getFiles(),useJSON)
+        if not links and shouldExit: exit("No links found.")
         return links
 
     def groupByArea(self,latencyData):
@@ -391,7 +456,9 @@ class Wireguard(Base):
             data = currentLinks[filename]
             print(f'Calling http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect')
             req = self.call(f'http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
-            if req == False and force == False: continue
+            if req == False and force == False: 
+                status[filename] = False
+                continue
             if force or req.status_code == 200:
                 interface = self.filterInterface(filename)
                 self.removeInterface(interface)
@@ -411,3 +478,19 @@ class Wireguard(Base):
             print("state.json has been reset!")
             os.remove(f"{self.path}/configs/state.json")
         return status
+
+    def setCost(self,link,cost=0):
+        if os.path.isfile(f"{self.path}/links/{link}.sh"):
+            if not os.path.exists(f"{self.path}/pipe"):
+                print("Pipe not found, did you start wgmesh-bird?")
+                return
+            with open(f"{self.path}/pipe", 'w') as f: f.write(json.dumps({"link":link,"cost":cost}))
+            return True
+        else:
+            print(f"Unable to find file: {self.path}/links/{link}.sh")
+
+    def getConfig(self):
+        return self.config
+
+    def getInitial(self):
+        return self.isInitial

@@ -1,5 +1,5 @@
 [Unit]
-Description=wgmesh service
+Description=wgmesh-diag service
 Wants=network-online.target wgmesh-pipe.service
 After=network-online.target wgmesh-pipe.service
 [Service]
@@ -9,6 +9,7 @@ Type=simple
 Restart=on-failure
 StandardOutput=null
 WorkingDirectory=/opt/wg-mesh
-ExecStart=/usr/bin/python3 api.py
+WorkingDirectory=/opt/wg-mesh/cron
+ExecStart=/usr/bin/python3 diag.py
 [Install]
 WantedBy=multi-user.target

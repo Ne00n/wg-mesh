@@ -15,21 +15,27 @@ routes = base.cmd("birdc show route")[0]
 targets = re.findall(f"(10\.0\.[0-9]+\.0\/30)",routes, re.MULTILINE)
 print("Getting Connection info")
 data = {}
-for target in targets:
+
+for index, target in enumerate(targets):
     target = target.replace("0/30","1")
+    print(f"Getting {index} of {len(targets) -1}")
     resp = wireguard.AskProtocol(f'http://{target}:8080','')
     if not resp: continue
-    data[target] = resp['connectivity']['ipv4']
+    if not "geo" in resp: 
+        print(f"No geo from {target}")
+        continue
+    if not resp: 
+        print(f"No response from {target}")
+        continue
+    data[target] = resp
+
+sortedData = dict(sorted(data.items(), key=lambda item: item[1]['geo']['country']))
 
 build = {}
-print("Fetching IP info")
-for localIP,externalIP in data.items():
-    resp = requests.get(url=f"http://ip-api.com/json/{externalIP}?fields=continent,country,city,countryCode,region")
-    data = resp.json()
-    if not data['continent'] in build: build[data['continent']] = {}
-    if not data['city'] in build[data['continent']]: build[data['continent']][data['city']] = []
-    build[data['continent']][data['city']].append([localIP,externalIP,data['countryCode']])
-    time.sleep(2)
+for target,data in sortedData.items():
+    if not data['geo']['continent'] in build: build[data['geo']['continent']] = {}
+    if not data['geo']['city'] in build[data['geo']['continent']]: build[data['geo']['continent']][data['geo']['city']] = []
+    build[data['geo']['continent']][data['geo']['city']].append([target,data['geo']['countryCode']])
 
 smokeping = """
 
@@ -52,15 +58,16 @@ menu = {continent}
 title = {continent}
 
 """
-    for city, data in details.items():
-        id = data[0][0].split(".")[2:3][0]
-        smokeping += f"""
-++ {data[0][2]}{id}
+    for city, nodes in details.items():
+        for node in nodes:
+            id = str(node[0].split(".")[2:3][0]).zfill(3)
+            smokeping += f"""
+    ++ {node[1]}{id}
 
-menu = {data[0][2]}{id} | {city}
-title = {data[0][2]}{id} | {city}
-host = {data[0][0]}
-alerts = startloss,someloss,bigloss,rttdetect,hostdown,lossdetect
-"""
+    menu = {node[1]}{id} | {city}
+    title = {node[1]}{id} | {city}
+    host = {node[0]}
+    alerts = startloss,someloss,bigloss,rttdetect,hostdown,lossdetect
+    """
 
 base.saveFile(smokeping,"/etc/smokeping/config.d/Targets")

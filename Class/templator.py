@@ -1,23 +1,25 @@
-import time
+import ipaddress, time
 
 class Templator:
 
-    def genServer(self,interface,config,payload,serverIP,serverPort,wgobfsSharedKey=""):
-        clientPublicKey,linkType,prefix,area = payload['clientPublicKey'],payload['linkType'],payload['prefix'],payload['area']
+    def genServer(self,interface,config,payload,freeSubnet,freeSubnetv6,serverPort,wgobfsSharedKey=""):
+        clientPublicKey,linkType,prefix,area,connectivity = payload['clientPublicKey'],payload['linkType'],payload['prefix'],payload['area'],payload['connectivity']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
+        wgPrefix = "awg" if linkType == "amneziawg" else "wg"
+        wgProtocol = "amneziawg" if linkType == "amneziawg" else "wireguard"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
-        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I OUTPUT -p udp --dport {serverPort} -j XOR --keys "{wgobfsSharedKey}";\n'
-        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I INPUT -p udp --sport {serverPort} -j XOR --keys "{wgobfsSharedKey}";\n'
+        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I OUTPUT -p udp -d {connectivity["ipv4"]} -j XOR --keys "{wgobfsSharedKey}";\n'
+        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I INPUT -p udp -s {connectivity["ipv4"]} -j XOR --keys "{wgobfsSharedKey}";\n'
         wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
 #Area {area}
 if [ "$1" == "up" ];  then
     {wgobfs}
-    sudo ip link add dev {interface} type wireguard
-    sudo ip address add dev {interface} {prefix}.{config["id"]}.{serverIP}/31
-    sudo ip -6 address add dev {interface} fe82:{config["id"]}::{serverIP}/127
-    sudo wg set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {clientPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0
+    sudo ip link add dev {interface} type {wgProtocol}
+    sudo ip address add dev {interface} {freeSubnet}
+    sudo ip -6 address add dev {interface} {freeSubnetv6}
+    sudo {wgPrefix} set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {clientPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
 else
@@ -26,22 +28,24 @@ else
 fi'''
         return template
 
-    def genClient(self,interface,config,resp,serverIPExternal,linkType="default",prefix="10.0",):
-        serverID,serverIP,serverPort,serverPublicKey,wgobfsSharedKey = resp['id'],resp['lastbyte'],resp['port'],resp['publicKeyServer'],resp['wgobfsSharedKey']
+    def genClient(self,interface,config,resp,serverIPExternal,linkType="default",prefix="10.0",peerPrefix="172.31"):
+        serverID,freeSubnet,freeSubnetv6,serverPort,serverPublicKey,wgobfsSharedKey = resp['id'],resp['freeSubnet'],resp['freeSubnetv6'],resp['freePort'],resp['publicKeyServer'],resp['wgobfsSharedKey']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
+        wgPrefix = "awg" if linkType == "amneziawg" else "wg"
+        wgProtocol = "amneziawg" if linkType == "amneziawg" else "wireguard"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
-        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I OUTPUT -p udp --dport {serverPort} -j XOR --keys "{wgobfsSharedKey}";\n'
-        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I INPUT -p udp --sport {serverPort} -j XOR --keys "{wgobfsSharedKey}";\n'
+        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I OUTPUT -p udp -d {serverIPExternal} -j XOR --keys "{wgobfsSharedKey}";\n'
+        if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I INPUT -p udp -s {serverIPExternal} -j XOR --keys "{wgobfsSharedKey}";\n'
         wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
 #Area {config['bird']["area"]}
 if [ "$1" == "up" ];  then
     {wgobfs}
-    sudo ip link add dev {interface} type wireguard
-    sudo ip address add dev {interface} {prefix}.{serverID}.{int(serverIP)+1}/31
-    sudo ip -6 address add dev {interface} fe82:{serverID}::{int(serverIP)+1}/127
-    sudo wg set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0 endpoint {serverIPExternal}:{serverPort}
+    sudo ip link add dev {interface} type {wgProtocol}
+    sudo ip address add dev {interface} {freeSubnet}
+    sudo ip -6 address add dev {interface} {freeSubnetv6}
+    sudo {wgPrefix} set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0 endpoint {serverIPExternal}:{serverPort}
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
 else
@@ -50,7 +54,17 @@ else
 fi'''
         return template
 
-    def genDummy(self,serverID,connectivity,prefix="10.0"):
+    def getNodeVXLAN(self,config):
+        vxlanSubnet = ipaddress.ip_network(config['subnetVXLAN'])
+        for index,host in enumerate(list(vxlanSubnet.hosts()),start=1):
+            #if /23 is used, override 0 to 1 since the VXLAN can't use a zero, 1 can't be used anyway since blocked by collision detection
+            if index == int(config['id']) or (int(config['id']) == 0 and index == 1): return f"{str(host)}/24"
+
+    def genDummy(self,config,connectivity):
+        serverID = int(config['id'])
+        serverID += config['vxlanOffset']
+        vxlanID = config['subnetVXLAN'].split(".")[2]
+        prefix = ".".join(config['subnet'].split(".")[:2])
         masquerade = ""
         if connectivity['ipv4']: masquerade += "sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
         if connectivity['ipv6']: masquerade += "sudo ip6tables -t nat -A POSTROUTING -o $(ip -6 route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
@@ -63,8 +77,8 @@ if [ "$1" == "up" ];  then
     sudo ip link add vxlan1 type vxlan id 1 dstport 1789 local {prefix}.{serverID}.1;
     sudo ip -6 link add vxlan1v6 type vxlan id 2 dstport 1790 local fd10:0:{serverID}::1;
     sudo ip link set vxlan1 up; sudo ip -6 link set vxlan1v6 up;
-    sudo ip addr add {prefix}.251.{serverID}/24 dev vxlan1;
-    sudo ip -6 addr add fd10:251::{serverID}/64 dev vxlan1v6;
+    sudo ip addr add {self.getNodeVXLAN(config)} dev vxlan1;
+    sudo ip -6 addr add fd10:{vxlanID}::{serverID}/64 dev vxlan1v6;
 else
     {masqueradeReverse}
     sudo ip addr del {prefix}.{serverID}.1/30 dev lo;
@@ -73,119 +87,80 @@ else
 fi'''
         return template
 
-    def genBird(self,latency,config):
-        isRouter = "yes" if config['bird']['client'] else "no"
-        routerID = f"{'.'.join(config['subnet'].split('.')[:2])}.{config['id']}.1"
-        template = f'''log syslog all;
-router id {routerID}; #updated '''+str(int(time.time()))+'''
-
-protocol device {
-    scan time 10;
+    def genBGPPeer(self,subnetPrefix,peer):
+        export = f"{subnetPrefix}.0.0/16"
+        return '''
+protocol bgp '''+peer["nic"]+''' {
+        ipv4 {
+                preference 175;
+                import all;
+                export where net ~ [ '''+export+''' ];
+        };
+        local as '''+"".join(peer["origin"].split(".")[2:])+''';
+        neighbor '''+peer["target"]+''' as '''+"".join(peer["target"].split(".")[2:])+''';
 }
-'''
+        '''
+
+    def genInterfaceOSPF(self,data,ospfType=2):
+        nic = data['nic']
+        template = f'\n\t\tinterface "{nic}" {{' 
+        template += '\n\t\t\tstub;' if "Peer" in data ['nic'] else '\n\t\t\ttype ptmp;'
+        if ospfType == 2 and not "Peer" in data['nic']: template += f"\n\t\t\tneighbors {{ {data['target']}; }};"
+        template += f"\n\t\t\tcost {data['cost']};\n\t\t}};"
+        return template
+
+    def genBird(self,latency,peers,config):
+        isRouter = "yes" if config['bird']['client'] else "no"
+        subnetPrefix = ".".join(config['subnet'].split(".")[:2])
+        routerID = f"{subnetPrefix}.{config['id']}.1"
+        logLevels = f"{config['bird']['loglevel']}"
+        template = f'log "/etc/bird/bird.log" {logLevels};\nrouter id {routerID}; #generated {int(time.time())}'
+        template += "\n\nprotocol device {\n\tscan time 10;\n}\n"
+
         localPTP = ""
         for area,latencyData in latency.items():
             for data in latencyData:
                 if localPTP != "":
                     localPTP += ","
                 localPTP += data['target']+"/32-"
-        template += '''
-function avoid_local_ptp() {
-### Avoid fucking around with direct peers
-return net ~ [ '''+localPTP+''' ];
-}
 
-protocol direct {
-    ipv4;
-    ipv6;
-    interface "lo";
-    interface "tunnel*";
-}
+        template += f"\nfunction avoid_local_ptp() {{\n\t### Avoid fucking around with direct peers\n\treturn net ~ [ {localPTP} ];\n}}"
+        template += '\n\nprotocol direct {\n\tipv4;\n\tipv6;\n\tinterface "lo";\n\tinterface "tunnel*";\n}'
+        template += f'\n\nprotocol static {{\n\tipv4;\n\troute {subnetPrefix}.0.0/16 unreachable;\n\tinclude "static.conf";\n\n}}'
+        template += '\ninclude "bgp.conf";'
 
-protocol static {
-    ipv4;
-    include "static.conf";
-}
+        #BGP Peers
+        for peer in peers:
+            template += self.genBGPPeer(subnetPrefix,peer)
 
-include "bgp.conf";
-
-protocol kernel {
-	ipv4 {
-	    export filter { '''
-        template += 'krt_prefsrc = '+routerID+';'
-        template += '''
-        if avoid_local_ptp() then reject;
-            accept;
-        };
-    };
-}
-
-protocol kernel {
-    ipv6 { export all; };
-}'''
+        template += "\nprotocol kernel {\n\tipv4 {\n\t\texport filter { "
+        template += f"\n\t\t\tkrt_prefsrc = {routerID};"
+        template += "\n\t\t\tif avoid_local_ptp() then reject;\n\t\t\taccept;\n\t\t};\n\t};\n}"
+        template += "\n\nprotocol kernel {\n\tipv6 { export all; };\n}"
 
         if config['bird']['ospfv2']:
-            template += '''
-filter export_OSPF {
-    if net ~ [ 10.0.252.0/24+ ] then reject; #Source based Routing for Clients
-    if net ~ [ 172.16.0.0/24+ ] then reject; #Wireguard VPN
-    if net ~ [ 127.0.0.0/8+ ] then reject; #loopback
-    if source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;
-    reject;
-}
+            template += "\n\nfilter export_OSPF {\n\tif source ~ [ RTS_DEVICE ] then accept;"
+            for peerSubnet in config['AllowedPeers']:
+                template += f"\n\tif net ~ [ {peerSubnet} ] then accept;" 
+            template += "\n\treject;\n}"
+            template += f"\n\nprotocol ospf {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
+            template += f"\n\tipv4 {{\n\t\timport all;\n\t\texport filter export_OSPF;\n\t}};"
+            for area,latencyData in latency.items():
+                template += f"\n\tarea {area} {{"
+                for data in latencyData:
+                    template += self.genInterfaceOSPF(data)
+                template += "\n\t};"
+            template += "\n}"
 
-protocol ospf {
-    tick '''+str(config['bird']['tick'])+''';
-    graceful restart yes;
-    stub router '''+isRouter+''';
-    ipv4 {
-        import all;
-        export filter export_OSPF;
-    };'''
-            for area,latencyData in latency.items():
-                template += """
-    area """+str(area)+""" {"""
-                for data in latencyData:
-                    template += '''
-        interface "'''+str(data['nic'])+'''" {
-                type ptmp;
-                neighbors {
-                '''+data['target']+''';
-                };
-                cost '''+str(data['cost'])+'''; #'''+data['target']+'''E
-        };
-            '''
-            template += """
-    };"""
-            template += """
-}"""
         if config['bird']['ospfv3']:
-            template += """
-filter export_OSPFv3 {
-    if (net.len > 48) then reject;
-    if source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;
-    reject;
-}
-protocol ospf v3 {
-    tick """+str(config['bird']['tick'])+""";
-    graceful restart yes;
-    stub router """+isRouter+""";
-    ipv6 {
-        export filter export_OSPFv3;
-    };"""
+            template += f"\n\nfilter export_OSPFv3 {{\n\tif (net.len > 48) then reject;\n\tif source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;\n\treject;\n}}"
+            template += f"\n\nprotocol ospf v3 {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
+            template += f"\n\tipv6 {{\n\t\texport filter export_OSPFv3;\n\t}};"
             for area,latencyData in latency.items():
-                template += """
-    area """+str(area)+""" {"""
+                template += f"\n\tarea {area} {{"
                 for data in latencyData:
-                    template += '''
-        interface "'''+str(data['nic'])+'''" {
-            type ptmp;
-            cost '''+str(data['cost'])+'''; #'''+data["target"]+'''E
-        };
-            '''
-                template += """
-    };"""
-            template += """
-}"""
+                    template += self.genInterfaceOSPF(data,3)
+                template += "\n\t};"
+            template += "\n}\n"
         
         return template

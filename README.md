@@ -14,7 +14,7 @@
 - bird2 (Routing, OSPF)
 
 **Network**<br />
-- By default 10.0.x.x/16 is used.<br>
+- By default 10.0.x.x/16.<br>
 - 10.0.id.1 Node /30<br>
 - 10.0.id.4-255 peers /31<br>
 - 10.0.251.1-255 vxlan /32<br>
@@ -30,74 +30,64 @@
 - [x] Active Latency optimisation
 - [x] Packet loss detection & rerouting
 - [x] High Jitter detection & rerouting
-- [x] Support for wgobfs (obfuscated wireguard)
+- [x] Support for wgobfs, ipt_xor and AmneziaWG
+- [x] Push notifications via gotify
 
 **Requirements**<br>
 - Debian or Ubuntu
 - Python 3.9 or higher
-- Kernel 5.4+ (wg kernel module, no user space support yet)
+- Kernel 5.4+ (wg kernel module, no user space support)
 
 Keep in mind that some containers such as OVZ or LXC, depending on kernel version and host configuration have issues with bird and/or wireguard.<br>
 
 **Example 2 nodes**<br>
 The ID needs to be unique, otherwise it will result in collisions.<br>
 Keep in mind, ID's 200 and higher are reserved for clients, they won't get meshed.<br>
+
 Public is used to expose the API to all interfaces, by default it listens only local on 10.0.id.1.<br>
+Use Public only for testing! since everything is transmitted unencrypted, otherwise use a reverse proxy with TLS.<br>
+
+Depending on what Subnet you are using, you either have to increment the ID's by 2 (10.) or by 1 (192/172.)<br>
+If 10.0.x.x/16 is used (default), a /23 is reserved per node, hence you have to increment it by 2.<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 0 public
 #Install wg-mesh and initialize the second node
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
 ```
-Grab the Token from Node1<br>
+Grab the Token from Node 0<br>
 ```
 wgmesh token
 ```
-Connect Node2 to Node1
+Connect Node 2 to Node 0
 ```
-wgmesh connect http://<node2IP>:8080 <token>
+wgmesh connect http://<node0IP>:8080 <token>
 ```
-After connecting successfully, a dummy.sh will be created, which assigns a 10.0.nodeID.1/30 to lo.<br>
-This will be picked up by bird, so on booth nodes on 10.0.1.1 and 10.0.2.1 should be reachable after bird ran.<br>
+After connecting successfully, a dummy.sh will be created, which assigns a 10.0.nodeID.0/30 to lo.<br>
+This will be picked up by bird, so on booth nodes on 10.0.0.1 and 10.0.2.1 should be reachable after bird ran.<br>
 Regarding NAT or in general behind Firewalls, the "connector" is always a Client, the endpoint the Server.<br>
-
-**Wireguard Port**<br>
-If you like to change the default wireguard port.
-```
-wgmesh set basePort 4000 && systemctl restart wgmesh
-#or 0 for random
-wgmesh set basePort 0 && systemctl restart wgmesh
-```
-
-**Prevent meshing**<br>
-In case you want to stop a client/server from automatically meshing into the network.<br>
-You can simply block it by creating an empty state.json.<br>
-```
-wgmesh disable mesh && systemctl restart wgmesh
-```
-This needs to be done before you connecting to the network.<br>
 
 **Example 2+ nodes**<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 1 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 0 public
 #Install wg-mesh and initialize the second node
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
 #Install wg-mesh and initialize the third node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 3
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 4
 ```
-Grab the Token from Node 1 with
+Grab the Token from Node 0 with 
 ```
 wgmesh token
 ```
-Connect Node 2 to Node 1
+Connect Node 2 to Node 0
 ```
-wgmesh connect http://<node1IP>:8080 <token>
+wgmesh connect http://<node0IP>:8080 <token>
 ```
 Before you connect the 3rd node, make sure Node 2 already has fully connected.<br>
-Connect Node 3 to Node 1
+Connect Node 4 to Node 0
 ```
-wgmesh connect http://<node1IP>:8080 <token>
+wgmesh connect http://<node0IP>:8080 <token>
 ```
 Wait for bird to pickup all routes + mesh buildup.<br>
 You can check it with<br>
@@ -108,32 +98,6 @@ cat /opt/wg-mesh/configs/state.json
 ```
 All 3 nodes should be reachable under 10.0.nodeID.1<br>
 
-**API**<br>
-Currently the webservice / API is exposed at ::8080, without TLS, use a reverse proxy for TLS<br>
-Internal requests from 10.0.0.0/8 don't need a token (connectivity, connect and update).<br>
-- /connectivity needs a valid token, otherwise will refuse to provide connectivity info<br>
-- /connect needs a valid token, otherwise the service will refuse to setup a wg link<br>
-- /update needs a valid wg public key and link name, otherwise it will not update the wg link<br>
-- /disconnect needs a valid wg public key and link name, otherwise will refuse to disconnect a specific link<br>
-
-**Shutdown/Startup**
-```
-wgmesh down
-wgmesh up && systemctl restart wgmesh
-```
-
-**Disconnect**<br>
-To disconnect all links on a Node
-```
-wgmesh disconnect
-#disconnect all links despite untable to reach API endpoint
-wgmesh disconnect force
-#disconnect a specific link e.g pipe250, pipe250v6
-wgmesh disconnect pipe250
-#disconnect a specific link with force
-wgmesh disconnect pipe250 force
-```
-
 **Removal**
 ```
 wgmesh down && bash /opt/wg-mesh/deinstall.sh
@@ -143,22 +107,6 @@ wgmesh down && bash /opt/wg-mesh/deinstall.sh
 ```
 wgmesh update && wgmesh migrate && systemctl restart wgmesh && systemctl restart wgmesh-bird
 ```
-
-**wgobfs**<br>
-Install wgbofs with
-```
-bash /opt/wg-mesh/tools/wgobfs.sh
-```
-To enable wgobfs connections run.<br>
-```
-#add wgobfs to linkTypes
-wgmesh enable wgobfs 
-#To override the defaultLinkType, if you want to prefer wgobfs over normal wg.
-wgmesh set defaultLinkType wgobfs
-systemctl restart wgmesh
-```
-
-If the remote has wgbofs not in linkeTypes, default will be used.<br>
 
 **Limitations**<br>
 Connecting multiple nodes at once, without waiting for the other node to finish, will result in double links.<br>
@@ -173,29 +121,3 @@ This will drop long lived TCP connections.
 **Known Issues**<br>
 - A client that does not have a direct connection to a newly added server, is stuck with a old outdated vxlan configuration.<br> 
 This can be "fixed" by reloading wgmesh-bird.<br>
-
-**Troubleshooting**
-- You can check the logs/<br>
-- wg-mesh is very slow<br>
-sudo requires a resolvable hostname
-- wg-mesh is not meshing<br>
-bird2 needs to be running / hidepid can block said access to check if bird is running.<br>
-- sudo is asking for authentication<br>
-reinstall sudo, likely old config file (debian 10)<br>
-- RTNETLINK answers: Address already in use<br>
-Can also mean the Port wg tries to listen, is already in use. Check your existing wg links.<br>
-- packetloss and/or higher latency inside the wg-mesh network but not on the uplink/network itself
-wireguard needs cpu time, check the load on the machine and check if you see any CPU steal.<br>
-This will likely explain what you see for example on Smokeping, you can try to reduce the links to lower the cpu usage.<br>
-- duplicate vxlan mac address / vxlan mac flapping<br>
-If you are using a virtual machine, check your machine-id if they are the same.<br>
-You can check it with or tools/machine-id.py<br>
-```
-cat /etc/machine-id
-```
-Which can be easily fixed by running.<br>
-```
-rm -f /etc/machine-id && rm -f /var/lib/dbus/machine-id
-dbus-uuidgen --ensure && systemd-machine-id-setup
-reboot
-```

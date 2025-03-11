@@ -1,4 +1,4 @@
-import subprocess, requests, netaddr, time, json, re, os
+import subprocess, requests, netaddr, shutil, time, json, re, os
 from ipaddress import ip_network
 
 class Base:
@@ -15,12 +15,12 @@ class Base:
         t = ip_network(target, strict = False).network_address
         return o == t
 
-    def getRemote(self,local,subnetPrefixSplitted):
-        parsed = re.findall(f'(({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.)([0-9]+)\/31)',local, re.MULTILINE)[0]
+    def getRemote(self,config,subnetPrefixSplitted):
+        parsed = re.findall(f'(({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.)([0-9]+)\/31)',config, re.MULTILINE)[0]
         lastOctet = int(parsed[2])
         return parsed,f"{parsed[1]}{lastOctet-1}" if self.sameNetwork(f"{parsed[1]}{lastOctet-1}",parsed[0]) else f"{parsed[1]}{lastOctet+1}"
 
-    def readConfig(self,file):
+    def readJson(self,file):
         if os.path.isfile(file):
             try:
                 with open(file) as handle: return json.loads(handle.read())
@@ -29,17 +29,34 @@ class Base:
         else:
             return {}
 
+    def readFile(self,file):
+        if os.path.isfile(file):
+            try:
+                with open(file, 'r') as file: return file.read()
+            except Exception as e:
+                return ""
+        else:
+            return ""
+
     def saveFile(self,data,path):
+        #Prevent file corruption
+        total, used, free = shutil.disk_usage("/")
+        usagePercent = (used / total) * 100
+        if usagePercent >= 98: return False
         try:
             with open(path, 'w') as file: file.write(data)
-        except:
+        except Exception as e:
             return False
         return True
 
     def saveJson(self,data,path):
+        #Prevent file corruption
+        total, used, free = shutil.disk_usage("/")
+        usagePercent = (used / total) * 100
+        if usagePercent >= 98: return False
         try:
             with open(path, 'w') as f: json.dump(data, f, indent=4)
-        except:
+        except Exception as e:
             return False
         return True
 
@@ -58,7 +75,8 @@ class Base:
         return ( ( ipDecimal & netmaskDecimal ) == ( rangeDecimal & netmaskDecimal ) )
 
     def filter(self,entry):
-        if "Ping" in entry: return False
+        ignoreNetworks = ["Ping"]
+        if any(network in entry for network in ignoreNetworks): return False
         return True
 
     def getAvrg(self,row,weight=True):
@@ -79,22 +97,35 @@ class Base:
     def fping(self,targets,pings=3,dropTimeout = False):
         fping = f"fping -c {pings} "
         fping += " ".join(targets)
-        result = self.cmd(fping)[0]
-        parsed = re.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result, re.MULTILINE)
+        result = self.cmd(fping)
+        parsed = re.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result[0], re.MULTILINE)
+        unreachable = re.findall("ICMP Host Unreachable from [0-9.]+ for ICMP Echo sent to ([0-9.]+)",result[1], re.MULTILINE)
         if not parsed: return {}
         latency =  {}
         for ip,ms,loss in parsed:
             if ip not in latency: latency[ip] = []
             if dropTimeout and ms == "timed out": continue
             latency[ip].append([ms,loss])
+        for ip in unreachable:
+            if ip not in latency: latency[ip] = []
+            latency[ip].append([65000,100])
         return latency
 
-    def call(self,url,payload,method="POST",max=5):
+    def iperf(self,target):
+        iperf = f"iperf3 -c {target}"
+        result = self.cmd(iperf)[0]
+        parsed = re.findall("([0-9]+) Mbits\/sec.*?sender",result, re.MULTILINE)
+        if not parsed: return 0
+        return parsed[0]
+
+    def call(self,url,payload,method="POST",headers={},max=5):
         allowedCodes = [200,412]
         for run in range(1,max):
             try:
                 if method == "POST":
                     req = requests.post(url, json=payload, timeout=(5,5))
+                elif method == "GET":
+                    req = requests.get(url, headers=headers, timeout=(5,5))
                 else:
                     req = requests.patch(url, json=payload, timeout=(5,5))
                 if req.status_code in allowedCodes: return req
@@ -124,3 +155,8 @@ class Base:
                 response += f"{entry}" if response.endswith("\n") or response == "" else f" {entry}"
             if i < len(list) -1: response += "\n"
         return response
+
+    def notify(self,server,title,message,priority=5):
+        payload = {'title':title, 'message':message, 'priority':priority}
+        req = self.call(server,payload,"POST")
+        if req: return True
