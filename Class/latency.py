@@ -173,9 +173,6 @@ class Latency(Base):
                     self.logger.debug(f"{datetime.now().minute} not in window.")
             #however save any packetloss or jitter detected
             self.saveJson(self.network,f"{self.path}/configs/network.json")
-            time.sleep(5)
-        else:
-            time.sleep(10)
         return self.noWait
 
     def setLatencyData(self,latencyData,peers):
