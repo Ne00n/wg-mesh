@@ -27,8 +27,6 @@ class Latency(Base):
         avrg = self.getAvrg(row)
         historyRaw, history = self.network[interface]['latency'][-60:], []
         for ping in historyRaw: history.append(ping)
-        #we multiplied the values before, to keep the precision
-        history.append(avrg / 10)
         #generate grace
         if len(history) >= 5:
             mean = sum(history) / len(history)
