@@ -24,16 +24,16 @@ class Latency(Base):
         if not self.network: self.network = {"created":int(time.time()),"updated":0}
 
     def checkJitter(self,row,interface):
-        avrg = self.getAvrg(row)
         historyRaw, history = self.network[interface]['latency'][-60:], []
         for ping in historyRaw: history.append(ping)
         #generate grace
         if len(history) >= 5:
-            mean = sum(history) / len(history)
+            avrg = mean = sum(history) / len(history)
             variance = sum((x - mean) ** 2 for x in history) / len(history)
             stdDev = max(variance ** 0.5, 0.5)
             dynamicGrace = stdDev * 2
         else:
+            avrg = self.getAvrg(row)
             if avrg < 20:
                 gracePercent = 0.25
             elif avrg < 50:
