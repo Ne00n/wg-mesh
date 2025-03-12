@@ -23,11 +23,37 @@ class Latency(Base):
         self.network = self.readJson(f"{path}/configs/network.json")
         if not self.network: self.network = {"created":int(time.time()),"updated":0}
 
-    def checkJitter(self,row,avrg):
-        grace = 20
+    def checkJitter(self,row,interface):
+        avrg = self.getAvrg(row)
+        historyRaw, history = self.network[interface]['latency'][-20:], []
+        #we multiplied the values before, to keep the precision
+        for ping in historyRaw: history.append(ping / 10)
+        history.append(avrg / 10)
+        #generate grace
+        if len(history) >= 5:
+            mean = sum(history) / len(history)
+            variance = sum((x - mean) ** 2 for x in history) / len(history)
+            stdDev = max(variance ** 0.5, 0.5)
+            dynamicGrace = std_dev * 2
+        else:
+            if avrg < 20:
+                gracePercent = 0.25
+            elif avrg < 50:
+                gracePercent = 0.20
+            elif avrg < 100:
+                gracePercent = 0.15
+            else:
+                gracePercent = 0.10
+            dynamicGrace = max(avrg * gracePercent, 1.0)
+
+        minGrace = 5
+        maxGrace = 25
+        #cap dynamicGrace
+        dynamicGrace = max(minGrace, min(dynamicGrace, maxGrace))
+
         for entry in row:
             if entry[0] == "timed out": continue
-            if float(entry[0]) > avrg + grace: return True,round(float(entry[0]) - (avrg + grace),2)
+            if float(entry[0]) > avrg + dynamicGrace: return True,round(float(entry[0]) - (avrg + dynamicGrace),2)
         return False,0
 
     def reloadPeacemaker(self,nic,ongoing,eventCount,latency,old):
@@ -105,7 +131,7 @@ class Latency(Base):
 
                     #Jitter
                     if self.config['bird']['jitter']:
-                        hasJitter,peakJitter = self.checkJitter(row,self.getAvrg(row))
+                        hasJitter,peakJitter = self.checkJitter(row,entry)
                         if hasJitter:
                             #keep jitter events for 30 minutes
                             self.network[entry]['jitter'][int(time.time()) + randint(1700,2100)] = {"peak":peakJitter,"latency":current}
