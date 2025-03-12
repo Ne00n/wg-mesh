@@ -77,4 +77,4 @@ while True:
                 logger.info(f"Triggering bird config regenerate")
                 links.append("dummy")
                 regenCooldown = int(time.time()) + 1800
-        if skipUntil < time.time(): time.sleep(config['bird']['pingInterval'])
+        if skipUntil < time.time(): time.sleep(config['latency']['pingInterval'])
