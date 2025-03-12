@@ -133,7 +133,7 @@ class Latency(Base):
         self.network['updated'] = int(time.time())
         return config
 
-    def run(self,runs,messages=[]):
+    def run(self,messages=[]):
         #Check if bird is running
         self.logger.debug("Checking bird status")
         bird = self.cmd("systemctl status bird")[0]
@@ -224,3 +224,6 @@ class Latency(Base):
                 if notifications['enabled']:
                     sendMessage = Thread(target=self.sendMessage, args=([0,row]))
                     sendMessage.start()
+    
+    def getConfig(self):
+        return self.config

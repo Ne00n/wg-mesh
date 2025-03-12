@@ -17,6 +17,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%d.%
 logger = logging.getLogger()
 
 latency = Latency(path,logger)
+config = latency.getConfig()
 bird = Bird(path,logger)
 
 def readPipe(messagesQueue,last=""):
@@ -46,7 +47,6 @@ logger.info(f"Current disk space usage {round(usagePercent,1)}%")
 if usagePercent > 90: logger.warning("If you hit 98%, wg-mesh will stop writing any files.")
 
 while True:
-    for runs in range(6):
         currentLinks = os.listdir(pathToLinks)
         #filter out specific links
         currentLinks = [x for x in currentLinks if bird.filter(x)]
@@ -61,24 +61,20 @@ while True:
                 latency.setLatencyData(latencyData,peers)
                 links = currentLinks
                 logger.info(f"Ready")
-        #every 30s
-        run = [0,3]
-        if runs in run:
-            if links:
-                logger.debug("Grabbing messages")
-                messages = []
-                while not messagesQueue.empty(): messages.append(messagesQueue.get())
-                skip = latency.run(runs,messages)
-                if skip > 0: 
-                    skipUntil = time.time() + 60
-                    logger.info(f"Skipping 10s wait for 60s")
-                elif skip == -1 and int(time.time()) > restartCooldown:
-                    logger.info(f"Triggering bird restart")
-                    os.system("sudo systemctl restart bird")
-                    restartCooldown = int(time.time()) + 1800
-                elif skip == -2 and int(time.time()) > regenCooldown:
-                    logger.info(f"Triggering bird config regenerate")
-                    links.append("dummy")
-                    regenCooldown = int(time.time()) + 1800
-        else:
-            if skipUntil < time.time(): time.sleep(10)
+        if links:
+            logger.debug("Grabbing messages")
+            messages = []
+            while not messagesQueue.empty(): messages.append(messagesQueue.get())
+            skip = latency.run(messages)
+            if skip > 0: 
+                skipUntil = time.time() + 60
+                logger.info(f"Skipping 10s wait for 60s")
+            elif skip == -1 and int(time.time()) > restartCooldown:
+                logger.info(f"Triggering bird restart")
+                os.system("sudo systemctl restart bird")
+                restartCooldown = int(time.time()) + 1800
+            elif skip == -2 and int(time.time()) > regenCooldown:
+                logger.info(f"Triggering bird config regenerate")
+                links.append("dummy")
+                regenCooldown = int(time.time()) + 1800
+        if skipUntil < time.time(): time.sleep(config['bird']['pingInterval'])
