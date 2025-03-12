@@ -77,7 +77,13 @@ class Latency(Base):
                     #get average
                     node['cost'] = current = self.getAvrg(row,False)
                     if node['nic'] in self.linkState: node['cost'] += self.linkState[node['nic']]['cost']
-                    if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{},"outages":0,"state":1}
+                    if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{},"latency":[],"outages":0,"state":1}
+                    #if latency doesn't exist in network.json create it
+                    if not "latency" in self.network[entry] = self.network[entry]['latency'] = []
+                    #Save latency values per interface
+                    self.network[entry]['latency'].append(current)
+                    #Keep only the last 100 records
+                    self.network[entry]['latency'] = self.network[entry]['latency'][-100:]
                     #Packetloss
                     hasLoss,peakLoss = len(row) < pings -1,(pings -1) - len(row)
                     if hasLoss:
