@@ -61,12 +61,25 @@ class Latency(Base):
         if latency > 20000 and float(old) > 20000: return False
         #ignore any negative changes
         if latency <= float(old): return False
+        #to keep precision we multiplied them by 10
+        latency = latency / 10
+        old = old / 10
+        #get diff and change in percentage
         diff = int(latency - float(old))
         percentage = round((abs(float(old) - latency) / latency) * 100.0,1)
-        #needs to be higher than 15% (default)
-        self.logger.debug(f"{nic} Current percentage: {percentage}%, needed {self.config['bird']['reloadPercentage']}% (current {latency}, earlier {old}, diff {diff})")
-        if percentage < self.config['bird']['reloadPercentage']: return False
-        return True
+        self.logger.debug(f"{nic} Current percentage: {percentage}%, (current {latency}, earlier {old}, diff {diff})")
+        if latency < 10 and diff >= 2:
+            return True
+        elif latency < 20 and diff >= 3:
+            return True
+        elif latency < 50 and diff >= 5:
+            return True
+        elif latency < 100 and diff >= 10:
+            return True
+        elif latency > 100 and percentage >= 10:
+            return True
+        else:
+            return False
 
     def countEvents(self,entry,eventType):
         eventCount,eventScore = 0,0
