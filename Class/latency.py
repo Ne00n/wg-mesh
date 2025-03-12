@@ -26,8 +26,8 @@ class Latency(Base):
     def checkJitter(self,row,interface):
         avrg = self.getAvrg(row)
         historyRaw, history = self.network[interface]['latency'][-60:], []
+        for ping in historyRaw: history.append(ping)
         #we multiplied the values before, to keep the precision
-        for ping in historyRaw: history.append(ping / 10)
         history.append(avrg / 10)
         #generate grace
         if len(history) >= 5:
