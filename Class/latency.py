@@ -34,7 +34,7 @@ class Latency(Base):
             mean = sum(history) / len(history)
             variance = sum((x - mean) ** 2 for x in history) / len(history)
             stdDev = max(variance ** 0.5, 0.5)
-            dynamicGrace = std_dev * 2
+            dynamicGrace = stdDev * 2
         else:
             if avrg < 20:
                 gracePercent = 0.25
