@@ -25,7 +25,7 @@ class Latency(Base):
 
     def checkJitter(self,row,interface):
         avrg = self.getAvrg(row)
-        historyRaw, history = self.network[interface]['latency'][-20:], []
+        historyRaw, history = self.network[interface]['latency'][-60:], []
         #we multiplied the values before, to keep the precision
         for ping in historyRaw: history.append(ping / 10)
         history.append(avrg / 10)
@@ -106,8 +106,11 @@ class Latency(Base):
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{},"latency":[],"outages":0,"state":1}
                     #if latency doesn't exist in network.json create it
                     if not "latency" in self.network[entry]: self.network[entry]['latency'] = []
-                    #Save latency values per interface
-                    self.network[entry]['latency'].append(current)
+                    #Save raw latency values per interface
+                    for entry in row:
+                        #ignore timed out
+                        if entry[0] == "timed out": continue
+                        self.network[entry]['latency'].append(float(entry[0]))
                     #Keep only the last 100 records
                     self.network[entry]['latency'] = self.network[entry]['latency'][-100:]
                     #Packetloss
