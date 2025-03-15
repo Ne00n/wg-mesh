@@ -165,7 +165,7 @@ class Latency(Base):
                     linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",node['nic'], re.MULTILINE)[0]
                     if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (node['cost'] + 10000) < 65535: node['cost'] += 10000
                     #make sure its always int
-                    node['cost'] = int(node['cost'])
+                    node['cost'] = int(round(node['cost']))
                     #make sure we stay below max int
                     if node['cost'] > 65535: node['cost'] = 65535
                     #make sure we always stay over zero
