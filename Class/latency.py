@@ -271,7 +271,7 @@ class Latency(Base):
                     sendMessage = Thread(target=self.sendMessage, args=([0,row]))
                     sendMessage.start()
             #if the difference suddenly is bigger than or equal 20ms, trigger an mtr
-            elif diff >= 20:
+            elif diff >= 20 and diff <= 2000:
                 if notifications['enabled'] and notifications['gotifyChanges'] and notifications['gotifyChanges'] != "disabled":
                     sendMessage = Thread(target=self.sendMessage, args=([2,row,diff]))
                     sendMessage.start()
