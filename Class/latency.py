@@ -62,8 +62,8 @@ class Latency(Base):
         #ignore any negative changes
         if latency <= float(old): return False
         #to keep precision we multiplied them by 10
-        latency = latency / 10
-        old = old / 10
+        latency = round(latency / 10,1)
+        old = round(old / 10,1)
         #get diff and change in percentage
         diff = int(latency - float(old))
         percentage = round((abs(float(old) - latency) / latency) * 100.0,1)
