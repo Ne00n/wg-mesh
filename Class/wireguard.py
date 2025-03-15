@@ -25,6 +25,7 @@ class Wireguard(Base):
         if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
         if not "listenPort" in self.config: self.config['listenPort'] = 8080
         if not "operationMode" in self.config: self.config['operationMode'] = 0
+        if not "loglevel" in self.config: self.config['loglevel'] = "info"
         if not "vxlanOffset" in self.config: self.config['vxlanOffset'] = 0
         if not "subnet" in self.config: self.config['subnet'] = "10.0.0.0/16"
         if not "subnetPeer" in self.config: self.config['subnetPeer'] = "172.31.0.0/16"
@@ -100,7 +101,7 @@ class Wireguard(Base):
         #config
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
-        config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"vxlanOffset":0,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16",
+        config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16",
         "subnetVXLAN":"10.0.251.0/24","subnetLinkLocal":"fe82:","AllowedPeers":[],"prefix":"pipe","id":int(id),"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"jitter":True,"area":0,"tick":1,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600},
         "latency":{"pingInterval":30},

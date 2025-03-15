@@ -8,8 +8,12 @@ from Class.bird import Bird
 path = os.path.dirname(os.path.realpath(__file__))
 path = path.replace("/cron","")
 
+#get config
+latency = Latency(path,None)
+config = latency.getConfig()
+
 #logging
-level = "info"
+level = config['loglevel']
 levels = {'critical': logging.CRITICAL,'error': logging.ERROR,'warning': logging.WARNING,'info': logging.INFO,'debug': logging.DEBUG}
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(levels[level])
@@ -17,7 +21,6 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%d.%
 logger = logging.getLogger()
 
 latency = Latency(path,logger)
-config = latency.getConfig()
 bird = Bird(path,logger)
 
 def readPipe(messagesQueue,last=""):

@@ -18,7 +18,7 @@ subnetPrefix = ".".join(config['subnet'].split(".")[:2])
 #templator
 templator = Templator()
 #logging
-level = "info"
+level = config['loglevel']
 levels = {'critical': logging.CRITICAL,'error': logging.ERROR,'warning': logging.WARNING,'info': logging.INFO,'debug': logging.DEBUG}
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(levels[level])
