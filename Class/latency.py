@@ -278,27 +278,27 @@ class Latency(Base):
                 self.logger.debug(f"{nic} got {diff}ms change, before {round(row['cost'] / 10)}ms, now {round(oldLatencyData['cost'] / 10)}ms")
                 if notifications['enabled'] and notifications['gotifyChanges'] and notifications['gotifyChanges'] != "disabled":
                     messages['changes'].append([2,row,diff])
-            #processing gotify messages
-            threshold = len(latencyData) / 2
-            #ignore if half of our connections report in
-            if len(messages['up']) <= threshold:
-                for message in messages['up']:
-                    sendMessage = Thread(target=self.sendMessage, args=(message))
-                    sendMessage.start()
-            else:
-                self.logger.warning(f"Skipping linkUp gotify messages {len(messages['up'])}/{threshold}")
-            if len(messages['down']) <= threshold:
-                for message in messages['down']:
-                    sendMessage = Thread(target=self.sendMessage, args=(message))
-                    sendMessage.start()
-            else:
-                self.logger.warning(f"Skipping linkDown gotify messages {len(messages['down'])}/{threshold}")
-            if len(messages['changes']) <= threshold:
-                for message in messages['changes']:
-                    sendMessage = Thread(target=self.sendMessage, args=(message))
-                    sendMessage.start()
-            else:
-                self.logger.warning(f"Skipping changes gotify messages {len(messages['changes'])}/{threshold}")
+        #processing gotify messages
+        threshold = len(latencyData) / 2
+        #ignore if half of our connections report in
+        if len(messages['up']) <= threshold:
+            for message in messages['up']:
+                sendMessage = Thread(target=self.sendMessage, args=(message))
+                sendMessage.start()
+        else:
+            self.logger.warning(f"Skipping linkUp gotify messages {len(messages['up'])}/{threshold}")
+        if len(messages['down']) <= threshold:
+            for message in messages['down']:
+                sendMessage = Thread(target=self.sendMessage, args=(message))
+                sendMessage.start()
+        else:
+            self.logger.warning(f"Skipping linkDown gotify messages {len(messages['down'])}/{threshold}")
+        if len(messages['changes']) <= threshold:
+            for message in messages['changes']:
+                sendMessage = Thread(target=self.sendMessage, args=(message))
+                sendMessage.start()
+        else:
+            self.logger.warning(f"Skipping changes gotify messages {len(messages['changes'])}/{threshold}")
 
     def getConfig(self):
         return self.config
