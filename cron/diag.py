@@ -30,6 +30,8 @@ logger.info(f"Ready")
 
 diag = Diag(path,logger)
 waitUntil = 0
+#initial cooldown
+time.sleep(600)
 while not shutdown:
     currentTime = int(time.time())
     if currentTime > waitUntil:
