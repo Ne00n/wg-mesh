@@ -258,7 +258,7 @@ class Latency(Base):
                 self.linkState[row['nic']]['state'] = 1
                 self.network[row['target']]['state'] = 1
                 self.logger.warning(f"Link {row['nic']} is up")
-                if notifications['enabled'] and notifications['gotifyUp']:
+                if notifications['enabled'] and notifications['gotifyUp'] and notifications['gotifyUp'] != "disabled":
                     sendMessage = Thread(target=self.sendMessage, args=([1,row]))
                     sendMessage.start()
             elif self.linkState[nic]['state'] and row['cost'] == 65535:
@@ -267,12 +267,12 @@ class Latency(Base):
                 self.linkState[row['nic']]['outages'] += 1
                 self.network[row['target']]['outages'] += 1
                 self.logger.warning(f"Link {row['nic']} is down")
-                if notifications['enabled'] and notifications['gotifyDown']:
+                if notifications['enabled'] and notifications['gotifyDown'] and notifications['gotifyDown'] != "disabled":
                     sendMessage = Thread(target=self.sendMessage, args=([0,row]))
                     sendMessage.start()
             #if the difference suddenly is bigger than or equal 20ms, trigger an mtr
             elif diff >= 20:
-                if notifications['enabled'] and notifications['gotifyChanges']:
+                if notifications['enabled'] and notifications['gotifyChanges'] and notifications['gotifyChanges'] != "disabled":
                     sendMessage = Thread(target=self.sendMessage, args=([2,row,diff]))
                     sendMessage.start()
     
