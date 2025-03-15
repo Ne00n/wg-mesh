@@ -96,6 +96,10 @@ class Latency(Base):
         for node in self.latencyDataState:
             if target == node['target']: return node 
 
+    def getRecentLatencyData(self,target):
+        for node in self.latencyData:
+            if target == node['target']: return node 
+
     def getLatency(self,config,pings=4):
         targets = []
         for row in config: targets.append(row['target'])
@@ -202,7 +206,7 @@ class Latency(Base):
             else:
                 #save in memory so we don't have to read the config file again
                 self.notifications(latencyData)
-                self.latencyData = latencyData
+                self.latencyData = copy.deepcopy(latencyData)
                 latencyData = self.wg.groupByArea(latencyData)
                 birdConfig = self.Templator.genBird(latencyData,self.peers,self.config)
                 #write
@@ -250,7 +254,7 @@ class Latency(Base):
 
     def notifications(self,latencyData):
         for index,row in enumerate(latencyData):
-            oldLatencyData = self.getOldLatencyData(row['target'])
+            oldLatencyData = self.getRecentLatencyData(row['target'])
             diff = round(abs(row['cost'] - oldLatencyData['cost']) / 10)
             notifications = self.config['notifications']
             nic = row['nic']
