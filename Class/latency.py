@@ -233,7 +233,7 @@ class Latency(Base):
     def sendMessage(self,status,row):
         linkOnDisk = self.currentLinks[f"{row['nic']}.sh"]
         mtr = ["..."]
-        if status == 0:
+        if status != 1:
             if linkOnDisk['remotePublic']:
                 targetIP = linkOnDisk['remotePublic']
                 targetIP = targetIP.replace("[","").replace("]","")
@@ -241,19 +241,23 @@ class Latency(Base):
             else:
                 mtr = ["No public ip available for mtr",""]
         notifications = self.config['notifications']
-        if status:
+        if status == 1:
             self.notify(notifications['gotifyUp'],f"Node {self.config['id']}: {row['nic']} is up",f"{row['nic']} has been down {self.linkState[row['nic']]['outages']} times")
+        elif status == 2:
+            self.notify(notifications['gotifyChanges'],f"Node {self.config['id']}: {row['nic']} high latency fluctuations",f"{mtr[0]}")
         else:
             self.notify(notifications['gotifyDown'],f"Node {self.config['id']}: {row['nic']} is down ({self.linkState[row['nic']]['outages']})",f"{mtr[0]}")
 
     def notifications(self,latencyData):
         for index,row in enumerate(latencyData):
+            oldLatencyData = self.getOldLatencyData(row['target'])
+            diff = abs(row['cost'] - oldLatencyData['cost'])
+            notifications = self.config['notifications']
             nic = row['nic']
             if not self.linkState[nic]['state'] and row['cost'] != 65535:
                 self.linkState[row['nic']]['state'] = 1
                 self.network[row['target']]['state'] = 1
                 self.logger.warning(f"Link {row['nic']} is up")
-                notifications = self.config['notifications']
                 if notifications['enabled']:
                     sendMessage = Thread(target=self.sendMessage, args=([1,row]))
                     sendMessage.start()
@@ -263,9 +267,13 @@ class Latency(Base):
                 self.linkState[row['nic']]['outages'] += 1
                 self.network[row['target']]['outages'] += 1
                 self.logger.warning(f"Link {row['nic']} is down")
-                notifications = self.config['notifications']
                 if notifications['enabled']:
                     sendMessage = Thread(target=self.sendMessage, args=([0,row]))
+                    sendMessage.start()
+            #if the difference suddenly is bigger than or equal 20ms, trigger an mtr
+            elif diff >= 200:
+                if notifications['enabled']:
+                    sendMessage = Thread(target=self.sendMessage, args=([2,row]))
                     sendMessage.start()
     
     def getConfig(self):

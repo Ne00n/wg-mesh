@@ -47,7 +47,8 @@ class Wireguard(Base):
         if not "client" in self.config['bird']: self.config['bird']['client'] = False
         if not "loglevel" in self.config['bird']: self.config['bird']['loglevel'] = "{ warning, fatal}"
         if not "reloadInterval" in self.config['bird']: self.config['bird']['reloadInterval'] = 600
-        if not "notifications" in self.config: self.config['notifications'] = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":""}
+        if not "notifications" in self.config: self.config['notifications'] = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""}
+        if not "gotifyChanges" in self.config['notifications']: self.config['notifications']['gotifyChanges'] = ""
         if not "gotifyDiag" in self.config['notifications']: self.config['notifications']['gotifyDiag'] = ""
         self.saveJson(self.config,f"{self.path}/configs/config.json")
         if reconfigureDummy: self.reconfigureDummy()
@@ -105,7 +106,7 @@ class Wireguard(Base):
         "subnetVXLAN":"10.0.251.0/24","subnetLinkLocal":"fe82:","AllowedPeers":[],"prefix":"pipe","id":int(id),"linkTypes":["default"],"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"jitter":True,"area":0,"tick":1,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600},
         "latency":{"pingInterval":30},
-        "notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":""}}
+        "notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""}}
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response: exit("Unable to save config.json")
         #load configs
