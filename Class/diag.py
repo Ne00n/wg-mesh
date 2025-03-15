@@ -57,12 +57,14 @@ class Diag(Base):
                 self.logger.info(f"Unable to reach endpoint {link} ({endpoint})")
                 continue
             self.logger.info(f"Dead link confirmed {link} ({remote})")
-            if notifications['enabled']: self.wg.notify(self.config['notifications']['gotifyDiag'],f"{link} disconnecting",f"Node {self.config['id']} disconnecting {link}")
+            if notifications['enabled'] and notifications['gotifyDiag']: 
+                self.wg.notify(notifications['gotifyDiag'],f"{link} disconnecting",f"Node {self.config['id']} disconnecting {link}")
             self.logger.info(f"Disconnecting {link}")
             status = self.wg.disconnect([link])
             if not status[link]:
                 self.logger.warning(f"Failed to disconnect {link} ({remote})")
-                if notifications['enabled']: self.wg.notify(self.config['notifications']['gotifyDiag'],f"{link} disconnect failure",f"Node {self.config['id']} failed to disconnect {link}")
+                if notifications['enabled'] and notifications['gotifyDiag']: 
+                    self.wg.notify(notifications['gotifyDiag'],f"{link} disconnect failure",f"Node {self.config['id']} failed to disconnect {link}")
                 continue
             time.sleep(3)
             self.logger.info(f"Reconnecting {link}")
@@ -70,10 +72,12 @@ class Diag(Base):
             status = self.wg.connect(f"http://{endpoint}:8080","dummy","",port)
             if status['v4'] or status['v6']:
                 self.logger.info(f"Reconnected {link} ({remote}) with Port {port}")
-                if notifications['enabled']: self.wg.notify(self.config['notifications']['gotifyDiag'],f"{link} reconnected",f"Node {self.config['id']} reconnected {link}")
+                if notifications['enabled'] and notifications['gotifyDiag']: 
+                    self.wg.notify(notifications['gotifyDiag'],f"{link} reconnected",f"Node {self.config['id']} reconnected {link}")
             else:
                 self.logger.info(f"Could not reconnect {link} ({remote})")
-                if notifications['enabled']: self.wg.notify(self.config['notifications']['gotifyDiag'],f"{link} reconnect failure",f"Node {self.config['id']} failed to reconnect {link}")
+                if notifications['enabled'] and notifications['gotifyDiag']: 
+                    self.wg.notify(notifications['gotifyDiag'],f"{link} reconnect failure",f"Node {self.config['id']} failed to reconnect {link}")
         self.logger.info(f"Loop done")
         self.saveJson(self.diagnostic,f"{self.path}/configs/diagnostic.json")
         return True
