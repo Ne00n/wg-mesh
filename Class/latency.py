@@ -242,6 +242,8 @@ class Latency(Base):
                 targetIP = linkOnDisk['remotePublic']
                 targetIP = targetIP.replace("[","").replace("]","")
                 mtr = self.cmd(f'mtr {targetIP} --report --report-cycles 3 --no-dns')
+                #if the mtr fails to run, grab the error message instead
+                if not mtr[0] and mtr[1]: mtr[0] = mtr[1]
             else:
                 mtr = ["No public ip available for mtr",""]
         notifications = self.config['notifications']
