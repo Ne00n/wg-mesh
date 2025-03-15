@@ -253,6 +253,7 @@ class Latency(Base):
             self.notify(notifications['gotifyDown'],f"Node {self.config['id']}: {row['nic']} is down ({self.linkState[row['nic']]['outages']})",f"{mtr[0]}")
 
     def notifications(self,latencyData):
+        messages = {"up":[],"down":[],"changes":[]}
         for index,row in enumerate(latencyData):
             oldLatencyData = self.getRecentLatencyData(row['target'])
             diff = round(abs(row['cost'] - oldLatencyData['cost']) / 10)
@@ -263,8 +264,7 @@ class Latency(Base):
                 self.network[row['target']]['state'] = 1
                 self.logger.warning(f"Link {row['nic']} is up")
                 if notifications['enabled'] and notifications['gotifyUp'] and notifications['gotifyUp'] != "disabled":
-                    sendMessage = Thread(target=self.sendMessage, args=([1,row]))
-                    sendMessage.start()
+                    messages['up'].append([1,row])
             elif self.linkState[nic]['state'] and row['cost'] == 65535:
                 self.linkState[row['nic']]['state'] = 0
                 self.network[row['target']]['state'] = 0
@@ -272,14 +272,33 @@ class Latency(Base):
                 self.network[row['target']]['outages'] += 1
                 self.logger.warning(f"Link {row['nic']} is down")
                 if notifications['enabled'] and notifications['gotifyDown'] and notifications['gotifyDown'] != "disabled":
-                    sendMessage = Thread(target=self.sendMessage, args=([0,row]))
-                    sendMessage.start()
+                    messages['down'].append([0,row])
             #if the difference suddenly is bigger than or equal 20ms, trigger an mtr
             elif diff >= 20 and diff <= 2000:
                 self.logger.debug(f"{nic} got {diff}ms change, before {round(row['cost'] / 10)}ms, now {round(oldLatencyData['cost'] / 10)}ms")
                 if notifications['enabled'] and notifications['gotifyChanges'] and notifications['gotifyChanges'] != "disabled":
-                    sendMessage = Thread(target=self.sendMessage, args=([2,row,diff]))
+                    messages['changes'].append([2,row,diff])
+            #processing gotify messages
+            threshold = len(latencyData) / 2
+            #ignore if half of our connections report in
+            if len(messages['up']) <= threshold:
+                for message in messages['up']:
+                    sendMessage = Thread(target=self.sendMessage, args=(message))
                     sendMessage.start()
-    
+            else:
+                self.logger.warning(f"Skipping linkUp gotify messages {len(messages['up'])}/{threshold}")
+            if len(messages['down']) <= threshold:
+                for message in messages['down']:
+                    sendMessage = Thread(target=self.sendMessage, args=(message))
+                    sendMessage.start()
+            else:
+                self.logger.warning(f"Skipping linkDown gotify messages {len(messages['down'])}/{threshold}")
+            if len(messages['changes']) <= threshold:
+                for message in messages['changes']:
+                    sendMessage = Thread(target=self.sendMessage, args=(message))
+                    sendMessage.start()
+            else:
+                self.logger.warning(f"Skipping changes gotify messages {len(messages['changes'])}/{threshold}")
+
     def getConfig(self):
         return self.config
