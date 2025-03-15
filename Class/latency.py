@@ -272,6 +272,7 @@ class Latency(Base):
                     sendMessage.start()
             #if the difference suddenly is bigger than or equal 20ms, trigger an mtr
             elif diff >= 20 and diff <= 2000:
+                self.logger.debug(f"{nic} got {diff}ms change, before {round(row['cost'] / 10)}ms, now {round(oldLatencyData['cost'] / 10)}ms")
                 if notifications['enabled'] and notifications['gotifyChanges'] and notifications['gotifyChanges'] != "disabled":
                     sendMessage = Thread(target=self.sendMessage, args=([2,row,diff]))
                     sendMessage.start()
