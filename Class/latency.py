@@ -264,7 +264,7 @@ class Latency(Base):
         for index,row in enumerate(latencyData):
             notifications = self.config['notifications']
             oldRow = self.getRecentLatencyData(row['target'])
-            diff = round(abs(row['cost'] - oldRow['cost']) / 10)
+            diff = round(row['cost'] - oldRow['cost'] / 10)
             nic = row['nic']
             if not self.linkState[nic]['state'] and row['cost'] != 65535:
                 self.linkState[row['nic']]['state'] = 1
@@ -280,8 +280,8 @@ class Latency(Base):
                 self.logger.warning(f"Link {row['nic']} is down")
                 if notifications['enabled'] and notifications['gotifyDown'] and notifications['gotifyDown'] != "disabled":
                     messages['down'].append([0,row])
-            #if the difference suddenly is bigger than or equal 20ms, trigger an mtr
-            elif diff >= 20 and diff <= 2000:
+            #if the difference suddenly is bigger than or equal 20ms, trigger an mtr + ignore negative changes
+            elif diff >= 20 and diff <= 2000 and diff > 0:
                 self.logger.debug(f"{nic} got {diff}ms change, before {round(row['cost'] / 10)}ms, now {round(oldLatencyData['cost'] / 10)}ms")
                 if notifications['enabled'] and notifications['gotifyChanges'] and notifications['gotifyChanges'] != "disabled":
                     messages['changes'].append([2,row,oldRow])
