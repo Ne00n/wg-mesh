@@ -200,7 +200,7 @@ class Latency(Base):
                 #reset lastReload to trigger a reload, otherwise we have to wait up to 10 minutes
                 self.lastReload = int(time.time())
             self.logger.debug("Running fping")
-            latencyData = self.getLatency(self.latencyData,5)
+            latencyData = self.getLatency(copy.deepcopy(self.latencyData),5)
             if not latencyData:
                 self.logger.warning("Nothing todo")
             else:
