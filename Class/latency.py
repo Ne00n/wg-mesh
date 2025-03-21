@@ -234,7 +234,7 @@ class Latency(Base):
         self.latencyDataState = copy.deepcopy(latencyData)
         self.peers = peers
 
-    def sendMessage(self,status,row,diff=0):
+    def sendMessage(self,status,row,oldRow={}):
         linkOnDisk = self.currentLinks[f"{row['nic']}.sh"]
         mtr = ["..."]
         if status != 1:
@@ -250,16 +250,21 @@ class Latency(Base):
         if status == 1:
             self.notify(notifications['gotifyUp'],f"Node {self.config['id']}: {row['nic']} is up",f"{row['nic']} has been down {self.linkState[row['nic']]['outages']} times")
         elif status == 2:
-            self.notify(notifications['gotifyChanges'],f"Node {self.config['id']}: {row['nic']} {diff}ms change",f"{mtr[0]}")
+            newLatency = round(row['cost'] / 10)
+            oldLatency = round(oldRow['cost'] / 10)
+            diff = round(newLatency - oldLatency)
+            #ignore negative changes, we want only latency increases for now
+            if diff < 0: return
+            self.notify(notifications['gotifyChanges'],f"Node {self.config['id']}: {row['nic']} +{diff}ms, {oldLatency}ms to {newLatency}ms",f"{mtr[0]}")
         else:
             self.notify(notifications['gotifyDown'],f"Node {self.config['id']}: {row['nic']} is down ({self.linkState[row['nic']]['outages']})",f"{mtr[0]}")
 
     def notifications(self,latencyData):
         messages = {"up":[],"down":[],"changes":[]}
         for index,row in enumerate(latencyData):
-            oldLatencyData = self.getRecentLatencyData(row['target'])
-            diff = round(abs(row['cost'] - oldLatencyData['cost']) / 10)
             notifications = self.config['notifications']
+            oldRow = self.getRecentLatencyData(row['target'])
+            diff = round(abs(row['cost'] - oldRow['cost']) / 10)
             nic = row['nic']
             if not self.linkState[nic]['state'] and row['cost'] != 65535:
                 self.linkState[row['nic']]['state'] = 1
@@ -279,7 +284,7 @@ class Latency(Base):
             elif diff >= 20 and diff <= 2000:
                 self.logger.debug(f"{nic} got {diff}ms change, before {round(row['cost'] / 10)}ms, now {round(oldLatencyData['cost'] / 10)}ms")
                 if notifications['enabled'] and notifications['gotifyChanges'] and notifications['gotifyChanges'] != "disabled":
-                    messages['changes'].append([2,row,diff])
+                    messages['changes'].append([2,row,oldRow])
         #processing gotify messages
         threshold = len(latencyData) / 2
         #ignore if half of our connections report in
