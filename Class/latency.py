@@ -271,7 +271,7 @@ class Latency(Base):
                 self.network[row['target']]['state'] = 1
                 self.logger.warning(f"Link {row['nic']} is up")
                 if notifications['enabled'] and notifications['gotifyUp'] and notifications['gotifyUp'] != "disabled":
-                    messages['up'].append([1,row])
+                    messages['up'].append([1,copy.deepcopy(row)])
             elif self.linkState[nic]['state'] and row['cost'] == 65535:
                 self.linkState[row['nic']]['state'] = 0
                 self.network[row['target']]['state'] = 0
@@ -279,12 +279,12 @@ class Latency(Base):
                 self.network[row['target']]['outages'] += 1
                 self.logger.warning(f"Link {row['nic']} is down")
                 if notifications['enabled'] and notifications['gotifyDown'] and notifications['gotifyDown'] != "disabled":
-                    messages['down'].append([0,row])
+                    messages['down'].append([0,copy.deepcopy(row)])
             #if the difference suddenly is bigger than or equal 20ms, trigger an mtr + ignore negative changes
             elif diff >= 20 and diff <= 2000 and diff > 0:
                 self.logger.debug(f"{nic} got {diff}ms change, before {round(row['cost'] / 10)}ms, now {round(oldRow['cost'] / 10)}ms")
                 if notifications['enabled'] and notifications['gotifyChanges'] and notifications['gotifyChanges'] != "disabled":
-                    messages['changes'].append([2,row,oldRow])
+                    messages['changes'].append([2,copy.deepcopy(row),copy.deepcopy(oldRow)])
         #processing gotify messages
         threshold = len(latencyData) / 2
         #ignore if half of our connections report in
