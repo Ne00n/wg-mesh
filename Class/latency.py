@@ -116,7 +116,9 @@ class Latency(Base):
                     oldLatencyData = self.getOldLatencyData(node['target'])
                     old = oldLatencyData['cost']
                     #get average
-                    node['cost'] = current = self.getAvrg(row,False)
+                    current = self.getAvrg(row,False)
+                    node['cost'] = current
+                    node['base'] = current
                     if node['nic'] in self.linkState: node['cost'] += self.linkState[node['nic']]['cost']
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{},"latency":[],"outages":0,"state":1}
                     #if latency doesn't exist in network.json create it
@@ -250,11 +252,9 @@ class Latency(Base):
         if status == 1:
             self.notify(notifications['gotifyUp'],f"Node {self.config['id']}: {row['nic']} is up",f"{row['nic']} has been down {self.linkState[row['nic']]['outages']} times")
         elif status == 2:
-            newLatency = round(row['cost'] / 10)
-            oldLatency = round(oldRow['cost'] / 10)
+            newLatency = round(row['base'] / 10)
+            oldLatency = round(oldRow['base'] / 10)
             diff = round(newLatency - oldLatency)
-            #ignore negative changes, we want only latency increases for now
-            if diff < 0: return
             self.notify(notifications['gotifyChanges'],f"Node {self.config['id']}: {row['nic']} +{diff}ms, {oldLatency}ms to {newLatency}ms",f"{mtr[0]}")
         else:
             self.notify(notifications['gotifyDown'],f"Node {self.config['id']}: {row['nic']} is down ({self.linkState[row['nic']]['outages']})",f"{mtr[0]}")
@@ -264,7 +264,7 @@ class Latency(Base):
         for index,row in enumerate(latencyData):
             notifications = self.config['notifications']
             oldRow = self.getRecentLatencyData(row['target'])
-            diff = round((row['cost'] / 10) - (oldRow['cost'] / 10))
+            diff = round((row['base'] / 10) - (oldRow['base'] / 10))
             nic = row['nic']
             if not self.linkState[nic]['state'] and row['cost'] != 65535:
                 self.linkState[row['nic']]['state'] = 1
@@ -282,7 +282,7 @@ class Latency(Base):
                     messages['down'].append([0,copy.deepcopy(row)])
             #if the difference suddenly is bigger than or equal 20ms, trigger an mtr + ignore negative changes
             elif diff >= 20 and diff <= 2000:
-                self.logger.debug(f"{nic} +{diff}ms, before {round(oldRow['cost'] / 10)}ms, now {round(row['cost'] / 10)}ms")
+                self.logger.debug(f"{nic} +{diff}ms, before {round(oldRow['base'] / 10)}ms, now {round(row['base'] / 10)}ms")
                 if notifications['enabled'] and notifications['gotifyChanges'] and notifications['gotifyChanges'] != "disabled":
                     messages['changes'].append([2,copy.deepcopy(row),copy.deepcopy(oldRow)])
         #processing gotify messages
