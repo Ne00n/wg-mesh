@@ -282,7 +282,7 @@ class Latency(Base):
                     messages['down'].append([0,copy.deepcopy(row)])
             #if the difference suddenly is bigger than or equal 20ms, trigger an mtr + ignore negative changes
             elif diff >= 20 and diff <= 2000:
-                self.logger.debug(f"{nic} got {diff}ms change, before {round(row['cost'] / 10)}ms, now {round(oldRow['cost'] / 10)}ms")
+                self.logger.debug(f"{nic} got {diff}ms change, before {round(oldRow['cost'] / 10)}ms, now {round(row['cost'] / 10)}ms")
                 if notifications['enabled'] and notifications['gotifyChanges'] and notifications['gotifyChanges'] != "disabled":
                     messages['changes'].append([2,copy.deepcopy(row),copy.deepcopy(oldRow)])
         #processing gotify messages
