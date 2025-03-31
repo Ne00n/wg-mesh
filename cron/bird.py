@@ -84,3 +84,4 @@ while True:
         if skipUntil < time.time(): time.sleep(config['latency']['pingInterval'])
     except Exception as e:
         logger.exception(f'Bird routine crashed {e}')
+        time.sleep(300)
