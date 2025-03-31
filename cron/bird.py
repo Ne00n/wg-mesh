@@ -50,6 +50,7 @@ logger.info(f"Current disk space usage {round(usagePercent,1)}%")
 if usagePercent > 90: logger.warning("If you hit 98%, wg-mesh will stop writing any files.")
 
 while True:
+    try:
         currentLinks = os.listdir(pathToLinks)
         #filter out specific links
         currentLinks = [x for x in currentLinks if bird.filter(x)]
@@ -81,3 +82,5 @@ while True:
                 links.append("dummy")
                 regenCooldown = int(time.time()) + 1800
         if skipUntil < time.time(): time.sleep(config['latency']['pingInterval'])
+    except Exception as e:
+        logger.exception(f'Bird routine crashed {e}')
