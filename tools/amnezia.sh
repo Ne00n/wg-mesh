@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+apt-get update
 apt install -y software-properties-common python3-launchpadlib gnupg2 linux-headers-$(uname -r)
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 57290828
 echo "deb https://ppa.launchpadcontent.net/amnezia/ppa/ubuntu focal main" | sudo tee -a /etc/apt/sources.list
