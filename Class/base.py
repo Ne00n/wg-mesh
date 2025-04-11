@@ -91,8 +91,12 @@ class Base:
         if result == 0: return 65535
         #make sure its not below one
         if result < 1: result = 1
-        if weight: return int(float(result / actual))
-        else: return int(float(result / actual) * 10)
+        if weight: 
+            return int(float(result / actual))
+        else: 
+            result = int(float(result / actual) * 10)
+            if result > 65535: result = 65535
+            return result
 
     def fping(self,targets,pings=3,dropTimeout = False):
         fping = f"fping -c {pings} "
