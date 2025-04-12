@@ -38,7 +38,7 @@ class Diag(Base):
             if "linkType" in linkConfig and not linkConfig['linkType'] in allowedLinkType:
                 self.logger.warning(f"{link} has non default linkType, skipping")
                 continue
-            parsed, remote = self.getRemote(data['config'],self.subnetPrefixSplitted)
+            remote = data['remote']
             self.logger.info(f"Found dead link {link} ({remote})")
             if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0,"retries":0}
             if self.diagnostic[remote]['cooldown'] > current: 
@@ -54,7 +54,7 @@ class Diag(Base):
             if count < 20: 
                 self.logger.info(f"{link} got {count}, 20 are needed for confirmation")
                 continue
-            endpoint = f"{parsed[1]}1"
+            endpoint = data['vxlan']
             pings = self.fping([endpoint],3,True)
             if not pings[endpoint]:
                 self.logger.info(f"Unable to reach endpoint {link} ({endpoint})")
