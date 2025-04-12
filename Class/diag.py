@@ -44,7 +44,7 @@ class Diag(Base):
             if self.diagnostic[remote]['cooldown'] > current: 
                 self.logger.info(f"Skipping {link} due to cooldown")
                 continue
-            self.diagnostic[remote]['cooldown'] = current + random.randint(43200,57600)
+            self.diagnostic[remote]['cooldown'] = current + random.randint(21600,43200)
             self.diagnostic[remote]['retries'] += 1
             if not remote in self.network:
                 self.logger.warning(f"{link} no data in network.json, skipping")
