@@ -27,12 +27,13 @@ class Diag(Base):
         self.logger.info(f"Checking {len(links)} Links")
         offline,online = self.wg.checkLinks(links)
         self.logger.info(f"Found {len(offline)} dead link(s)")
+        allowed = ["default","amneziawg"]
         for link in offline:
             count, data, current = 0, links[link], int(time.time())
             if not "endpoint" in data['config']: continue
             linkConfig = self.readJson(f'{self.path}/links/{data["filename"]}.json')
             #have to check the linkType, currently no logic for different link types so we just skip them for now
-            if not "linkType" in linkConfig or linkConfig['linkType'] != "default":
+            if not "linkType" in linkConfig or not linkConfig['linkType'] in allowed:
                 self.logger.warning(f"{link} has non default linkType, skipping")
                 continue
             parsed, remote = self.getRemote(data['config'],self.subnetPrefixSplitted)
