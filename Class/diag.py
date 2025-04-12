@@ -30,7 +30,9 @@ class Diag(Base):
         allowedLinkType = ["default","amneziawg"]
         for link in offline:
             count, data, current = 0, links[link], int(time.time())
-            if not "endpoint" in data['config']: continue
+            if "endpoint" in data['config']: 
+                self.logger.debug(f"{link} is client, skipping")
+                continue
             linkConfig = self.readJson(f'{self.path}/links/{data["filename"]}.json')
             #have to check the linkType, currently no logic for different link types so we just skip them for now
             if not "linkType" in linkConfig or not linkConfig['linkType'] in allowedLinkType:
