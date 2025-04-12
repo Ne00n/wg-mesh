@@ -76,8 +76,9 @@ def validateNetwork(network):
 
 def validateLinkType(linkType):
     linkTypes = ["default","wgobfs","ipt_xor","amneziawg"]
-    if linkType in linkTypes: return True
-    return False
+    if not linkType in linkTypes: return False
+    if not linkType in config['linkTypes']: return False
+    return True
 
 def validatePrefix(prefix):
     result = re.findall(r"^[0-9.]{4,6}$",prefix,re.MULTILINE | re.DOTALL)
