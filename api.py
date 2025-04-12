@@ -273,8 +273,7 @@ def index():
     wg.updateLink(payload['interface'],payload)
     wg.setInterface(payload['interface'],"up")
     #the pipe is fetched every 100ms, make sure we wait until the data is fetched
-    if "cost" in payload:
-        time.sleep(0.1)
+    if "cost" in payload: time.sleep(0.1)
     updateMutex.release()
     return HTTPResponse(status=200, body="link updated")
 
@@ -297,6 +296,8 @@ def index():
     if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
         logging.info(f"Invalid link from {requestIP}")
         return HTTPResponse(status=400, body="invalid link")
+    #block any other requests to prevent issues regarding port and ip assignment
+    connectMutex.acquire()
     #read private key
     with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
     #get public key from private key
@@ -314,6 +315,7 @@ def index():
         termination = Thread(target=terminateLink, args=([folder,payload['interface']]))
         termination.start()
         logging.info(f"{payload['interface']} started termination thread")
+    connectMutex.release()
     return HTTPResponse(status=200, body="link terminated")
 
 listen = '::' if config['listen'] == "public" else f"{subnetPrefix}.{config['id']}.1"
