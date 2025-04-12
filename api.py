@@ -292,12 +292,12 @@ def index():
         return HTTPResponse(status=400, body="Invalid link name")
     #support older versions that are using Serv
     if os.path.isfile(f"{folder}/links/{payload['interface']}Serv.sh"): payload['interface'] = f"{payload['interface']}Serv"
+    #block any other requests to prevent issues regarding port and ip assignment
+    connectMutex.acquire()
     #check if interface exists
     if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
         logging.info(f"Invalid link from {requestIP}")
         return HTTPResponse(status=400, body="invalid link")
-    #block any other requests to prevent issues regarding port and ip assignment
-    connectMutex.acquire()
     #read private key
     with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
     #get public key from private key
