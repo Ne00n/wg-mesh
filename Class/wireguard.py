@@ -402,7 +402,7 @@ class Wireguard(Base):
             targetSplit = mapping[ip]['target'].split(".")
             #reserve 10.0.200+ for clients, don't mesh
             if int(targetSplit[2]) >= 200: continue
-            if mapping[ip]['target'] in existing: continue
+            if ip in existing: continue
             self.connect(f"http://{mapping[ip]['target']}:{self.config['listenPort']}")
         for link,details in links.items():
             if not details['vxlan'] in terminate: continue
