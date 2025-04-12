@@ -292,6 +292,9 @@ class Wireguard(Base):
                 linkType = self.config['defaultLinkType']
             else:
                 linkType = "default"
+        else:
+            if not linkType in data['linkTypes']:
+                linkType = "default"
         for run in range(2):
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
