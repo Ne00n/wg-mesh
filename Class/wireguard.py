@@ -362,7 +362,7 @@ class Wireguard(Base):
     def proximity(self,cutoff=0):
         fpingTargets, existing = [],[]
         links = self.getLinks()
-        for link,details in links.items(): existing.append(details['vxlan'])
+        for link,details in links.items(): existing.append(details['remotePublic'])
         print("Getting Routes")
         targets = self.getRoutes(self.subnetPrefixSplitted)
         print("Getting Connection info")
@@ -392,7 +392,7 @@ class Wireguard(Base):
         result.append("-------\t-------\t-------\t-------")
         for ip,latency in latencyData.items(): 
             if latency > float(cutoff): terminate.append(mapping[ip]['target'])
-            result.append(f"{mapping[ip]['target']}\t{ip}\t{bool(mapping[ip]['target'] in existing)}\t{latency}ms")
+            result.append(f"{mapping[ip]['target']}\t{ip}\t{bool(ip in existing)}\t{latency}ms")
         result = self.formatTable(result)
         if cutoff == 0: 
             print(result)
