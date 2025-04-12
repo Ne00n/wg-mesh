@@ -388,11 +388,11 @@ class Wireguard(Base):
         for ip in fping: latencyData[ip] = self.getAvrg(fping[ip])
         latencyData = {k: latencyData[k] for k in sorted(latencyData, key=latencyData.get)}
         terminate, result = [], []
-        result.append("Target\tIP address\tConnected\tLatency")
-        result.append("-------\t-------\t-------\t-------")
+        result.append("Target\tIP address\tCity\tConnected\tLatency")
+        result.append("-------\t-------\t-------\t-------\t-------")
         for ip,latency in latencyData.items(): 
             if latency > float(cutoff): terminate.append(mapping[ip]['target'])
-            result.append(f"{mapping[ip]['target']}\t{ip}\t{bool(ip in existing)}\t{latency}ms")
+            result.append(f"{mapping[ip]['target']}\t{ip}\t{mapping[ip]['location']}\t{bool(ip in existing)}\t{latency}ms")
         result = self.formatTable(result)
         if cutoff == 0: 
             print(result)
