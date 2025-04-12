@@ -216,6 +216,9 @@ class CLI(Base):
                     else:
                         config['AllowedPeers'].append(value)
                 else:
+                    #rewrite awg to amneziawg
+                    if key == "defaultLinkType" and value == "awg": 
+                        value = "amneziawg"
                     config[key] = value
                 response = self.saveJson(config,f"{self.path}/configs/config.json")
                 if not response:
