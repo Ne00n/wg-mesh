@@ -366,18 +366,20 @@ class Wireguard(Base):
         print("Getting Routes")
         targets = self.getRoutes(self.subnetPrefixSplitted)
         print("Getting Connection info")
-        ips = {}
+        mapping = {}
         local = f"{self.subnetPrefix}.{self.config['id']}.1"
         for target in targets:
             target = target.replace("0/30","1")
-            if target == local:
+            if target == local: 
                 print(f"Skipping {target} since local.")
                 continue
             resp = self.AskProtocol(f'http://{target}:{self.config["listenPort"]}','')
             if not resp: continue
-            ips[resp['connectivity']['ipv4']] = target
-            ips[resp['connectivity']['ipv6']] = target
-        for ip in ips:
+            location = "n/a"
+            if "geo" in resp['connectivity'] and "city" in resp['connectivity']["geo"]: location = resp['connectivity']['geo']['city']
+            if not resp['connectivity']['ipv4'] in mapping: mapping[resp['connectivity']['ipv4']] = {"target":target,"location":location}
+            if not resp['connectivity']['ipv6'] in mapping: mapping[resp['connectivity']['ipv6']] = {"target":target,"location":location}
+        for ip in mapping:
             if ip != None: fpingTargets.append(ip)
         print("Getting Latency")
         fping = self.fping(fpingTargets,10)
@@ -389,19 +391,19 @@ class Wireguard(Base):
         result.append("Target\tIP address\tConnected\tLatency")
         result.append("-------\t-------\t-------\t-------")
         for ip,latency in latencyData.items(): 
-            if latency > float(cutoff): terminate.append(ips[ip])
-            result.append(f"{ips[ip]}\t{ip}\t{bool(ips[ip] in existing)}\t{latency}ms")
+            if latency > float(cutoff): terminate.append(mapping[ip]['target'])
+            result.append(f"{mapping[ip]['target']}\t{ip}\t{bool(mapping[ip]['target'] in existing)}\t{latency}ms")
         result = self.formatTable(result)
         if cutoff == 0: 
             print(result)
             return True
         for ip,latency in latencyData.items():
             if latency > float(cutoff): continue 
-            targetSplit = ips[ip].split(".")
+            targetSplit = mapping[ip]['target'].split(".")
             #reserve 10.0.200+ for clients, don't mesh
             if int(targetSplit[2]) >= 200: continue
-            if ips[ip] in existing: continue
-            self.connect(f"http://{ips[ip]}:{self.config['listenPort']}")
+            if mapping[ip]['target'] in existing: continue
+            self.connect(f"http://{mapping[ip]['target']}:{self.config['listenPort']}")
         for link,details in links.items():
             if not details['vxlan'] in terminate: continue
             self.disconnect([link])
