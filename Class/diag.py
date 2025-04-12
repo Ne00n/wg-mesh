@@ -32,7 +32,7 @@ class Diag(Base):
             if not "endpoint" in data['config']: continue
             linkConfig = self.readJson(f'{self.path}/links/{data["filename"]}.json')
             #have to check the linkType, currently no logic for different link types so we just skip them for now
-            if "linkType" in linkConfig and linkConfig['linkType'] != "default":
+            if not "linkType" in linkConfig or linkConfig['linkType'] != "default":
                 self.logger.warning(f"{link} has non default linkType, skipping")
                 continue
             parsed, remote = self.getRemote(data['config'],self.subnetPrefixSplitted)
