@@ -267,15 +267,15 @@ def index():
         return HTTPResponse(status=400, body="invalid public key")
     #update
     wg.setInterface(payload['interface'],"down")
-    #since cost adjustments go through a pipe, there needs to be a mutex
-    if "cost" in payload: updateMutex.acquire()
+    #always apply the mutex
+    updateMutex.acquire()
     logging.info(f"{payload['interface']} updating link")
     wg.updateLink(payload['interface'],payload)
     wg.setInterface(payload['interface'],"up")
     #the pipe is fetched every 100ms, make sure we wait until the data is fetched
     if "cost" in payload:
         time.sleep(0.1)
-        updateMutex.release()
+    updateMutex.release()
     return HTTPResponse(status=200, body="link updated")
 
 @route('/disconnect', method='POST')
