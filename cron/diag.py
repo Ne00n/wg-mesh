@@ -37,6 +37,10 @@ while not shutdown:
     if currentTime > waitUntil:
         #check for lock file
         if os.path.isfile(f"{path}/cron/lock"):
+            if time.time() - os.path.getmtime(f"{path}/cron/lock") > (60 * 60 * 3):
+                logger.info(f"Lockfile is older than 3 hours, removing")
+                os.unlink(f"{path}/cron/lock")
+                continue
             logger.info(f"Waiting for lock")
             time.sleep(60)
             continue
