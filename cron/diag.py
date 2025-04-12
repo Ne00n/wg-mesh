@@ -36,11 +36,13 @@ while not shutdown:
     currentTime = int(time.time())
     if currentTime > waitUntil:
         #check for lock file
-        if os.path.isfile(f"{path}/cron/lock"): 
-            time.sleep(10)
+        if os.path.isfile(f"{path}/cron/lock"):
+            logger.info(f"Waiting for lock")
+            time.sleep(60)
             continue
         #we need a lock file, since rotate and diag could conflict with each other
         open(f"{path}/cron/lock",'w').close()
+        logger.info(f"Running")
         diag.run()
         #clear lock file
         os.unlink(f"{path}/cron/lock")

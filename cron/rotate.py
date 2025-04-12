@@ -44,10 +44,12 @@ while not shutdown:
     currentTime = int(time.time())
     if currentTime > waitUntil:
         #we need a lock file, since rotate and diag could conflict with each other
-        if os.path.isfile(f"{path}/cron/lock"): 
+        if os.path.isfile(f"{path}/cron/lock"):
+            logger.info(f"Waiting for lock") 
             time.sleep(60)
             continue
         open(f"{path}/cron/lock",'w').close()
+        logger.info(f"Running")
         links = wg.getLinks()
         for link, data in links.items():
             link = wg.filterInterface(link)
