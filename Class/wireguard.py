@@ -376,7 +376,7 @@ class Wireguard(Base):
             resp = self.AskProtocol(f'http://{target}:{self.config["listenPort"]}','')
             if not resp: continue
             location = "n/a"
-            if "geo" in resp['connectivity'] and "city" in resp['connectivity']["geo"]: location = resp['connectivity']['geo']['city']
+            if "geo" in resp and "city" in resp["geo"]: location = resp['geo']['city']
             if not resp['connectivity']['ipv4'] in mapping: mapping[resp['connectivity']['ipv4']] = {"target":target,"location":location}
             if not resp['connectivity']['ipv6'] in mapping: mapping[resp['connectivity']['ipv6']] = {"target":target,"location":location}
         for ip in mapping:
