@@ -9,12 +9,12 @@ class Diag(Base):
         self.wg = Wireguard(path)
         self.path = path
         self.diagnostic = self.readJson(f"{self.path}/configs/diagnostic.json")
-        self.network = self.readJson(f"{self.path}/configs/network.json")
         self.config = self.readJson(f'{self.path}/configs/config.json')
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
 
     def run(self):
-        notifications = self.config['notifications']
+        #refresh network.json on each run
+        self.network = self.readJson(f"{self.path}/configs/network.json")
         self.logger.info("Starting diagnostic")
         if not os.path.isfile(f"{self.path}/configs/state.json"):
             self.logger.warning("state.json does not exist")
@@ -60,6 +60,7 @@ class Diag(Base):
                 self.logger.info(f"Unable to reach endpoint {link} ({endpoint})")
                 continue
             self.logger.info(f"Dead link confirmed {link} ({remote})")
+            notifications = self.config['notifications']
             if notifications['enabled'] and notifications['gotifyDiag']: 
                 self.wg.notify(notifications['gotifyDiag'],f"{link} disconnecting",f"Node {self.config['id']} disconnecting {link}")
             self.logger.info(f"Disconnecting {link}")
