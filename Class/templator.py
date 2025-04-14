@@ -8,8 +8,9 @@ class Templator:
         amneziawg = ""
         wgPrefix = "awg" if linkType == "amneziawg" else "wg"
         if linkType == "amneziawg" and "amneziawg" in payload:
+            amneziawg = f"sudo {wgPrefix} set {interface}"
             for key, value in payload['amneziawg'].items():
-                amneziawg += f"{key} {value} "
+                amneziawg += f" {key} {value} "
         wgProtocol = "amneziawg" if linkType == "amneziawg" else "wireguard"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
@@ -23,7 +24,8 @@ if [ "$1" == "up" ];  then
     sudo ip link add dev {interface} type {wgProtocol}
     sudo ip address add dev {interface} {freeSubnet}
     sudo ip -6 address add dev {interface} {freeSubnetv6}
-    sudo {wgPrefix} set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {clientPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0 {amneziawg}
+    sudo {wgPrefix} set {interface} listen-port {serverPort} private-key /opt/wg-mesh/links/{interface}.key peer {clientPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0
+    {amneziawg}
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
 else
@@ -38,6 +40,7 @@ fi'''
         amneziawg = ""
         wgPrefix = "awg" if linkType == "amneziawg" else "wg"
         if linkType == "amneziawg" and "amneziawg" in resp:
+            amneziawg = f"sudo {wgPrefix} set {interface}"
             for key, value in resp['amneziawg'].items():
                 amneziawg += f"{key} {value} "
         wgProtocol = "amneziawg" if linkType == "amneziawg" else "wireguard"
@@ -53,7 +56,8 @@ if [ "$1" == "up" ];  then
     sudo ip link add dev {interface} type {wgProtocol}
     sudo ip address add dev {interface} {freeSubnet}
     sudo ip -6 address add dev {interface} {freeSubnetv6}
-    sudo {wgPrefix} set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0 endpoint {serverIPExternal}:{serverPort} {amneziawg}
+    sudo {wgPrefix} set {interface} private-key /opt/wg-mesh/links/{interface}.key peer {serverPublicKey} preshared-key /opt/wg-mesh/links/{interface}.pre allowed-ips 0.0.0.0/0,::0/0 endpoint {serverIPExternal}:{serverPort}
+    {amneziawg}
     sudo ip link set {interface} mtu {mtu}
     sudo ip link set up dev {interface}
 else
