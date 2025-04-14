@@ -3,7 +3,7 @@ from Class.wireguard import Wireguard
 from Class.templator import Templator
 from Class.base import Base
 from Class.bird import Bird
-import subprocess, logging, time, sys, os
+import subprocess, logging, time, sys, os, re
 
 class CLI(Base):
 
@@ -25,6 +25,12 @@ class CLI(Base):
 
     def connect(self,dest,token,linkType="default",port=51820,network=""):
         self.wg = Wireguard(self.path)
+        config = self.wg.getConfig()
+        if dest.startswith("pipe"):
+            pipeTarget = re.findall(f"^{config['prefix']}([0-9]+)",dest, re.MULTILINE)
+            if not pipeTarget: exit("Failed to parse pipe")
+            subnetPrefix = ".".join(config['subnet'].split(".")[:2])
+            dest = f"http://{subnetPrefix}.{pipeTarget[0]}.1:8080"
         status = self.wg.connect(dest,token,linkType,port,network)
         if self.wg.getInitial:
             if not status['v4'] and not status['v6']:
