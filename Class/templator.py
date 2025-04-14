@@ -42,7 +42,7 @@ fi'''
         if linkType == "amneziawg" and "amneziawg" in resp:
             amneziawg = f"sudo {wgPrefix} set {interface}"
             for key, value in resp['amneziawg'].items():
-                amneziawg += f"{key} {value} "
+                amneziawg += f" {key} {value}"
         wgProtocol = "amneziawg" if linkType == "amneziawg" else "wireguard"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
