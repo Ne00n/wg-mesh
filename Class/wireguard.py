@@ -252,6 +252,26 @@ class Wireguard(Base):
             links[filename] = {"filename":filename,"vxlan":destination,"local":local,"remote":remote,'remotePublic':remotePublic,'publicKey':publicKey,"area":area,"config":config}
         return links
 
+    def genAmneziaConfig(self):
+        config = {}
+        #number of junk packages
+        config['Jc'] = random.randint(3, 10)
+        #junk package minimum size
+        config['Jmin'] = random.randint(10, 50)
+        #junk package maximum size
+        config['Jmax'] = random.randint(config['Jmin'] + 50, 1000)
+        #junk in handshake
+        numbers = random.sample(range(15,150), 2)
+        config['S1'] = numbers[0]
+        config['S2'] = numbers[1]
+        #user defined types
+        numbers = random.sample(range(15,4294967295), 4)
+        config['H1'] = numbers[0]
+        config['H2'] = numbers[1]
+        config['H3'] = numbers[2]
+        config['H4'] = numbers[3]
+        return config
+
     def AskProtocol(self,dest,token=""):
         #ask remote about available protocols
         req = self.call(f'{dest}/connectivity',{"token":token})
