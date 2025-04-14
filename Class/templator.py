@@ -37,8 +37,8 @@ fi'''
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         amneziawg = ""
         wgPrefix = "awg" if linkType == "amneziawg" else "wg"
-        if linkType == "amneziawg" and "amneziawg" in payload:
-            for key, value in payload['amneziawg'].items():
+        if linkType == "amneziawg" and "amneziawg" in resp:
+            for key, value in resp['amneziawg'].items():
                 amneziawg += f"{key} {value} "
         wgProtocol = "amneziawg" if linkType == "amneziawg" else "wireguard"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
