@@ -216,7 +216,7 @@ def index():
         logging.info(f"Unable to allocate subnet for wireguard link, {requestIP}")
         return HTTPResponse(status=500, body="Unable to allocate subnet for wireguard link.")
     #amneziawg
-    if payload['linkType'] == "amneziawg": payload["amneziawg"] = self.wg.genAmneziaConfig()
+    if payload['linkType'] == "amneziawg": payload["amneziawg"] = wg.genAmneziaConfig()
     #generate wireguard config
     serverConfig = templator.genServer(interface,config,payload,freeSubnet,freeSubnetv6,freePort,wgobfsSharedKey)
     #save
