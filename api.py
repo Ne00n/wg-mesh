@@ -215,6 +215,8 @@ def index():
         connectMutex.release()
         logging.info(f"Unable to allocate subnet for wireguard link, {requestIP}")
         return HTTPResponse(status=500, body="Unable to allocate subnet for wireguard link.")
+    #amneziawg
+    if payload['linkType'] == "amneziawg": payload["amneziawg"] = self.wg.genAmneziaConfig()
     #generate wireguard config
     serverConfig = templator.genServer(interface,config,payload,freeSubnet,freeSubnetv6,freePort,wgobfsSharedKey)
     #save
@@ -236,8 +238,11 @@ def index():
         wg.setInterface("dummy","up")
     connectMutex.release()
     logging.info(f"{interface} created for {requestIP}")
-    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id']
-    ,'freeSubnet':wg.Network.getHost(freeSubnet),"freeSubnetv6":wg.Network.getHost(freeSubnetv6,"127"),'freePort':freePort,'connectivity':config['connectivity']})
+    response = {"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id']
+    ,'freeSubnet':wg.Network.getHost(freeSubnet),"freeSubnetv6":wg.Network.getHost(freeSubnetv6,"127"),'freePort':freePort,'connectivity':config['connectivity']}
+    #append config if amneziawg
+    if payload['linkType'] == "amneziawg": response["amneziawg"] = payload['amneziawg']
+    return HTTPResponse(status=200, body=response)
 
 @route('/update', method='PATCH')
 def index():
