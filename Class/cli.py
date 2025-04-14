@@ -30,7 +30,7 @@ class CLI(Base):
             pipeTarget = re.findall(f"^{config['prefix']}([0-9]+)",dest, re.MULTILINE)
             if not pipeTarget: exit("Failed to parse pipe")
             subnetPrefix = ".".join(config['subnet'].split(".")[:2])
-            dest = f"http://{subnetPrefix}.{pipeTarget[0]}.1:8080"
+            dest = f"http://{subnetPrefix}.{pipeTarget[0]}.1:{config['listenPort']}"
         status = self.wg.connect(dest,token,linkType,port,network)
         if self.wg.getInitial:
             if not status['v4'] and not status['v6']:
