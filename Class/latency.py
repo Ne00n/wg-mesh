@@ -270,7 +270,8 @@ class Latency(Base):
                 self.linkState[row['nic']]['state'] = 1
                 self.network[row['target']]['state'] = 1
                 self.logger.warning(f"Link {row['nic']} is up")
-                if notifications['enabled'] and notifications['gotifyUp'] and notifications['gotifyUp'] != "disabled":
+                #send push notifcations out only the first time and every 5th time, instead of everytime...
+                if self.linkState[row['nic']]['outages'] == 1 or self.linkState[row['nic']]['outages'] % 5 == 0 and notifications['enabled'] and notifications['gotifyUp'] and notifications['gotifyUp'] != "disabled":
                     messages['up'].append([1,copy.deepcopy(row)])
             elif self.linkState[nic]['state'] and row['cost'] == 65535:
                 self.linkState[row['nic']]['state'] = 0
@@ -278,7 +279,8 @@ class Latency(Base):
                 self.linkState[row['nic']]['outages'] += 1
                 self.network[row['target']]['outages'] += 1
                 self.logger.warning(f"Link {row['nic']} is down")
-                if notifications['enabled'] and notifications['gotifyDown'] and notifications['gotifyDown'] != "disabled":
+                #send push notifcations out only the first time and every 5th time, instead of everytime...
+                if self.linkState[row['nic']]['outages'] == 1 or self.linkState[row['nic']]['outages'] % 5 == 0 and notifications['enabled'] and notifications['gotifyDown'] and notifications['gotifyDown'] != "disabled":
                     messages['down'].append([0,copy.deepcopy(row)])
             #if the difference suddenly is bigger than or equal 20ms, trigger an mtr + ignore negative changes
             elif diff >= 20 and diff <= 2000:
