@@ -61,14 +61,12 @@ class Diag(Base):
                 continue
             self.logger.info(f"Dead link confirmed {link} ({remote})")
             notifications = self.config['notifications']
-            if notifications['enabled'] and notifications['gotifyDiag']: 
-                self.wg.notify(notifications['gotifyDiag'],f"{link} disconnecting {self.diagnostic[remote]['retries']}",f"Node {self.config['id']} disconnecting {link}")
             self.logger.info(f"Disconnecting {link}")
             status = self.wg.disconnect([link])
             if not status[link]:
                 self.logger.warning(f"Failed to disconnect {link} ({remote})")
                 if notifications['enabled'] and notifications['gotifyDiag']: 
-                    self.wg.notify(notifications['gotifyDiag'],f"{link} disconnect failure",f"Node {self.config['id']} failed to disconnect {link}")
+                    self.wg.notify(notifications['gotifyDiag'],f"{link} disconnect failure {self.diagnostic[remote]['retries']}",f"Node {self.config['id']} failed to disconnect {link}")
                 continue
             time.sleep(3)
             self.logger.info(f"Reconnecting {link}")
@@ -77,7 +75,7 @@ class Diag(Base):
             if status['v4'] or status['v6']:
                 self.logger.info(f"Reconnected {link} ({remote}) with Port {port}")
                 if notifications['enabled'] and notifications['gotifyDiag']: 
-                    self.wg.notify(notifications['gotifyDiag'],f"{link} reconnected",f"Node {self.config['id']} reconnected {link}")
+                    self.wg.notify(notifications['gotifyDiag'],f"{link} reconnected {self.diagnostic[remote]['retries']}",f"Node {self.config['id']} reconnected {link}")
             else:
                 self.logger.info(f"Could not reconnect {link} ({remote})")
                 if notifications['enabled'] and notifications['gotifyDiag']: 
