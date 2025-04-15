@@ -62,7 +62,7 @@ class Diag(Base):
             self.logger.info(f"Dead link confirmed {link} ({remote})")
             notifications = self.config['notifications']
             if notifications['enabled'] and notifications['gotifyDiag']: 
-                self.wg.notify(notifications['gotifyDiag'],f"{link} disconnecting",f"Node {self.config['id']} disconnecting {link}")
+                self.wg.notify(notifications['gotifyDiag'],f"{link} disconnecting {self.diagnostic[remote]['retries']}",f"Node {self.config['id']} disconnecting {link}")
             self.logger.info(f"Disconnecting {link}")
             status = self.wg.disconnect([link])
             if not status[link]:
