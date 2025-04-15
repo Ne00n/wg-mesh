@@ -266,7 +266,7 @@ class Wireguard(Base):
         config['s1'] = numbers[0]
         config['s2'] = numbers[1]
         #user defined types
-        numbers = random.sample(range(15,4294967295), 4)
+        numbers = random.sample(range(15,2147483647), 4)
         config['h1'] = numbers[0]
         config['h2'] = numbers[1]
         config['h3'] = numbers[2]
