@@ -63,11 +63,15 @@ class Diag(Base):
             notifications = self.config['notifications']
             self.logger.info(f"Disconnecting {link}")
             status = self.wg.disconnect([link])
-            if not status[link]:
+            if not status[link]['success']:
                 self.logger.warning(f"Failed to disconnect {link} ({remote})")
-                if notifications['enabled'] and notifications['gotifyDiag']: 
-                    self.wg.notify(notifications['gotifyDiag'],f"{link} disconnect failure ({self.diagnostic[remote]['retries']})",f"Node {self.config['id']} failed to disconnect {link}")
-                continue
+                if status[link]['message'] == "invalid link":
+                    self.wg.removeInterface(link)
+                    self.logger.info(f"Removed link {link} ({remote})")
+                else:
+                    if notifications['enabled'] and notifications['gotifyDiag']: 
+                        self.wg.notify(notifications['gotifyDiag'],f"{link} disconnect failure ({self.diagnostic[remote]['retries']})",f"Node {self.config['id']} failed to disconnect {link}")
+                    continue
             time.sleep(3)
             self.logger.info(f"Reconnecting {link}")
             port = random.randint(1024, 50000)
