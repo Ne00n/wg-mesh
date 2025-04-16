@@ -240,3 +240,22 @@ class CLI(Base):
         
     def cost(self,link,cost=0):
         self.wg.setCost(link,cost)
+
+    def debug(self,targetLink):
+        self.wg = Wireguard(self.path)
+        links = self.wg.getLinks()
+        mapping = {}
+        for currentLink, details in links.items():
+            if f"{targetLink}.sh" == currentLink:
+                mapping = {details['remote']:"Public",details['vxlan']:"VXLAN",details['remotePublic']:"Public"}
+                targets = [details['vxlan'],details['remote'],details['remotePublic']]
+                fping = self.wg.fping(targets,3,True)
+        if not mapping: return
+        print("Ping results")
+        for ip, pings in fping.items():
+            print(f"{mapping[ip]}: {len(pings)} of 3")
+        if details['remotePublic']:
+            print(f"Running MTR")
+            mtr = self.cmd(f'mtr {details['remotePublic']} --report --report-cycles 3 --no-dns')
+            if not mtr[0] and mtr[1]: mtr[0] = mtr[1]
+            print(mtr[0])

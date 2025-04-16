@@ -65,5 +65,8 @@ elif sys.argv[1] == "cost":
     if len(sys.argv) <= 2: exit("link missing")
     cost = None if len(sys.argv) <= 3 else int(sys.argv[3])
     cli.cost(sys.argv[2],cost)
+elif sys.argv[1] == "debug":
+    if len(sys.argv) <= 2: exit("link missing")
+    cli.debug(sys.argv[2])
 else:
     print(options)
