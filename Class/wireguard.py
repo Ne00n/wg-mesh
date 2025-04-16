@@ -275,8 +275,8 @@ class Wireguard(Base):
 
     def AskProtocol(self,dest,token=""):
         #ask remote about available protocols
-        req = self.call(f'{dest}/connectivity',{"token":token})
-        if req == False: return False
+        success, req = self.call(f'{dest}/connectivity',{"token":token})
+        if success == False: return False
         if req.status_code != 200:
             print("Failed to request connectivity info")
             return False
@@ -321,8 +321,8 @@ class Wireguard(Base):
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
             "ipv6":isv6,"initial":self.isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
             if port != 51820: payload["port"] = port
-            req = self.call(f'{dest}/connect',payload)
-            if req == False: return status
+            success, req = self.call(f'{dest}/connect',payload)
+            if success == False: return status
             if req.status_code == 412:
                 print(f"Link already exists to {dest}")
             elif req.status_code == 200:
@@ -486,8 +486,8 @@ class Wireguard(Base):
                 continue
             data = currentLinks[filename]
             print(f'Calling http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect')
-            req = self.call(f'http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
-            if req == False and force == False: 
+            success, req = self.call(f'http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
+            if success == False and force == False: 
                 status[filename] = {"success":False,"message":""}
                 continue
             if force or req.status_code == 200:
