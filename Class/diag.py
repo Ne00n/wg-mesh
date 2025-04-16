@@ -66,7 +66,7 @@ class Diag(Base):
             if not status[link]['success']:
                 self.logger.warning(f"Failed to disconnect {link} ({remote})")
                 if status[link]['message'] == "invalid link":
-                    self.wg.removeInterface(link)
+                    self.wg.removeInterface(link.replace(".sh",""))
                     self.logger.info(f"Removed link {link} ({remote})")
                 else:
                     if notifications['enabled'] and notifications['gotifyDiag']: 
