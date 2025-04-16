@@ -123,7 +123,7 @@ class Base:
         return parsed[0]
 
     def call(self,url,payload,method="POST",headers={},max=5):
-        allowedCodes = [200,412]
+        allowedCodes, crashed = [200,412], False
         for run in range(1,max):
             try:
                 if method == "POST":
@@ -132,10 +132,12 @@ class Base:
                     req = requests.get(url, headers=headers, timeout=(5,5))
                 else:
                     req = requests.patch(url, json=payload, timeout=(5,5))
-                if req.status_code in allowedCodes: return req
+                if req.status_code in allowedCodes: return True,req
+                crashed = False
             except Exception as ex:
+                crashed = True
                 pass
-            if run == 4 and req:
+            if run == 4 and not crashed:
                 return False,req
             elif run == 4:
                 return False,None
