@@ -487,7 +487,7 @@ class Wireguard(Base):
             data = currentLinks[filename]
             print(f'Calling http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect')
             success, req = self.call(f'http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
-            if success == False and force == False: 
+            if success == False and force == False and req is None: 
                 status[filename] = {"success":False,"message":""}
                 continue
             if force or req.status_code == 200:
