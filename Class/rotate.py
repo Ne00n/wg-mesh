@@ -11,6 +11,9 @@ class Rotate(Base):
         self.config = self.readJson(f'{self.path}/configs/config.json')
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
 
+    def setRemoteCost(self,config,data,interfaceRemote,cost=0):
+        return self.call(f'http://{data["vxlan"]}:{config["listenPort"]}/update',{"cost":cost,"publicKeyServer":data['publicKey'],"interface":interfaceRemote},'PATCH')
+
     def run(self,targetInterface):
         self.rotate = self.readJson(f"{self.path}/configs/rotate.json")
         self.logger.info(f"Running")
@@ -28,8 +31,8 @@ class Rotate(Base):
                 self.logger.info(f"{link} swapping xor keys")
                 interfaceRemote = self.wg.getInterfaceRemote(link)
                 self.logger.info(f"{link} increasing remote cost")
-                req = setRemoteCost(5000)
-                if not req:
+                success, req = setRemoteCost(self.config,data,interfaceRemote,5000)
+                if not success:
                     self.logger.warning(f"{link} Failed to increase remote cost")
                     if notifications['enabled']: self.wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"Node {config['id']} Failed to increase remote cost")
                     continue
@@ -38,8 +41,8 @@ class Rotate(Base):
                 if not result:
                     self.logger.warning(f"Failed to increase local cost")
                     if notifications['enabled']: self.wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"Node {config['id']} Failed to increase local cost")
-                    req = setRemoteCost(0)
-                    if not req: self.logger.warning(f"{link} Failed to remove remote cost")
+                    success, req = setRemoteCost(self.config,data,interfaceRemote,0)
+                    if not success: self.logger.warning(f"{link} Failed to remove remote cost")
                     continue
                 self.logger.info(f"{link} waiting 60s for cost to apply")
                 time.sleep(60)
@@ -47,14 +50,14 @@ class Rotate(Base):
                 self.wg.setInterface(link,"down")
                 self.logger.info(f"{link} updating remote xor keys")
                 xorKey = secrets.token_urlsafe(24)
-                req = self.wg.call(f'http://{data["vxlan"]}:{config["listenPort"]}/update',{"xorKey":xorKey,"publicKeyServer":data['publicKey'],"interface":interfaceRemote},'PATCH')
-                if not req:
+                success, req = self.wg.call(f'http://{data["vxlan"]}:{config["listenPort"]}/update',{"xorKey":xorKey,"publicKeyServer":data['publicKey'],"interface":interfaceRemote},'PATCH')
+                if not success:
                     self.logger.warning(f"{link} Failed to update remote xor keys")
                     if notifications['enabled']: self.wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"Node {config['id']} Failed to update remote xor keys")
                     self.logger.info(f"{link} restoring link state")
                     self.wg.setCost(link,0)
                     self.wg.setInterface(link,"up")
-                    setRemoteCost(0)
+                    setRemoteCost(self.config,data,interfaceRemote,0)
                     self.logger.info(f"{link} restored link state")
                     continue
                 self.logger.info(f"{link} updating local xor keys")
@@ -62,8 +65,8 @@ class Rotate(Base):
                 self.logger.info(f"{link} starting link")
                 self.wg.setInterface(link,"up")
                 self.logger.info(f"{link} removing remote cost")
-                req = setRemoteCost(0)
-                if not req: 
+                success, req = setRemoteCost(self.config,data,interfaceRemote,0)
+                if not success: 
                     self.logger.warning(f"{link} Failed to remove remote cost")
                     if notifications['enabled']: self.wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"Node {config['id']} Failed to remove remote cost")
                 self.logger.info(f"{link} removing local cost")
