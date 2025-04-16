@@ -70,9 +70,9 @@ class CLI(Base):
 
     def geo(self):
         headers = {"Origin":"https://ip-api.com"}
-        geoDataRaw = self.call("https://demo.ip-api.com/json/?fields=66842623",{},"GET",headers)
-        if geoDataRaw:
-            geoData = geoDataRaw.json()
+        success, req = self.call("https://demo.ip-api.com/json/?fields=66842623",{},"GET",headers)
+        if success:
+            geoData = req.json()
             config = self.readJson(f'{self.path}/configs/config.json')
             if not "geo" in config: config['geo'] = {}
             config['geo']['countryCode'] = geoData['countryCode']
