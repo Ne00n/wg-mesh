@@ -24,9 +24,6 @@ notifications = config['notifications']
 targetInterface = ""
 if len(sys.argv) == 2: targetInterface = sys.argv[1]
 
-def setRemoteCost(cost=0):
-    return wg.call(f'http://{data["vxlan"]}:{config["listenPort"]}/update',{"cost":cost,"publicKeyServer":data['publicKey'],"interface":interfaceRemote},'PATCH')
-
 shutdown = False
 def gracefulExit(signal_number,stack_frame):
     systemd.daemon.notify('STOPPING=1')
