@@ -133,13 +133,12 @@ class Base:
                 else:
                     req = requests.patch(url, json=payload, timeout=(5,5))
                 if req.status_code in allowedCodes: return req
-                print(f"Got {req.text} as response")
             except Exception as ex:
-                print(f"Error {ex}")
-            print(f"Run {run} of 4")
-            if run == 4:
-                print("Aborting, limit reached.")
-                return False
+                pass
+            if run == 4 and req:
+                return False,req
+            elif run == 4:
+                return False,None
             time.sleep(2)
 
     def formatTable(self,list):
@@ -162,5 +161,5 @@ class Base:
 
     def notify(self,server,title,message,priority=5):
         payload = {'title':title, 'message':message, 'priority':priority}
-        req = self.call(server,payload,"POST")
-        if req: return True
+        success, req = self.call(server,payload,"POST")
+        if success: return True
