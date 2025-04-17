@@ -68,7 +68,7 @@ class Diag(Base):
                 if not pings[remotePublic]:
                     self.logger.info(f"Unable to reach public ip address, likely routing problems {link}")
                     continue
-                self.logger.info(f"Running MTR")
+                self.logger.debug(f"Running MTR")
                 mtr = self.cmd(f'mtr {remotePublic} --report --report-cycles 3 --no-dns')
                 #if the mtr fails to run, grab the error message instead
                 if not mtr[0] and mtr[1]: mtr[0] = mtr[1]
