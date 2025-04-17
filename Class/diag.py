@@ -60,15 +60,16 @@ class Diag(Base):
             if not pings[endpoint]:
                 self.logger.info(f"Unable to reach vxlan endpoint {link} ({endpoint})")
                 continue
-            self.logger.debug(f"Pinging remotePublic {data['remotePublic']}")
-            pings = self.fping([data["remotePublic"]],3,True)
-            if not pings[endpoint]:
-                self.logger.info(f"Unable to reach public ip address, likely routing problems {link}")
-                continue
             notifications = self.config['notifications']
-            if data['remotePublic']:
+            remotePublic = data['remotePublic']
+            if remotePublic:
+                self.logger.debug(f"Pinging public ip {remotePublic}")
+                pings = self.fping([remotePublic],3,True)
+                if not pings[remotePublic]:
+                    self.logger.info(f"Unable to reach public ip address, likely routing problems {link}")
+                    continue
                 self.logger.info(f"Running MTR")
-                mtr = self.cmd(f'mtr {data["remotePublic"]} --report --report-cycles 3 --no-dns')
+                mtr = self.cmd(f'mtr {remotePublic} --report --report-cycles 3 --no-dns')
                 #if the mtr fails to run, grab the error message instead
                 if not mtr[0] and mtr[1]: mtr[0] = mtr[1]
                 mtrLines = mtr[0].splitlines()
