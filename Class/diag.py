@@ -60,6 +60,7 @@ class Diag(Base):
                 self.logger.info(f"Unable to reach endpoint {link} ({endpoint})")
                 continue
             self.logger.info(f"Dead link confirmed {link} ({remote})")
+            notifications = self.config['notifications']
             if data['remotePublic']:
                 self.logger.info(f"Running MTR")
                 mtr = self.cmd(f'mtr {data["remotePublic"]} --report --report-cycles 3 --no-dns')
@@ -71,7 +72,6 @@ class Diag(Base):
                     self.logger.warning(f"MTR shows routing issue, skipping {link}")
                     if notifications['enabled'] and notifications['gotifyDiag']: self.wg.notify(notifications['gotifyDiag'],f"{link} MTR shows routing issue",mtr[0])
                     continue
-            notifications = self.config['notifications']
             self.logger.info(f"Disconnecting {link}")
             status = self.wg.disconnect([link])
             if not status[link]['success']:
