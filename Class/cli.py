@@ -250,6 +250,7 @@ class CLI(Base):
                 mapping = {details['remote']:"Remote",details['vxlan']:"VXLAN",details['remotePublic']:"Public"}
                 targets = [details['vxlan'],details['remote'],details['remotePublic']]
                 fping = self.wg.fping(targets,3,True)
+                break
         if not mapping: return
         print("Ping results")
         for ip, pings in fping.items():
