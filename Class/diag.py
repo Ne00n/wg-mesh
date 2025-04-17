@@ -70,7 +70,6 @@ class Diag(Base):
                 mtrLastLine = mtrLines[len(mtrLines) -1]
                 if "???" in mtrLastLine:
                     self.logger.warning(f"MTR shows routing issue, skipping {link}")
-                    if notifications['enabled'] and notifications['gotifyDiag']: self.wg.notify(notifications['gotifyDiag'],f"{link} MTR shows routing issue",mtr[0])
                     continue
             self.logger.info(f"Disconnecting {link}")
             status = self.wg.disconnect([link])
