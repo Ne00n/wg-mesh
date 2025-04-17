@@ -55,11 +55,16 @@ class Diag(Base):
                 self.logger.info(f"{link} got {count}, 20 are needed for confirmation")
                 continue
             endpoint = data['vxlan']
+            self.logger.debug(f"Pinging vxlan {endpoint}")
             pings = self.fping([endpoint],3,True)
             if not pings[endpoint]:
-                self.logger.info(f"Unable to reach endpoint {link} ({endpoint})")
+                self.logger.info(f"Unable to reach vxlan endpoint {link} ({endpoint})")
                 continue
-            self.logger.info(f"Dead link confirmed {link} ({remote})")
+            self.logger.debug(f"Pinging remotePublic {data['remotePublic']}")
+            pings = self.fping([data["remotePublic"]],3,True)
+            if not pings[endpoint]:
+                self.logger.info(f"Unable to reach public ip address, likely routing problems {link}")
+                continue
             notifications = self.config['notifications']
             if data['remotePublic']:
                 self.logger.info(f"Running MTR")
@@ -71,6 +76,7 @@ class Diag(Base):
                 if "???" in mtrLastLine:
                     self.logger.warning(f"MTR shows routing issue, skipping {link}")
                     continue
+            self.logger.info(f"Dead link confirmed {link} ({remote})")
             self.logger.info(f"Disconnecting {link}")
             status = self.wg.disconnect([link])
             if not status[link]['success']:
