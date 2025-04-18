@@ -93,6 +93,8 @@ class Diag(Base):
                         self.wg.notify(notifications['gotifyDiag'],f"{link} disconnect failure ({self.diagnostic[remote]['retries']})",f"Node {self.config['id']} failed to disconnect {link}")
                     continue
             time.sleep(3)
+            if "linkType" in linkConfig:
+                self.logger.info(f"Current linkType is {linkConfig['linkType']}")
             self.logger.debug(f"Selecting linkType")
             linkData = self.wg.AskProtocol(f"http://{endpoint}:8080")
             linkType = ""
