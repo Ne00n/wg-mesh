@@ -216,9 +216,11 @@ def index():
         logging.info(f"Unable to allocate subnet for wireguard link, {requestIP}")
         return HTTPResponse(status=500, body="Unable to allocate subnet for wireguard link.")
     #amneziawg
-    if payload['linkType'] == "amneziawg" and config['linkSettings']['awgGen']: 
+    amneziaConfig = wg.genAmneziaConfig()
+    #check if amnezia is requested but also if we are using vanilla amnezia or with modded config
+    if payload['linkType'] == "amneziawg" and config['linkSettings']['awgGen'] and amneziaConfig:
         payload["amneziawg"] = wg.genAmneziaConfig()
-        configAsString = ''.join(f"{k}:{v}," for k, v in payload['amneziawg'].items())
+        configAsString = ''.join(f"{k}:{v}," for k, v in amneziaConfig.items())
         logging.info(f"Used config for amneziawg: {configAsString}")
     #generate wireguard config
     serverConfig = templator.genServer(interface,config,payload,freeSubnet,freeSubnetv6,freePort,wgobfsSharedKey)

@@ -255,6 +255,9 @@ class Wireguard(Base):
 
     def genAmneziaConfig(self):
         config = {}
+        #vanillaAmnezia switch
+        vanilla = random.randint(0, 1)
+        if vanilla: return config
         #junkPackage switch
         junkPackages = random.randint(0, 1)
         if junkPackages:
