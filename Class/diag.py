@@ -100,8 +100,8 @@ class Diag(Base):
             linkType = ""
             if linkData:
                 availableLinkTypes = self.wg.availableLinkTypes(self.config,linkData)
-                self.logger.info(f"Selected linkType is {linkType}")
                 linkType = random.choice(availableLinkTypes)
+                self.logger.info(f"Selected linkType is {linkType}")
             self.logger.info(f"Reconnecting {link}")
             port = random.randint(1024, 50000)
             status = self.wg.connect(f"http://{endpoint}:8080","dummy",linkType,port)
