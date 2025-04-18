@@ -255,12 +255,15 @@ class Wireguard(Base):
 
     def genAmneziaConfig(self):
         config = {}
-        #number of junk packages
-        config['jc'] = random.randint(3, 10)
-        #junk package minimum size
-        config['jmin'] = random.randint(10, 50)
-        #junk package maximum size
-        config['jmax'] = random.randint(config['jmin'] + 50, 1000)
+        #junkPackage switch
+        junkPackages = random.randint(0, 1)
+        if junkPackages:
+            #number of junk packages
+            config['jc'] = random.randint(3, 10)
+            #junk package minimum size
+            config['jmin'] = random.randint(10, 50)
+            #junk package maximum size
+            config['jmax'] = random.randint(config['jmin'] + 50, 1000)
         #junk in handshake
         numbers = random.sample(range(15,150), 2)
         config['s1'] = numbers[0]
