@@ -13,6 +13,7 @@ class Wireguard(Base):
         if not os.path.isfile(f"{self.path}/configs/config.json"): exit("Config missing")
         self.config = self.readJson(f'{self.path}/configs/config.json')
         if onlyConfig: return
+        self.amneziaConfig = {}
         self.Network = Network(self.config)
         self.prefix = self.config['prefix']
         self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
@@ -254,7 +255,7 @@ class Wireguard(Base):
         return links
 
     def genAmneziaConfig(self):
-        config = {}
+        self.amneziaConfig = config = {}
         #vanillaAmnezia switch
         vanilla = random.randint(0, 1)
         if vanilla: return config
@@ -277,7 +278,11 @@ class Wireguard(Base):
         config['h2'] = numbers[1]
         config['h3'] = numbers[2]
         config['h4'] = numbers[3]
+        self.amneziaConfig = config
         return config
+
+    def getAmneziaConfig(self):
+        return self.amneziaConfig
 
     def AskProtocol(self,dest,token=""):
         #ask remote about available protocols
