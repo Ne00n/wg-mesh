@@ -93,9 +93,16 @@ class Diag(Base):
                         self.wg.notify(notifications['gotifyDiag'],f"{link} disconnect failure ({self.diagnostic[remote]['retries']})",f"Node {self.config['id']} failed to disconnect {link}")
                     continue
             time.sleep(3)
+            self.logger.debug(f"Selecting linkType")
+            linkData = self.wg.AskProtocol(f"http://{endpoint}:8080")
+            linkType = ""
+            if linkData:
+                availableLinkTypes = self.wg.availableLinkTypes(self.config,linkData)
+                self.logger.info(f"Selected linkType is {linkType}")
+                linkType = random.choice(availableLinkTypes)
             self.logger.info(f"Reconnecting {link}")
             port = random.randint(1024, 50000)
-            status = self.wg.connect(f"http://{endpoint}:8080","dummy","",port)
+            status = self.wg.connect(f"http://{endpoint}:8080","dummy",linkType,port)
             if status['v4'] or status['v6']:
                 self.logger.info(f"Reconnected {link} ({remote}) with Port {port}")
                 if notifications['enabled'] and notifications['gotifyDiag']: 
