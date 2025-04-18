@@ -283,6 +283,12 @@ class Wireguard(Base):
         data = req.json()
         return data
 
+    def availableLinkTypes(self,local,remote):
+        available = []
+        for linkType in remote['linkTypes']:
+            if linkType in local['linkTypes']: available.append(linkType)
+        return available
+
     def subnetSwitch(self,network=""):
         if "Peer" in network:
             return self.subnetPeerPrefix,self.subnetPeerPrefixSplitted
