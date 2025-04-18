@@ -263,7 +263,7 @@ class Wireguard(Base):
         junkPackages = random.randint(0, 1)
         if junkPackages:
             #number of junk packages
-            config['jc'] = random.randint(3, 10)
+            config['jc'] = random.randint(2, 5)
             #junk package minimum size
             config['jmin'] = random.randint(10, 50)
             #junk package maximum size
