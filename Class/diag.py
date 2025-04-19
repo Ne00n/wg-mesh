@@ -42,7 +42,7 @@ class Diag(Base):
             self.logger.info(f"Found dead link {link} ({remote})")
             if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0,"retries":0}
             if self.diagnostic[remote]['cooldown'] > current: 
-                self.logger.info(f"Skipping {link} due to cooldown")
+                self.logger.debug(f"Skipping {link} due to cooldown")
                 continue
             self.diagnostic[remote]['cooldown'] = current + random.randint(21600,43200)
             self.diagnostic[remote]['retries'] += 1
