@@ -149,8 +149,10 @@ class Latency(Base):
                             self.noWait += 1
                         ongoingLoss += 1
 
-                    #Jitter
-                    if self.config['bird']['jitter']:
+                    #Grab linkID
+                    linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",node['nic'], re.MULTILINE)[0]
+                    #Jitter if enabled and not client
+                    if self.config['bird']['jitter'] and int(linkID) <= 200:
                         hasJitter,peakJitter = self.checkJitter(row,entry)
                         if hasJitter:
                             #keep jitter events for 30 minutes
@@ -168,7 +170,6 @@ class Latency(Base):
 
                     total += 1
                     #if within 200-255 range (client) adjust base cost/weight to avoid transit
-                    linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",node['nic'], re.MULTILINE)[0]
                     if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (node['cost'] + 10000) < 65535: node['cost'] += 10000
                     #make sure its always int
                     node['cost'] = int(round(node['cost']))
