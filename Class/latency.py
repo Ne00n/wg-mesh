@@ -152,7 +152,7 @@ class Latency(Base):
                     #Grab linkID
                     linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",node['nic'], re.MULTILINE)[0]
                     #Jitter if enabled and not client
-                    if self.config['bird']['jitter'] and int(linkID) <= 200:
+                    if self.config['bird']['jitter'] and int(linkID) < 200:
                         hasJitter,peakJitter = self.checkJitter(row,entry)
                         if hasJitter:
                             #keep jitter events for 30 minutes
