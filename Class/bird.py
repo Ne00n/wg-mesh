@@ -28,7 +28,7 @@ class Bird(Base):
             for entry,row in latency.items():
                 if entry == data['target']:
                     if len(row) < 5: self.logger.warning(f"Expected 5 pings, got {len(row)} from {data['target']}, possible Packetloss")
-                    data['base'] = data['cost'] = self.getAvrg(row,False)
+                    data['base'] = data['cost'] = self.getAvrg(row) * 10
                     if data['cost'] == 65535: self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
                     break
                 #apparently fping 4.2 and 5.0 result in different outputs, neat, so we keep this
