@@ -29,12 +29,12 @@ class Bird(Base):
                 if entry == data['target']:
                     if len(row) < 5: self.logger.warning(f"Expected 5 pings, got {len(row)} from {data['target']}, possible Packetloss")
                     data['base'] = data['cost'] = self.getAvrg(row) * 10
-                    if data['cost'] == 65535: self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
+                    if data['cost'] == 65534: self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
                     break
                 #apparently fping 4.2 and 5.0 result in different outputs, neat, so we keep this
                 elif data['target'] not in latency and not "latency" in data:
                     self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
-                    data['base'] = data['cost'] = 65535
+                    data['base'] = data['cost'] = 65534
                     break
         if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
         return targets
@@ -102,7 +102,7 @@ class Bird(Base):
             #if client adjust base latency to avoid transit
             for data in latencyData:
                 linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",data['nic'], re.MULTILINE)[0]
-                if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65535: data['cost'] += 10000
+                if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65534: data['cost'] += 10000
         elif self.config['operationMode'] == 2:
             self.logger.info("IPerf messurement")
             latencyData = self.getIPerf(nodes)

@@ -170,11 +170,11 @@ class Latency(Base):
 
                     total += 1
                     #if within 200-255 range (client) adjust base cost/weight to avoid transit
-                    if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (node['cost'] + 10000) < 65535: node['cost'] += 10000
+                    if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (node['cost'] + 10000) < 65534: node['cost'] += 10000
                     #make sure its always int
                     node['cost'] = int(round(node['cost']))
                     #make sure we stay below max int
-                    if node['cost'] > 65535: node['cost'] = 65535
+                    if node['cost'] > 65534: node['cost'] = 65534
                     #make sure we always stay over zero
                     #in case of a typo and you connect to itself, it may cause a weight to be measured at zero
                     if node['cost'] < 0: node['cost'] = 1
@@ -267,14 +267,14 @@ class Latency(Base):
             oldRow = self.getRecentLatencyData(row['target'])
             diff = round((row['base'] / 10) - (oldRow['base'] / 10))
             nic = row['nic']
-            if not self.linkState[nic]['state'] and row['cost'] != 65535:
+            if not self.linkState[nic]['state'] and row['cost'] != 65534:
                 self.linkState[row['nic']]['state'] = 1
                 self.network[row['target']]['state'] = 1
                 self.logger.warning(f"Link {row['nic']} is up")
                 #send push notifcations out only the first time and every 5th time, instead of everytime...
                 if self.linkState[row['nic']]['outages'] == 1 or self.linkState[row['nic']]['outages'] % 5 == 0 and notifications['enabled'] and notifications['gotifyUp'] and notifications['gotifyUp'] != "disabled":
                     messages['up'].append([1,copy.deepcopy(row)])
-            elif self.linkState[nic]['state'] and row['cost'] == 65535:
+            elif self.linkState[nic]['state'] and row['cost'] == 65534:
                 self.linkState[row['nic']]['state'] = 0
                 self.network[row['target']]['state'] = 0
                 self.linkState[row['nic']]['outages'] += 1

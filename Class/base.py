@@ -81,14 +81,14 @@ class Base:
 
     def getAvrg(self,row):
         result,actual = 0,0
-        if not row: return 65535
+        if not row: return 65534
         for entry in row:
             #ignore timed out
             if entry[0] == "timed out": continue
             result += float(entry[0])
             actual += 1
         #do not return 0, never, ever
-        if result == 0: return 65535
+        if result == 0: return 65534
         #make sure its not below one
         if result < 1: result = 1
         result =  int(float(result / actual))
