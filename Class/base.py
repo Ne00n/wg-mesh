@@ -108,7 +108,7 @@ class Base:
             latency[ip].append([ms,loss])
         for ip in unreachable:
             if ip not in latency: latency[ip] = []
-            if not dropTimeout: latency[ip].append([65000,100])
+            if not dropTimeout: latency[ip].append([65534,100])
         return latency
 
     def iperf(self,target):
