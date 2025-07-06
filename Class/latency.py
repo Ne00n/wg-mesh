@@ -118,7 +118,7 @@ class Latency(Base):
                     #get average
                     current = self.getAvrg(row) * 10
                     if current > 65534: current = 65534
-                    data['base'] = data['cost'] = current
+                    node['base'] = node['cost'] = current
                     if node['nic'] in self.linkState: node['cost'] += self.linkState[node['nic']]['cost']
                     if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{},"latency":[],"outages":0,"state":1}
                     #if latency doesn't exist in network.json create it
