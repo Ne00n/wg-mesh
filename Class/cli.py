@@ -254,7 +254,7 @@ class CLI(Base):
         if not mapping: return
         print("Ping results")
         for ip, pings in fping.items():
-            print(f"{mapping[ip]}: {len(pings)} of 3 {ip}")
+            print(f"{mapping[ip]}: {len(pings)} of 3 ({ip})")
         if details['remotePublic']:
             print(f"Running MTR to {details['remotePublic']}")
             mtr = self.cmd(f'mtr {details["remotePublic"]} --report --report-cycles 5')
