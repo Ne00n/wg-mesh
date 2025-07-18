@@ -7,6 +7,7 @@ class Bird(Base):
     Templator = Templator()
 
     def __init__(self,path,logger):
+        super().__init__() 
         self.config = self.readJson(f'{path}/configs/config.json')
         self.subnetPrefixSplitted = self.config['subnet'].split(".")
         self.prefix = self.config['prefix']

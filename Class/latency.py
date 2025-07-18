@@ -10,6 +10,7 @@ class Latency(Base):
     Templator = Templator()
 
     def __init__(self,path,logger):
+        super().__init__()
         self.wg = Wireguard(path)
         self.latencyData = {}
         self.logger = logger
