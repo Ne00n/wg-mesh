@@ -7,6 +7,7 @@ class Wireguard(Base):
     Templator = Templator()
 
     def __init__(self,path,skip=False,onlyConfig=False):
+        super().__init__()
         self.path = path
         self.isInitial = False
         if skip: return
