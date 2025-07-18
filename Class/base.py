@@ -102,7 +102,7 @@ class Base:
         fping += " ".join(targets)
         result = self.cmd(fping)
         parsed = []
-        for row in result[0].splitlines(): parsed.append(fpingMatch.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",row, re.MULTILINE))
+        for row in result[0].splitlines(): parsed.append(self.fpingMatch.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",row, re.MULTILINE))
         unreachable = re.findall("ICMP Host Unreachable from [0-9.]+ for ICMP Echo sent to ([0-9.]+)",result[1], re.MULTILINE)
         if not parsed: return {}
         latency =  {}
