@@ -2,6 +2,9 @@ import subprocess, requests, netaddr, shutil, time, json, re, os
 from ipaddress import ip_network
 
 class Base:
+
+    def __init__(self):
+        self.fpingMatch = re.compile(r"([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss")
     
     def cmd(self,cmd,timeout=None):
         try:
@@ -98,14 +101,16 @@ class Base:
         fping = f"fping -c {pings} "
         fping += " ".join(targets)
         result = self.cmd(fping)
-        parsed = re.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",result[0], re.MULTILINE)
+        parsed = []
+        for row in result[0].splitlines(): parsed.append(fpingMatch.findall("([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss",row, re.MULTILINE))
         unreachable = re.findall("ICMP Host Unreachable from [0-9.]+ for ICMP Echo sent to ([0-9.]+)",result[1], re.MULTILINE)
         if not parsed: return {}
         latency =  {}
-        for ip,ms,loss in parsed:
-            if ip not in latency: latency[ip] = []
-            if dropTimeout and ms == "timed out": continue
-            latency[ip].append([ms,loss])
+        for row in parsed:
+            for ip,ms,loss in row:
+                if ip not in latency: latency[ip] = []
+                if dropTimeout and ms == "timed out": continue
+                latency[ip].append([ms,loss])
         for ip in unreachable:
             if ip not in latency: latency[ip] = []
             if not dropTimeout: latency[ip].append([65534,100])
