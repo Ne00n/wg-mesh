@@ -5,6 +5,7 @@ class Base:
 
     def __init__(self):
         self.fpingMatch = re.compile(r"([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss")
+        self.fpingUnreachable = re.compile(r"ICMP Host Unreachable from [0-9.]+ for ICMP Echo sent to ([0-9.]+)")
     
     def cmd(self,cmd,timeout=None):
         try:
@@ -101,9 +102,9 @@ class Base:
         fping = f"fping -c {pings} "
         fping += " ".join(targets)
         result = self.cmd(fping)
-        parsed = []
+        parsed, unreachable = [], []
         for row in result[0].splitlines(): parsed.append(re.findall(self.fpingMatch,row))
-        unreachable = re.findall("ICMP Host Unreachable from [0-9.]+ for ICMP Echo sent to ([0-9.]+)",result[1], re.MULTILINE)
+        for row in result[1].splitlines(): unreachable.append(re.findall(self.fpingUnreachable,row))
         if not parsed: return {}
         latency =  {}
         for row in parsed:
@@ -111,9 +112,10 @@ class Base:
                 if ip not in latency: latency[ip] = []
                 if dropTimeout and ms == "timed out": continue
                 latency[ip].append([ms,loss])
-        for ip in unreachable:
-            if ip not in latency: latency[ip] = []
-            if not dropTimeout: latency[ip].append([65534,100])
+        for row in unreachable:
+            for ip in row:
+                if ip not in latency: latency[ip] = []
+                if not dropTimeout: latency[ip].append([65534,100])
         return latency
 
     def iperf(self,target):
