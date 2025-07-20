@@ -19,15 +19,15 @@ class Network(Base):
     def getSubnetPeerSplitted(self):
         return self.subnetPeerSplitted
 
-    def getRoutes(self,subnetPrefixSplitted=None):
-        if subnetPrefixSplitted is None: subnetPrefixSplitted = self.subnetSplitted
+    def getRoutes(self,subnetSplitted=None):
+        if subnetSplitted is None: subnetSplitted = self.subnetSplitted
         routes = self.cmd("birdc show route")[0]
-        return re.findall(f"({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
+        return re.findall(f"({subnetSplitted[0]}\.{subnetSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
 
-    def getBirdLinks(self,subnetPrefixSplitted=None):
-        if subnetPrefixSplitted is None: subnetPrefixSplitted = self.subnetSplitted
+    def getBirdLinks(self,subnetSplitted=None):
+        if subnetSplitted is None: subnetSplitted = self.subnetSplitted
         configs = self.cmd('ip addr show')[0]
-        return re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet ({subnetPrefixSplitted[0]}[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
+        return re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet ({subnetSplitted[0]}[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
 
     def getNodeSubnet(self):
         if self.config['subnet'].startswith("10."):
