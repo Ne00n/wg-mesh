@@ -20,7 +20,6 @@ class Latency(Base):
         self.lastReload = int(time.time()) + 600
         self.currentLinks = self.wg.getLinks(False)
         self.config = self.readJson(f'{path}/configs/config.json')
-        self.subnetPrefixSplitted = self.config['subnet'].split(".")
         self.network = self.readJson(f"{path}/configs/network.json")
         if not self.network: self.network = {"created":int(time.time()),"updated":0}
 

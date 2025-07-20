@@ -9,7 +9,6 @@ class Rotate(Base):
         self.wg = Wireguard(path)
         self.path = path
         self.config = self.readJson(f'{self.path}/configs/config.json')
-        self.subnetPrefixSplitted = self.config['subnet'].split(".")
 
     def setRemoteCost(self,config,data,interfaceRemote,cost=0):
         return self.call(f'http://{data["vxlan"]}:{config["listenPort"]}/update',{"cost":cost,"publicKeyServer":data['publicKey'],"interface":interfaceRemote},'PATCH')

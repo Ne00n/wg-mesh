@@ -10,7 +10,6 @@ class Diag(Base):
         self.path = path
         self.diagnostic = self.readJson(f"{self.path}/configs/diagnostic.json")
         self.config = self.readJson(f'{self.path}/configs/config.json')
-        self.subnetPrefixSplitted = self.config['subnet'].split(".")
 
     def run(self):
         #refresh network.json on each run
