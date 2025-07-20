@@ -1,6 +1,7 @@
+from Class.base import Base
 import ipaddress
 
-class Network:
+class Network(Base):
 
     def __init__(self,config):
         self.config = config
