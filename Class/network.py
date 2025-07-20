@@ -1,5 +1,5 @@
 from Class.base import Base
-import ipaddress
+import ipaddress, re
 
 class Network(Base):
 
