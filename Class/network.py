@@ -7,10 +7,8 @@ class Network:
         self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
 
     def getNodeSubnet(self):
-        if self.config['subnet'].startswith("10.") and self.config['networkID'] == 0:
+        if self.config['subnet'].startswith("10."):
             return f"{self.subnetPrefix}.{self.config['id']}.0/23"
-        elif self.config['subnet'].startswith("10."):
-            return f"10.{self.config['networkID']}.{self.config['id']}.0/23"
         else:
             return f"{self.subnetPrefix}.{self.config['id']}.0/24"
 
