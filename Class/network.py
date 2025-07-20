@@ -14,7 +14,7 @@ class Network(Base):
         return ".".join(self.config[selector].split("."))
 
     def getSubnetSplitted(self):
-        return self.SubnetSplitted
+        return self.subnetSplitted
 
     def getSubnetPeerSplitted(self):
         return self.subnetPeerSplitted
