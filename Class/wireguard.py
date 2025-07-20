@@ -384,7 +384,7 @@ class Wireguard(Base):
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
     def getUsedIDs(self):
-        targets = self.getRoutes(self.subnetSplitted)
+        targets = self.Network.getRoutes()
         parsed = re.findall(f"([0-9]+).0\/30",", ".join(targets), re.MULTILINE)
         parsed.sort(key = int)
         return parsed
@@ -406,7 +406,7 @@ class Wireguard(Base):
         links = self.getLinks()
         for link,details in links.items(): existing.append(details['remotePublic'])
         print("Getting Routes")
-        targets = self.getRoutes(self.subnetSplitted)
+        targets = self.Network.getRoutes()
         print("Getting Connection info")
         mapping = {}
         local = f"{self.subnetSplitted[:2]}.{self.config['id']}.1"
