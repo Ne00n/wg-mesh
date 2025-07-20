@@ -3,6 +3,7 @@ from bottle import HTTPResponse, route, run, request, template
 from logging.handlers import RotatingFileHandler
 from Class.wireguard import Wireguard
 from Class.templator import Templator
+from Class.validate import Validate
 from threading import Thread
 from random import randint
 from pathlib import Path
@@ -13,6 +14,8 @@ folder = os.path.dirname(os.path.realpath(__file__))
 #wireguard
 wg = Wireguard(folder)
 config = wg.getConfig()
+#validation
+validate = Validate()
 #pull subnetPrefix
 subnetPrefix = ".".join(config['subnet'].split(".")[:2])
 #templator
@@ -58,11 +61,6 @@ def block(requestIP,check=False):
         del blocklist[requestIP]
     else:
         return True
-
-def validateID(id):
-    result = re.findall(r"^[0-9]{1,4}$",str(id),re.MULTILINE | re.DOTALL)
-    if not result: return False
-    return True
 
 def validatePort(port):
     result = re.findall(r"^[0-9]{4,5}$",str(port),re.MULTILINE | re.DOTALL)
@@ -147,7 +145,7 @@ def index():
         block(requestIP)
         return HTTPResponse(status=401, body="Invalid Token")
     #validate id
-    if not 'id' in payload or not validateID(payload['id']): 
+    if not 'id' in payload or not validate.ID(payload['id']): 
         logging.info(f"Invalid ID from {requestIP}")
         return HTTPResponse(status=400, body="Invalid ID")
     #validate port
@@ -167,7 +165,7 @@ def index():
         logging.info(f"Invalid linkType from {requestIP}")
         return HTTPResponse(status=400, body="Invalid linkType")
     #validate area
-    if "area" in payload and not validateID(payload['area']):
+    if "area" in payload and not validate.ID(payload['area']):
         logging.info(f"Invalid Area from {requestIP}")
         return HTTPResponse(status=400, body="Invalid Area")
     #validate connectivity

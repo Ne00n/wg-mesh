@@ -1,5 +1,6 @@
 import urllib.request, ipaddress, requests, random, string, json, time, re, os
 from Class.templator import Templator
+from Class.validate import Validate
 from Class.network import Network
 from Class.base import Base
 
@@ -17,6 +18,7 @@ class Wireguard(Base):
         self.amneziaConfig = {}
         self.Network = Network(self.config)
         self.prefix = self.config['prefix']
+        self.validate = Validate()
 
     def updateConfig(self):
         reconfigureDummy = False
@@ -352,7 +354,7 @@ class Wireguard(Base):
                 self.setInterface(interface,"up")
                 status["v6" if isv6 else "v4"] = True
                 #updating networkID on initial setup
-                if 'networkID' in resp and resp['networkID'] != 0 and self.isInitial:
+                if 'networkID' in resp and resp['networkID'] != 0 and self.isInitial and self.validate.ID(resp['networkID']):
                     self.config['networkID'] = resp['networkID']
                     self.saveJson(self.config,f'{self.path}/configs/config.json')
             else:
