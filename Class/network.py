@@ -6,14 +6,18 @@ class Network(Base):
     def __init__(self,config):
         self.config = config
         self.prefix = self.config['prefix']
-        self.subnetPrefix = self.getSubnetOctet(splitBy=2)
+        self.subnetSplitted = self.getSubnetOctet()
+        self.subnetPeerSplitted = self.getSubnetOctet(isPeer=True)
 
-    def getSubnetOctet(self,splitBy=0,isPeer=False):
+    def getSubnetOctet(self,isPeer=False):
         selector = 'subnetPeer' if isPeer else 'subnet'
-        if splitBy == 0:
-            return ".".join(self.config[selector].split("."))
-        else:
-            return ".".join(self.config[selector].split(".")[:splitBy])
+        return ".".join(self.config[selector].split("."))
+
+    def getSubnetSplitted(self):
+        return self.SubnetSplitted
+
+    def getSubnetPeerSplitted(self):
+        return self.subnetPeerSplitted
 
     def getRoutes(self,subnetPrefixSplitted=self.getSubnetOctet()):
         routes = self.cmd("birdc show route")[0]
@@ -25,9 +29,9 @@ class Network(Base):
 
     def getNodeSubnet(self):
         if self.config['subnet'].startswith("10."):
-            return f"{self.subnetPrefix}.{self.config['id']}.0/23"
+            return f"{self.subnetSplitted[:2]}.{self.config['id']}.0/23"
         else:
-            return f"{self.subnetPrefix}.{self.config['id']}.0/24"
+            return f"{self.subnetSplitted[:2]}.{self.config['id']}.0/24"
 
     def getNodeSubnetv6(self):
         return f"{self.config['subnetLinkLocal']}{self.config['id']}::/112"

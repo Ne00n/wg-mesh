@@ -17,8 +17,6 @@ class Wireguard(Base):
         self.amneziaConfig = {}
         self.Network = Network(self.config)
         self.prefix = self.config['prefix']
-        self.subnetSplitted = self.Network.getSubnetOctet()
-        self.subnetPeerSplitted = self.Network.getSubnetOctet(isPeer=True)
 
     def updateConfig(self):
         reconfigureDummy = False
@@ -194,7 +192,7 @@ class Wireguard(Base):
         offline,online = self.checkLinks(links)
         for link in offline:
             data = links[link]
-            parsed, remote = self.getRemote(data['config'],self.subnetSplitted)
+            parsed, remote = self.getRemote(data['config'],self.Network.getSubnetSplitted())
             print(f"Found dead link {link} ({remote})")
             pings = self.fping([data['vxlan']],3,True)
             if ignoreEndpoint or not pings or not pings[data['vxlan']]:
@@ -257,7 +255,7 @@ class Wireguard(Base):
     def genAmneziaConfig(self):
         self.amneziaConfig = config = {}
         #vanillaAmnezia switch
-        vanilla = random.randint(0, 1)
+        vanilla = random.randint(0, 1)getSubnetPeerSplitted
         if vanilla: return config
         #junkPackage switch
         junkPackages = random.randint(0, 1)
@@ -302,9 +300,9 @@ class Wireguard(Base):
 
     def subnetSwitch(self,network=""):
         if "Peer" in network:
-            return self.subnetPeerSplitted
+            return self.Network.getSubnetPeerSplitted()
         else:
-            return self.subnetSplitted
+            return self.Network.getSubnetSplitted()
 
     def connect(self,dest,token="",linkType="",port=51820,network=""):
         print(f"Connecting to {dest}")
@@ -393,7 +391,7 @@ class Wireguard(Base):
         print("Getting Routes")
         parsed = self.getUsedIDs()
         print("Route Bender nodes.json")
-        for id in parsed: print(f'"{self.subnetSplitted[:2]}.252.{id}",')
+        for id in parsed: print(f'"{self.Network.getSubnetSplitted()[:2]}.252.{id}",')
 
     def used(self):
         print("Getting Routes")
@@ -409,7 +407,7 @@ class Wireguard(Base):
         targets = self.Network.getRoutes()
         print("Getting Connection info")
         mapping = {}
-        local = f"{self.subnetSplitted[:2]}.{self.config['id']}.1"
+        local = f"{self.Network.getSubnetSplitted()[:2]}.{self.config['id']}.1"
         for target in targets:
             target = target.replace("0/30","1")
             if target == local: 
