@@ -159,8 +159,7 @@ class Bird(Base):
             self.logger.debug("state.json already exist, skipping")
         else:
             #fetch network interfaces and parse
-            configs = self.cmd('ip addr show')[0]
-            links = self.Network.getBirdLinks(configs)
+            links = self.Network.getBirdLinks()
             localIP = f"{'.'.join(self.config['subnet'].split('.')[:2])}.{self.config['id']}.1"
             if not links: 
                 self.logger.warning("No wireguard interfaces found") 

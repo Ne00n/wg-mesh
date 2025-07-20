@@ -19,7 +19,8 @@ class Network(Base):
         routes = self.cmd("birdc show route")[0]
         return re.findall(f"({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
 
-    def getBirdLinks(self,configs,subnetPrefixSplitted=self.getSubnetOctet()):
+    def getBirdLinks(self,subnetPrefixSplitted=self.getSubnetOctet()):
+        configs = self.cmd('ip addr show')[0]
         return re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet ({subnetPrefixSplitted[0]}[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
 
     def getNodeSubnet(self):
