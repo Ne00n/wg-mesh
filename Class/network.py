@@ -9,6 +9,7 @@ class Network(Base):
         self.subnetSplitted = self.getSubnetOctet()
         self.subnetPrefix = ".".join(self.subnetSplitted[:2])
         self.subnetPeerSplitted = self.getSubnetOctet(isPeer=True)
+        self.subnetPeerPrefix = ".".join(self.subnetPeerSplitted[:2])
 
     def getSubnetOctet(self,isPeer=False):
         selector = 'subnetPeer' if isPeer else 'subnet'
@@ -19,6 +20,9 @@ class Network(Base):
 
     def getSubnetPeerSplitted(self):
         return self.subnetPeerSplitted
+
+    def getSubnetPeerPrefix(self):
+        return self.subnetPeerPrefix
 
     def getSubnetPrefix(self):
         return self.subnetPrefix

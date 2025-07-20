@@ -217,7 +217,7 @@ class Wireguard(Base):
                 continue
             link = filename.replace(".sh","")
             linkConfig = self.readJson(f"{self.path}/links/{link}.json")
-            subnetSplitted = self.subnetSwitch(filename)
+            subnetSplitted,subnetPrefix = self.subnetSwitch(filename)
             if linkConfig and useJSON:
                 remotePublic = linkConfig['remotePublic']
                 destination = linkConfig['remote']
@@ -241,7 +241,7 @@ class Wireguard(Base):
                 elif "listen-port" in config:
                     #grab ID from filename
                     linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
-                    destination = f"{subnetSplitted[:2]}.{linkID}.1"
+                    destination = f"{subnetPrefix}.{linkID}.1"
             #get remote endpoint
             local, remote = self.getRemote(config,subnetSplitted)
             #grab publickey
@@ -300,9 +300,9 @@ class Wireguard(Base):
 
     def subnetSwitch(self,network=""):
         if "Peer" in network:
-            return self.Network.getSubnetPeerSplitted()
+            return self.Network.getSubnetPeerSplitted(),self.Network.getSubnetPeerPrefix()
         else:
-            return self.Network.getSubnetSplitted()
+            return self.Network.getSubnetSplitted(),self.Network.getSubnetPrefix()
 
     def connect(self,dest,token="",linkType="",port=51820,network=""):
         print(f"Connecting to {dest}")
@@ -310,7 +310,7 @@ class Wireguard(Base):
         clientPrivateKey, clientPublicKey = self.genKeys()
         #initial check
         configs = self.cmd('ip addr show')[0]
-        subnetSplitted = self.subnetSwitch(network)
+        subnetSplitted,subnetPrefix = self.subnetSwitch(network)
         links = self.getBirdLinks(configs,self.prefix,subnetSplitted)
         self.isInitial = False if links else True
         status = {"v4":False,"v6":False}
@@ -334,7 +334,7 @@ class Wireguard(Base):
         for run in range(2):
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
-            "ipv6":isv6,"initial":self.isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":subnetSplitted[:2],"network":network,"connectivity":self.config['connectivity']}
+            "ipv6":isv6,"initial":self.isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
             if port != 51820: payload["port"] = port
             success, req = self.call(f'{dest}/connect',payload)
             if success == False: return status
@@ -348,7 +348,7 @@ class Wireguard(Base):
                 #interface
                 interface = self.getInterface(resp['id'],interfaceType,network)
                 #generate config
-                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,subnetSplitted[:2],data['subnetPrefix'])
+                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,subnetPrefix,data['subnetPrefix'])
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
@@ -391,7 +391,7 @@ class Wireguard(Base):
         print("Getting Routes")
         parsed = self.getUsedIDs()
         print("Route Bender nodes.json")
-        for id in parsed: print(f'"{self.Network.getSubnetSplitted()[:2]}.252.{id}",')
+        for id in parsed: print(f'"{self.Network.getSubnetPrefix()}.252.{id}",')
 
     def used(self):
         print("Getting Routes")
@@ -407,7 +407,7 @@ class Wireguard(Base):
         targets = self.Network.getRoutes()
         print("Getting Connection info")
         mapping = {}
-        local = f"{self.Network.getSubnetSplitted()[:2]}.{self.config['id']}.1"
+        local = f"{self.Network.getSubnetPrefix()}.{self.config['id']}.1"
         for target in targets:
             target = target.replace("0/30","1")
             if target == local: 
