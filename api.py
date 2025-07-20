@@ -145,7 +145,7 @@ def index():
         block(requestIP)
         return HTTPResponse(status=401, body="Invalid Token")
     #validate id
-    if not 'id' in payload or not validate.ID(payload['id']): 
+    if not 'id' in payload or not validate.id(payload['id']): 
         logging.info(f"Invalid ID from {requestIP}")
         return HTTPResponse(status=400, body="Invalid ID")
     #validate port

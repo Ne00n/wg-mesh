@@ -354,7 +354,7 @@ class Wireguard(Base):
                 self.setInterface(interface,"up")
                 status["v6" if isv6 else "v4"] = True
                 #updating networkID on initial setup
-                if 'networkID' in resp and resp['networkID'] != 0 and self.isInitial and self.validate.ID(resp['networkID']):
+                if 'networkID' in resp and resp['networkID'] != 0 and self.isInitial and self.validate.id(resp['networkID']):
                     self.config['networkID'] = resp['networkID']
                     self.saveJson(self.config,f'{self.path}/configs/config.json')
             else:
