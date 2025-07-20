@@ -11,7 +11,7 @@ class Network(Base):
 
     def getSubnetOctet(self,isPeer=False):
         selector = 'subnetPeer' if isPeer else 'subnet'
-        return ".".join(self.config[selector].split("."))
+        return self.config[selector].split(".")
 
     def getSubnetSplitted(self):
         return self.subnetSplitted
