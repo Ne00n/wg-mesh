@@ -26,12 +26,10 @@ def gracefulExit(signal_number,stack_frame):
 signal.signal(signal.SIGINT, gracefulExit)
 signal.signal(signal.SIGTERM, gracefulExit)
 systemd.daemon.notify('READY=1')
-logger.info(f"Ready")
 
 diag = Diag(path,logger)
 waitUntil = 0
-#initial cooldown
-time.sleep(600)
+logger.info(f"Ready")
 while not shutdown:
     currentTime = int(time.time())
     if currentTime > waitUntil:
