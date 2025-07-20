@@ -7,6 +7,7 @@ class Network(Base):
         self.config = config
         self.prefix = self.config['prefix']
         self.subnetSplitted = self.getSubnetOctet()
+        self.subnetPrefix = ".".join(self.subnetSplitted[:2])
         self.subnetPeerSplitted = self.getSubnetOctet(isPeer=True)
 
     def getSubnetOctet(self,isPeer=False):
@@ -18,6 +19,9 @@ class Network(Base):
 
     def getSubnetPeerSplitted(self):
         return self.subnetPeerSplitted
+
+    def getSubnetPrefix(self):
+        return self.subnetPrefix
 
     def getRoutes(self,subnetSplitted=None):
         if subnetSplitted is None: subnetSplitted = self.subnetSplitted
@@ -31,9 +35,9 @@ class Network(Base):
 
     def getNodeSubnet(self):
         if self.config['subnet'].startswith("10."):
-            return f"{self.subnetSplitted[:2]}.{self.config['id']}.0/23"
+            return f"{self.subnetPrefix}.{self.config['id']}.0/23"
         else:
-            return f"{self.subnetSplitted[:2]}.{self.config['id']}.0/24"
+            return f"{self.subnetPrefix}.{self.config['id']}.0/24"
 
     def getNodeSubnetv6(self):
         return f"{self.config['subnetLinkLocal']}{self.config['id']}::/112"
