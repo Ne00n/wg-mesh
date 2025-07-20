@@ -19,11 +19,13 @@ class Network(Base):
     def getSubnetPeerSplitted(self):
         return self.subnetPeerSplitted
 
-    def getRoutes(self,subnetPrefixSplitted=self.getSubnetOctet()):
+    def getRoutes(self,subnetPrefixSplitted=None):
+        if subnetPrefixSplitted is None: subnetPrefixSplitted = self.getSubnetOctet()
         routes = self.cmd("birdc show route")[0]
         return re.findall(f"({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
 
-    def getBirdLinks(self,subnetPrefixSplitted=self.getSubnetOctet()):
+    def getBirdLinks(self,subnetPrefixSplitted=None):
+        if subnetPrefixSplitted is None: subnetPrefixSplitted = self.getSubnetOctet()
         configs = self.cmd('ip addr show')[0]
         return re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet ({subnetPrefixSplitted[0]}[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
 
