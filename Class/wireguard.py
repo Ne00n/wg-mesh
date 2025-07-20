@@ -17,10 +17,8 @@ class Wireguard(Base):
         self.amneziaConfig = {}
         self.Network = Network(self.config)
         self.prefix = self.config['prefix']
-        self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
-        self.subnetPrefixSplitted = self.config['subnet'].split(".")
-        self.subnetPeerPrefix = ".".join(self.config['subnetPeer'].split(".")[:2])
-        self.subnetPeerPrefixSplitted = self.config['subnetPeer'].split(".")
+        self.subnetSplitted = self.Network.getSubnetOctet()
+        self.subnetPeerSplitted = self.Network.getSubnetOctet(isPeer=True)
 
     def updateConfig(self):
         reconfigureDummy = False
@@ -196,7 +194,7 @@ class Wireguard(Base):
         offline,online = self.checkLinks(links)
         for link in offline:
             data = links[link]
-            parsed, remote = self.getRemote(data['config'],self.subnetPrefixSplitted)
+            parsed, remote = self.getRemote(data['config'],self.subnetSplitted)
             print(f"Found dead link {link} ({remote})")
             pings = self.fping([data['vxlan']],3,True)
             if ignoreEndpoint or not pings or not pings[data['vxlan']]:
@@ -221,7 +219,7 @@ class Wireguard(Base):
                 continue
             link = filename.replace(".sh","")
             linkConfig = self.readJson(f"{self.path}/links/{link}.json")
-            subnetPrefix,subnetPrefixSplitted = self.subnetSwitch(filename)
+            subnetSplitted = self.subnetSwitch(filename)
             if linkConfig and useJSON:
                 remotePublic = linkConfig['remotePublic']
                 destination = linkConfig['remote']
@@ -231,7 +229,7 @@ class Wireguard(Base):
                 #grab wg server ip from client wg config
                 if "endpoint" in config:
                     remotePublic = re.findall(f'endpoint\s(.*):',config, re.MULTILINE)[0]
-                    destination = re.findall(f'({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.)',config, re.MULTILINE)
+                    destination = re.findall(f'({subnetSplitted[0]}\.{subnetSplitted[1]}\.[0-9]+\.)',config, re.MULTILINE)
                     if not destination:
                         print(f"Ignoring {filename}")
                         continue
@@ -245,9 +243,9 @@ class Wireguard(Base):
                 elif "listen-port" in config:
                     #grab ID from filename
                     linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
-                    destination = f"{subnetPrefix}.{linkID}.1"
+                    destination = f"{subnetSplitted[:2]}.{linkID}.1"
             #get remote endpoint
-            local, remote = self.getRemote(config,subnetPrefixSplitted)
+            local, remote = self.getRemote(config,subnetSplitted)
             #grab publickey
             publicKey = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)[0]
             #grab area
@@ -304,9 +302,9 @@ class Wireguard(Base):
 
     def subnetSwitch(self,network=""):
         if "Peer" in network:
-            return self.subnetPeerPrefix,self.subnetPeerPrefixSplitted
+            return self.subnetPeerSplitted
         else:
-            return self.subnetPrefix,self.subnetPrefixSplitted
+            return self.subnetSplitted
 
     def connect(self,dest,token="",linkType="",port=51820,network=""):
         print(f"Connecting to {dest}")
@@ -314,8 +312,8 @@ class Wireguard(Base):
         clientPrivateKey, clientPublicKey = self.genKeys()
         #initial check
         configs = self.cmd('ip addr show')[0]
-        subnetPrefix,subnetPrefixSplitted = self.subnetSwitch(network)
-        links = self.getBirdLinks(configs,self.prefix,subnetPrefixSplitted)
+        subnetSplitted = self.subnetSwitch(network)
+        links = self.getBirdLinks(configs,self.prefix,subnetSplitted)
         self.isInitial = False if links else True
         status = {"v4":False,"v6":False}
         #ask remote about available protocols
@@ -338,7 +336,7 @@ class Wireguard(Base):
         for run in range(2):
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
-            "ipv6":isv6,"initial":self.isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
+            "ipv6":isv6,"initial":self.isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":subnetSplitted[:2],"network":network,"connectivity":self.config['connectivity']}
             if port != 51820: payload["port"] = port
             success, req = self.call(f'{dest}/connect',payload)
             if success == False: return status
@@ -352,7 +350,7 @@ class Wireguard(Base):
                 #interface
                 interface = self.getInterface(resp['id'],interfaceType,network)
                 #generate config
-                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,subnetPrefix,data['subnetPrefix'])
+                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,subnetSplitted[:2],data['subnetPrefix'])
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
@@ -386,7 +384,7 @@ class Wireguard(Base):
         self.saveFile(config,f"{self.path}/links/{link}.sh")
 
     def getUsedIDs(self):
-        targets = self.getRoutes(self.subnetPrefixSplitted)
+        targets = self.getRoutes(self.subnetSplitted)
         parsed = re.findall(f"([0-9]+).0\/30",", ".join(targets), re.MULTILINE)
         parsed.sort(key = int)
         return parsed
@@ -395,7 +393,7 @@ class Wireguard(Base):
         print("Getting Routes")
         parsed = self.getUsedIDs()
         print("Route Bender nodes.json")
-        for id in parsed: print(f'"{self.subnetPrefix}.252.{id}",')
+        for id in parsed: print(f'"{self.subnetSplitted[:2]}.252.{id}",')
 
     def used(self):
         print("Getting Routes")
@@ -408,10 +406,10 @@ class Wireguard(Base):
         links = self.getLinks()
         for link,details in links.items(): existing.append(details['remotePublic'])
         print("Getting Routes")
-        targets = self.getRoutes(self.subnetPrefixSplitted)
+        targets = self.getRoutes(self.subnetSplitted)
         print("Getting Connection info")
         mapping = {}
-        local = f"{self.subnetPrefix}.{self.config['id']}.1"
+        local = f"{self.subnetSplitted[:2]}.{self.config['id']}.1"
         for target in targets:
             target = target.replace("0/30","1")
             if target == local: 
