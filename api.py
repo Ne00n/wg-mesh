@@ -165,7 +165,7 @@ def index():
         logging.info(f"Invalid linkType from {requestIP}")
         return HTTPResponse(status=400, body="Invalid linkType")
     #validate area
-    if "area" in payload and not validate.ID(payload['area']):
+    if "area" in payload and not validate.id(payload['area']):
         logging.info(f"Invalid Area from {requestIP}")
         return HTTPResponse(status=400, body="Invalid Area")
     #validate connectivity
