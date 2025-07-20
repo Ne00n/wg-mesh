@@ -4,7 +4,14 @@ class Network:
 
     def __init__(self,config):
         self.config = config
-        self.subnetPrefix = ".".join(self.config['subnet'].split(".")[:2])
+        self.subnetPrefix = self.getSubnetOctet(splitBy=2)
+
+    def getSubnetOctet(self,splitBy=0,isPeer=False):
+        selector = 'subnetPeer' if isPeer else 'subnet'
+        if splitBy == 0:
+            return ".".join(self.config[selector].split("."))
+        else:
+            return ".".join(self.config[selector].split(".")[:splitBy])
 
     def getNodeSubnet(self):
         if self.config['subnet'].startswith("10."):
