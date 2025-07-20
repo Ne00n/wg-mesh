@@ -5,8 +5,9 @@ from Class.base import Base
 class Diag(Base):
 
     def __init__(self,path,logger):
-        self.logger = logger
         self.wg = Wireguard(path)
+        self.logger = logger
+        super().__init__()
         self.path = path
         self.diagnostic = self.readJson(f"{self.path}/configs/diagnostic.json")
         self.config = self.readJson(f'{self.path}/configs/config.json')

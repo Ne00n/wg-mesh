@@ -5,6 +5,7 @@ from Class.base import Base
 class Rotate(Base):
 
     def __init__(self,path,logger):
+        super().__init__()
         self.logger = logger
         self.wg = Wireguard(path)
         self.path = path
