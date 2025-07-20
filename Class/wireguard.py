@@ -217,7 +217,7 @@ class Wireguard(Base):
                 continue
             link = filename.replace(".sh","")
             linkConfig = self.readJson(f"{self.path}/links/{link}.json")
-            subnetSplitted,subnetPrefix = self.subnetSwitch(filename)
+            subnetSplitted,subnetPrefix = self.Network.subnetSwitch(filename)
             if linkConfig and useJSON:
                 remotePublic = linkConfig['remotePublic']
                 destination = linkConfig['remote']
@@ -298,19 +298,13 @@ class Wireguard(Base):
             if linkType in local['linkTypes']: available.append(linkType)
         return available
 
-    def subnetSwitch(self,network=""):
-        if "Peer" in network:
-            return self.Network.getSubnetPeerSplitted(),self.Network.getSubnetPeerPrefix()
-        else:
-            return self.Network.getSubnetSplitted(),self.Network.getSubnetPrefix()
-
     def connect(self,dest,token="",linkType="",port=51820,network=""):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
         #initial check
         configs = self.cmd('ip addr show')[0]
-        subnetSplitted,subnetPrefix = self.subnetSwitch(network)
+        subnetSplitted,subnetPrefix = self.Network.subnetSwitch(network)
         links = self.getBirdLinks(configs,self.prefix,subnetSplitted)
         self.isInitial = False if links else True
         status = {"v4":False,"v6":False}

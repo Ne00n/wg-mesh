@@ -15,17 +15,11 @@ class Network(Base):
         selector = 'subnetPeer' if isPeer else 'subnet'
         return self.config[selector].split(".")
 
-    def getSubnetSplitted(self):
-        return self.subnetSplitted
-
-    def getSubnetPeerSplitted(self):
-        return self.subnetPeerSplitted
-
-    def getSubnetPeerPrefix(self):
-        return self.subnetPeerPrefix
-
-    def getSubnetPrefix(self):
-        return self.subnetPrefix
+    def subnetSwitch(self,network=""):
+        if "Peer" in network:
+            return self.subnetPeerSplitted,self.subnetPeerPrefix
+        else:
+            return self.subnetSplitted,self.subnetPrefix
 
     def getRoutes(self,subnetSplitted=None):
         if subnetSplitted is None: subnetSplitted = self.subnetSplitted
@@ -61,3 +55,9 @@ class Network(Base):
     def getHost(self,freeSubnet,suffix="31"):
         peerSubnet = ipaddress.ip_network(freeSubnet)
         return f"{list(peerSubnet.hosts())[1]}/{suffix}"
+
+    def getSubnetSplitted(self):
+        return self.subnetSplitted
+
+    def getSubnetPrefix(self):
+        return self.subnetPrefix
