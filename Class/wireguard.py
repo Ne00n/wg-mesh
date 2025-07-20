@@ -361,6 +361,10 @@ class Wireguard(Base):
                 self.saveJson(linkConfig,f"{self.path}/links/{interface}.json")
                 self.setInterface(interface,"up")
                 status["v6" if isv6 else "v4"] = True
+                #updating networkID on initial setup
+                if resp['networkID'] and resp['networkID'] != 0 and self.isInitial:
+                    self.config['networkID'] = resp['networkID']
+                    self.saveJson(self.config,f'{self.path}/configs/config.json')
             else:
                 print(f"Failed to connect to {dest}")
                 print(f"Got {req.text} as response")
