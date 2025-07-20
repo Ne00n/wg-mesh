@@ -50,4 +50,4 @@ while not shutdown:
         os.unlink(f"{path}/cron/lock")
         waitUntil = currentTime + random.randint(3600,7200)
     else:
-        time.sleep(10)
+        time.sleep(2)
