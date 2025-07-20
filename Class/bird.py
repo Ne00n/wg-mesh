@@ -1,6 +1,7 @@
 import random, time, json, re, os
 from Class.templator import Templator
 from Class.wireguard import Wireguard
+from Class.network import Network
 from Class.base import Base
 
 class Bird(Base):
@@ -9,8 +10,8 @@ class Bird(Base):
     def __init__(self,path,logger):
         super().__init__() 
         self.config = self.readJson(f'{path}/configs/config.json')
-        self.subnetPrefixSplitted = self.config['subnet'].split(".")
         self.prefix = self.config['prefix']
+        self.Network = Network(self.config)
         self.wg = Wireguard(path)
         self.logger = logger
         self.path = path
@@ -132,7 +133,7 @@ class Bird(Base):
         oldTargets,counter = [],0
         self.logger.info("Waiting for bird routes")
         for run in range(30):
-            targets = self.getRoutes(self.subnetPrefixSplitted)
+            targets = self.Network.getRoutes()
             self.logger.debug(f"Run {run}/30, Counter {counter}, Got {targets} as targets")
             if oldTargets != targets:
                 oldTargets = targets
@@ -159,7 +160,7 @@ class Bird(Base):
         else:
             #fetch network interfaces and parse
             configs = self.cmd('ip addr show')[0]
-            links = self.getBirdLinks(configs,self.prefix,self.subnetPrefixSplitted)
+            links = self.Network.getBirdLinks(configs)
             localIP = f"{'.'.join(self.config['subnet'].split('.')[:2])}.{self.config['id']}.1"
             if not links: 
                 self.logger.warning("No wireguard interfaces found") 
