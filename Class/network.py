@@ -4,6 +4,7 @@ import ipaddress, re
 class Network(Base):
 
     def __init__(self,config):
+        super().__init__()
         self.config = config
         self.prefix = self.config['prefix']
         self.subnetSplitted = self.getSubnetOctet()
