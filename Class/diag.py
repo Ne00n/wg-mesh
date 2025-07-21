@@ -30,7 +30,10 @@ class Diag(Base):
         allowedLinkType = ["default","amneziawg"]
         for link in offline:
             count, data, current = 0, links[link], int(time.time())
-            if "endpoint" in data['config']: 
+            isDead = int(time.time()) - 21600 # 6 hours
+            if "endpoint" in data['config'] and self.network[remote]['lastOnline'] < isDead:
+                self.logger.warning(f"{link} overriding client check")
+            elif "endpoint" in data['config']: 
                 self.logger.debug(f"{link} is client, skipping")
                 continue
             linkConfig = self.readJson(f'{self.path}/links/{data["filename"]}.json')
