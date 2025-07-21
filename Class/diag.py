@@ -31,6 +31,7 @@ class Diag(Base):
         for link in offline:
             count, data, current = 0, links[link], int(time.time())
             isDead = int(time.time()) - 21600 # 6 hours
+            remote = data['remote']
             if "endpoint" in data['config'] and self.network[remote]['lastOnline'] < isDead:
                 self.logger.warning(f"{link} overriding client check")
             elif "endpoint" in data['config']: 
@@ -41,7 +42,6 @@ class Diag(Base):
             if "linkType" in linkConfig and not linkConfig['linkType'] in allowedLinkType:
                 self.logger.warning(f"{link} has non default linkType, skipping")
                 continue
-            remote = data['remote']
             if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0,"retries":0}
             if self.diagnostic[remote]['cooldown'] > current: 
                 self.logger.debug(f"Skipping {link} due to cooldown")
