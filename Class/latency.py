@@ -270,7 +270,7 @@ class Latency(Base):
             if self.network[row['target']]['state']: 
                 self.network[row['target']]['lastOnline'] = int(time.time())
             elif not 'lastOnline' in self.network[row['target']]:
-                self.network[row['target']]['lastOnline'] = 0
+                self.network[row['target']]['lastOnline'] = int(time.time())
             if not self.network[row['target']]['state'] and row['cost'] != 65534:
                 self.network[row['target']]['state'] = 1
                 self.logger.warning(f"Link {row['nic']} is up")
