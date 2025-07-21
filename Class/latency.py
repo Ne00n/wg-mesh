@@ -231,7 +231,7 @@ class Latency(Base):
     def setLatencyData(self,latencyData,peers):
         #fill linkState
         for data in latencyData:
-            if not data['nic'] in self.linkState: self.linkState[data['nic']] = {"state":1,"cost":0,"outages":0}
+            if not data['nic'] in self.linkState: self.linkState[data['nic']] = {"cost":0}
         #copy dicts
         self.latencyData = copy.deepcopy(latencyData)
         self.latencyDataState = copy.deepcopy(latencyData)
@@ -251,14 +251,14 @@ class Latency(Base):
                 mtr = ["No public ip available for mtr",""]
         notifications = self.config['notifications']
         if status == 1:
-            self.notify(notifications['gotifyUp'],f"Node {self.config['id']}: {row['nic']} is up",f"{row['nic']} has been down {self.linkState[row['nic']]['outages']} times")
+            self.notify(notifications['gotifyUp'],f"Node {self.config['id']}: {row['nic']} is up",f"{row['nic']} has been down {self.network[row['target']]['outages']} times")
         elif status == 2:
             newLatency = round(row['base'] / 10)
             oldLatency = round(oldRow['base'] / 10)
             diff = round(newLatency - oldLatency)
             self.notify(notifications['gotifyChanges'],f"Node {self.config['id']}: {row['nic']} +{diff}ms, {oldLatency}ms to {newLatency}ms",f"{mtr[0]}")
         else:
-            self.notify(notifications['gotifyDown'],f"Node {self.config['id']}: {row['nic']} is down ({self.linkState[row['nic']]['outages']})",f"{mtr[0]}")
+            self.notify(notifications['gotifyDown'],f"Node {self.config['id']}: {row['nic']} is down ({self.network[row['target']]['outages']})",f"{mtr[0]}")
 
     def notifications(self,latencyData):
         messages = {"up":[],"down":[],"changes":[]}
@@ -267,21 +267,18 @@ class Latency(Base):
             oldRow = self.getRecentLatencyData(row['target'])
             diff = round((row['base'] / 10) - (oldRow['base'] / 10))
             nic = row['nic']
-            if not self.linkState[nic]['state'] and row['cost'] != 65534:
-                self.linkState[row['nic']]['state'] = 1
+            if not self.network[row['target']]['state'] and row['cost'] != 65534:
                 self.network[row['target']]['state'] = 1
                 self.logger.warning(f"Link {row['nic']} is up")
                 #send push notifcations out only the first time and every 5th time, instead of everytime...
-                if self.linkState[row['nic']]['outages'] == 1 or self.linkState[row['nic']]['outages'] % 5 == 0 and notifications['enabled'] and notifications['gotifyUp'] and notifications['gotifyUp'] != "disabled":
+                if self.network[row['target']]['state'] == 1 or self.network[row['target']]['outages'] % 5 == 0 and notifications['enabled'] and notifications['gotifyUp'] and notifications['gotifyUp'] != "disabled":
                     messages['up'].append([1,copy.deepcopy(row)])
-            elif self.linkState[nic]['state'] and row['cost'] == 65534:
-                self.linkState[row['nic']]['state'] = 0
+            elif self.network[row['target']]['state'] and row['cost'] == 65534:
                 self.network[row['target']]['state'] = 0
-                self.linkState[row['nic']]['outages'] += 1
                 self.network[row['target']]['outages'] += 1
                 self.logger.warning(f"Link {row['nic']} is down")
                 #send push notifcations out only the first time and every 5th time, instead of everytime...
-                if self.linkState[row['nic']]['outages'] == 1 or self.linkState[row['nic']]['outages'] % 5 == 0 and notifications['enabled'] and notifications['gotifyDown'] and notifications['gotifyDown'] != "disabled":
+                if self.network[row['target']]['state'] == 1 or self.network[row['target']]['outages'] % 5 == 0 and notifications['enabled'] and notifications['gotifyDown'] and notifications['gotifyDown'] != "disabled":
                     messages['down'].append([0,copy.deepcopy(row)])
             #if the difference suddenly is bigger than or equal 20ms, trigger an mtr + ignore negative changes
             elif diff >= 20 and diff <= 2000:
