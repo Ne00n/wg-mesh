@@ -309,7 +309,7 @@ class Wireguard(Base):
         subnetSplitted,subnetPrefix = self.Network.subnetSwitch(network)
         links = self.getBirdLinks(configs,self.prefix,subnetSplitted)
         self.isInitial = False if links else True
-        status = {"v4":{"status":False,"http":0},"v6":{"status":False,"http":0}}
+        status = {"ipv4":{"status":False,"http":0},"ipv6":{"status":False,"http":0}}
         #ask remote about available protocols
         data = self.AskProtocol(dest,token)
         if not data: return status
