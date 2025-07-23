@@ -309,15 +309,18 @@ class Wireguard(Base):
         subnetSplitted,subnetPrefix = self.Network.subnetSwitch(network)
         links = self.getBirdLinks(configs,self.prefix,subnetSplitted)
         self.isInitial = False if links else True
-        status = {"v4":False,"v6":False}
+        status = {"v4":{"status":False},"v6":{"status":False}}
         #ask remote about available protocols
         data = self.AskProtocol(dest,token)
         if not data: return status
+        availableProtocols = []
         #start with the protocol which is available
-        if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']: isv6 = False
-        elif data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']: isv6 = True
+        if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']:
+            availableProtocols.append("ipv4")
+        if data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']:
+            availableProtocols.append("ipv6")
         #if neither of these are available, leave it
-        else: return status
+        if not availableProtocols: return status
         #linkType
         if linkType == "":
             if self.config['defaultLinkType'] in data['linkTypes']:
@@ -327,7 +330,8 @@ class Wireguard(Base):
         else:
             if not linkType in data['linkTypes']:
                 linkType = "default"
-        for run in range(2):
+        for protocol in availableProtocols:
+            isv6 = True if protocol == "ipv6" else False
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
             "ipv6":isv6,"initial":self.isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
@@ -352,7 +356,7 @@ class Wireguard(Base):
                 linkConfig = {'remote':f"{data['subnetPrefix']}.{resp['id']}.1",'remotePublic':connectivity.replace("[","").replace("]",""),"linkType":linkType}
                 self.saveJson(linkConfig,f"{self.path}/links/{interface}.json")
                 self.setInterface(interface,"up")
-                status["v6" if isv6 else "v4"] = True
+                status[protocol]['status'] = True
                 #updating networkID on initial setup
                 if 'networkID' in resp and resp['networkID'] != 0 and self.isInitial and self.validate.id(resp['networkID']):
                     self.config['networkID'] = resp['networkID']
@@ -361,11 +365,6 @@ class Wireguard(Base):
                 print(f"Failed to connect to {dest}")
                 print(f"Got {req.text} as response")
                 return status
-            #before we try to setup a v4 in v6 wg, we check if booth hosts have IPv6 connectivity
-            if not self.config['connectivity']['ipv6'] or not data['connectivity']['ipv6']: break
-            if not self.config['connectivity']['ipv4'] or not data['connectivity']['ipv4']: break
-            #second run going to be IPv6 if available
-            isv6 = True
         return status
 
     def updateLink(self,link,data):
