@@ -309,7 +309,7 @@ class Wireguard(Base):
         subnetSplitted,subnetPrefix = self.Network.subnetSwitch(network)
         links = self.getBirdLinks(configs,self.prefix,subnetSplitted)
         self.isInitial = False if links else True
-        status = {"v4":{"status":False},"v6":{"status":False}}
+        status = {"v4":{"status":False,"http":0},"v6":{"status":False,"http":0}}
         #ask remote about available protocols
         data = self.AskProtocol(dest,token)
         if not data: return status
@@ -338,6 +338,7 @@ class Wireguard(Base):
             if port != 51820: payload["port"] = port
             success, req = self.call(f'{dest}/connect',payload)
             if success == False: return status
+            status[protocol]['http'] = req.status_code
             if req.status_code == 412:
                 print(f"Link already exists to {dest}")
             elif req.status_code == 200:
