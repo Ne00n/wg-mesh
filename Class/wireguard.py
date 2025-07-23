@@ -494,24 +494,25 @@ class Wireguard(Base):
             #if a specific link is given filter out
             if links and filename not in links: continue
             interfaceRemote = self.getInterfaceRemote(filename)
+            if not filename in status: status[filename] = {"status":False,"http":0,"message":""}
             #call destination
             if not filename in currentLinks: 
                 print(f"Unable to find link {filename}")
-                status[filename] = {"success":False,"message":"Unable to find link"}
+                status[filename]["message"] = "Unable to find link"
                 continue
             data = currentLinks[filename]
             print(f'Calling http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect')
             success, req = self.call(f'http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
+            status[filename]['http'] = req.status_code
             if success == False and force == False and req is None: 
-                status[filename] = {"success":False,"message":""}
                 continue
             if force or req.status_code == 200:
                 interface = self.filterInterface(filename)
                 self.removeInterface(interface)
-                status[filename] = {"success":True,"message":""}
+                status[filename]["status"] = True
             else:
                 print(f"Got {req.status_code} with {req.text} aborting")
-                status[filename] = {"success":False,"message":req.text}
+                status[filename]["message"] = req.text
         #load configs
         configs = self.getConfigs(False)
         #get all links
