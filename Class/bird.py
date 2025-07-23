@@ -193,7 +193,7 @@ class Bird(Base):
                 #no token needed but external IP for the client
                 self.logger.info(f"Setting up link to {dest}")
                 status = self.wg.connect(f"http://{dest}:{self.config['listenPort']}")
-                if status['v4'] or status['v6']:
+                if status['v4']['status'] or status['v6']['status']:
                     results[target] = True
                     self.logger.info(f"Link established to http://{dest}:{self.config['listenPort']}")
                 else:

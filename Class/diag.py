@@ -108,7 +108,7 @@ class Diag(Base):
             self.logger.info(f"Reconnecting {link}")
             port = random.randint(1024, 50000)
             status = self.wg.connect(f"http://{endpoint}:8080","dummy",linkType,port)
-            if status['v4'] or status['v6']:
+            if status['v4']['status'] or status['v6']['status']:
                 self.logger.info(f"Reconnected {link} ({remote}) with Port {port}")
                 if notifications['enabled'] and notifications['gotifyDiag']: 
                     self.wg.notify(notifications['gotifyDiag'],f"{link} reconnected ({self.diagnostic[remote]['retries']})",f"Node {self.config['id']} reconnected {link}")

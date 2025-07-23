@@ -33,7 +33,7 @@ class CLI(Base):
             dest = f"http://{subnetPrefix}.{pipeTarget[0]}.1:{config['listenPort']}"
         status = self.wg.connect(dest,token,linkType,port,network)
         if self.wg.getInitial:
-            if not status['v4'] and not status['v6']:
+            if not status['v4']['status'] and not status['v6']['status']:
                 print(f"Initial link wasn't setup.")
                 return 
             print("Waiting for meshing to complete.")
