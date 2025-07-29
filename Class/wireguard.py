@@ -504,9 +504,9 @@ class Wireguard(Base):
             data = currentLinks[filename]
             print(f'Calling http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect')
             success, req = self.call(f'http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
-            status[filename]['http'] = req.status_code
             if success == False and force == False and req is None: 
                 continue
+            status[filename]['http'] = req.status_code
             if force or req.status_code == 200:
                 interface = self.filterInterface(filename)
                 self.removeInterface(interface)
