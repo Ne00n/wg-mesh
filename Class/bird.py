@@ -30,7 +30,7 @@ class Bird(Base):
             for entry,row in latency.items():
                 if entry == data['target']:
                     if len(row) < 5: self.logger.warning(f"Expected 5 pings, got {len(row)} from {data['target']}, possible Packetloss")
-                    current = self.getAvrg(row) * 10
+                    current = int(self.getAvrg(row) * 10)
                     if current > 65534: current = 65534
                     data['base'] = data['cost'] = current
                     if data['cost'] == 65534: self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")

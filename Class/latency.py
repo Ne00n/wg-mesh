@@ -116,7 +116,7 @@ class Latency(Base):
                     oldLatencyData = self.getOldLatencyData(node['target'])
                     old = oldLatencyData['cost']
                     #get average
-                    current = self.getAvrg(row) * 10
+                    current = int(self.getAvrg(row) * 10)
                     if current > 65534: current = 65534
                     node['base'] = node['cost'] = current
                     if node['nic'] in self.linkState: node['cost'] += self.linkState[node['nic']]['cost']
