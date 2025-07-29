@@ -42,6 +42,31 @@ class CLI(Base):
                 time.sleep(1)
             print("Meshing seems to have failed.")
 
+    def tunnel(self,task,tunnel=None):
+        self.wg = Wireguard(self.path)
+        config = self.wg.getConfig()
+        if task == "create":
+            print("Creating new tunnel")
+            #generate new client key pair
+            clientPrivateKey, clientPublicKey = wg.genKeys()
+            #generate new server key pair
+            privateKeyServer, publicKeyServer = wg.genKeys()
+            #generate new preshared secret
+            preSharedKey = wg.genPreShared()
+            #load existing tunnels / pipes
+            configs = wg.getConfigs(False)
+            #grab an available subnet + port
+            freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,config['basePort'])
+            #generate wireguard server config
+            fakePayload = {'clientPublicKey':clientPublicKey,'linkType':'','prefix':'tunnel','area':0,'connectivity':{"ipv4":True}}
+            interface = wg.getInterface(id=config['id'],prefix="tunnel")
+            serverConfig = self.templator.genServer(interface,config,fakePayload,freeSubnet,freeSubnetv6,freePort)
+            print(serverConfig)
+        elif task == "delete":
+            if tunnel is None: exit("You have to provide a tunnel")
+            print(tunnel)
+            print("Deleting existing tunnel")
+
     def proximity(self,cutoff=0):
         self.wg = Wireguard(self.path)
         self.wg.proximity(cutoff)
