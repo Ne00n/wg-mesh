@@ -1,5 +1,6 @@
 import subprocess, requests, netaddr, shutil, time, json, re, os
 from ipaddress import ip_network
+from decimal import Decimal
 
 class Base:
 
@@ -89,13 +90,13 @@ class Base:
         for entry in row:
             #ignore timed out
             if entry[0] == "timed out": continue
-            result += float(entry[0])
+            result += Decimal(entry[0])
             actual += 1
         #do not return 0, never, ever
         if result == 0: return 65534
         #make sure its not below one
         if result < 1: result = 1
-        result =  int(float(result / actual))
+        result =  int(Decimal(result / actual))
         return result
 
     def fping(self,targets,pings=3,dropTimeout = False):
