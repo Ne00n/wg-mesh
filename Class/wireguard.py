@@ -165,8 +165,9 @@ class Wireguard(Base):
         except:
             return "","",0
 
-    def getInterface(self,id,type="",network=""):
-        return f"{self.prefix}{network}{id}{type}"
+    def getInterface(self,id,type="",network="",prefix=""):
+        if not prefix: prefix = self.prefix
+        return f"{prefix}{network}{id}{type}"
 
     def filterInterface(self,interface):
         return interface.replace(".sh","")
