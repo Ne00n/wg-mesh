@@ -96,7 +96,7 @@ class Base:
         if result == 0: return 65534
         #make sure its not below one
         if result < 1: result = 1
-        result =  int(Decimal(result / actual))
+        result =  Decimal(result / actual)
         return result
 
     def fping(self,targets,pings=3,dropTimeout = False):
