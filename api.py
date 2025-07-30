@@ -206,6 +206,8 @@ def index():
     privateKeyServer, publicKeyServer = wg.genKeys()
     preSharedKey = wg.genPreShared()
     wgobfsSharedKey = secrets.token_urlsafe(24)
+    #switch to peer subnet if required
+    isPeer = True if payload['network'] == "Peer" else False
     #load configs
     configs = wg.getConfigs(False)
     freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,payload['basePort'])
