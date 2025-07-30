@@ -34,6 +34,19 @@ else
 fi'''
         return template
 
+    def genExternalClient(self,config,clientIP,clientPrivateKey,publicKeyServer,freePort):
+        template = f'''
+[Interface]
+PrivateKey = {clientPrivateKey}
+Address = {clientIP}
+[Peer]
+PublicKey = {publicKeyServer}
+AllowedIPs = {config['subnet']}
+Endpoint = {config['connectivity']['ipv4']}:{freePort}
+PersistentKeepalive = 20
+        '''
+        return template
+
     def genClient(self,interface,config,resp,serverIPExternal,linkType="default",prefix="10.0",peerPrefix="172.31"):
         serverID,freeSubnet,freeSubnetv6,serverPort,serverPublicKey,wgobfsSharedKey = resp['id'],resp['freeSubnet'],resp['freeSubnetv6'],resp['freePort'],resp['publicKeyServer'],resp['wgobfsSharedKey']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
