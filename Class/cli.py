@@ -78,8 +78,10 @@ class CLI(Base):
             print(clientConfig)
         elif task == "delete":
             if tunnel is None: exit("You have to provide a tunnel")
-            print(tunnel)
-            print("Deleting existing tunnel")
+            if not "tunnel" in tunnel: exit(f"{tunnel} invalid name")
+            if not os.path.isfile(f"{self.path}/links/{tunnel}.sh"): exit(f"{tunnel} doesn't exists.")
+            print(f"Deleting {tunnel}")
+            self.wg.removeInterface(tunnel)
 
     def proximity(self,cutoff=0):
         self.wg = Wireguard(self.path)
