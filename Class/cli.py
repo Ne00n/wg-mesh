@@ -65,13 +65,8 @@ class CLI(Base):
             clientConfig = self.templator.genExternalClient(config,clientIP,clientPrivateKey,publicKeyServer,preSharedKey,freePort)
             #saving interface
             if os.path.isfile(f"{self.path}/links/{interface}.sh"): exit(f"{interface} already exists.")
-            self.wg.saveFile(privateKeyServer,f"{self.path}/links/{interface}.key")
-            self.wg.saveFile(preSharedKey,f"{self.path}/links/{interface}.pre")
-            self.wg.saveFile(serverConfig,f"{self.path}/links/{interface}.sh")
-            remotePublic = config['connectivity']['ipv4']
-            remotePrivate = freeSubnet.split("/")
-            linkConfig = {'remote':f"{self.wg.Network.getSubnetPrefix()}.{config['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":"default"}
-            self.wg.saveJson(linkConfig,f"{self.path}/links/{interface}.json")
+            linkConfig = {'remote':f"{self.wg.Network.getSubnetPrefix()}.{config['id']}.1",'remotePublic':config['connectivity']['ipv4'],"linkType":"default"}
+            self.wg.createInterface(interface,clientPrivateKey,preSharedKey,clientConfig,linkConfig)
             #starting interface
             self.wg.setInterface(interface,"up")
             print("Wireguard client config")
