@@ -191,7 +191,6 @@ class Wireguard(Base):
         self.saveFile(preSharedKey,f"{self.path}/links/{interface}.pre")
         self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
         self.saveJson(linkConfig,f"{self.path}/links/{interface}.json")
-        self.getInterface(interface,"up")
 
     def removeInterface(self,interface):
         self.setInterface(interface,"down")
