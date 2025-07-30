@@ -61,9 +61,19 @@ class CLI(Base):
             fakePayload = {'clientPublicKey':clientPublicKey,'linkType':'','prefix':'tunnel','area':0,'connectivity':{"ipv4":True}}
             interface = self.wg.getInterface(id=config['id'],prefix="tunnel")
             serverConfig = self.templator.genServer(interface,config,fakePayload,freeSubnet,freeSubnetv6,freePort)
-            print(serverConfig)
             clientIP = self.wg.Network.getHost(freeSubnet)
             clientConfig = self.templator.genExternalClient(config,clientIP,clientPrivateKey,publicKeyServer,freePort)
+            #saving interface
+            self.wg.saveFile(privateKeyServer,f"{self.path}/links/{interface}.key")
+            self.wg.saveFile(preSharedKey,f"{self.path}/links/{interface}.pre")
+            self.wg.saveFile(serverConfig,f"{self.path}/links/{interface}.sh")
+            remotePublic = config['connectivity']['ipv4']
+            remotePrivate = freeSubnet.split("/")
+            linkConfig = {'remote':f"{self.wg.Network.getSubnetPrefix()}.{config['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":"default"}
+            self.wg.saveJson(linkConfig,f"{self.path}/links/{interface}.json")
+            #starting interface
+            self.wg.setInterface(interface,"up")
+            print("Wireguard client config")
             print(clientConfig)
         elif task == "delete":
             if tunnel is None: exit("You have to provide a tunnel")
