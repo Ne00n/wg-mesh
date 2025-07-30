@@ -66,7 +66,7 @@ class CLI(Base):
             #saving interface
             if os.path.isfile(f"{self.path}/links/{interface}.sh"): exit(f"{interface} already exists.")
             linkConfig = {'remote':f"{self.wg.Network.getSubnetPrefix()}.{config['id']}.1",'remotePublic':config['connectivity']['ipv4'],"linkType":"default"}
-            self.wg.createInterface(interface,clientPrivateKey,preSharedKey,clientConfig,linkConfig)
+            self.wg.createInterface(interface,privateKeyServer,preSharedKey,serverConfig,linkConfig)
             #starting interface
             self.wg.setInterface(interface,"up")
             print("Wireguard client config")

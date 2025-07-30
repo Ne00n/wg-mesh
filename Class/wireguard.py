@@ -186,10 +186,10 @@ class Wireguard(Base):
             if os.path.isfile(f"{self.path}/links/{interface}.pre"): os.remove(f"{self.path}/links/{interface}.pre")
             if os.path.isfile(f"{self.path}/links/{interface}.json"): os.remove(f"{self.path}/links/{interface}.json")
 
-    def createInterface(self,interface,clientPrivateKey,preSharedKey,clientConfig,linkConfig):
-        self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
+    def createInterface(self,interface,privateKey,preSharedKey,config,linkConfig):
+        self.saveFile(privateKey,f"{self.path}/links/{interface}.key")
         self.saveFile(preSharedKey,f"{self.path}/links/{interface}.pre")
-        self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
+        self.saveFile(config,f"{self.path}/links/{interface}.sh")
         self.saveJson(linkConfig,f"{self.path}/links/{interface}.json")
 
     def removeInterface(self,interface):
