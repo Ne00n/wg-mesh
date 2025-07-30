@@ -209,8 +209,8 @@ def index():
     #switch to peer subnet if required
     isPeer = True if payload['network'] == "Peer" else False
     #load configs
-    configs = wg.getConfigs(False)
-    freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,payload['basePort'])
+    configs = wg.getConfigs(False,isPeer)
+    freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,payload['basePort'],isPeer)
     if not freeSubnet or not freeSubnetv6:
         connectMutex.release()
         logging.info(f"Unable to allocate subnet for wireguard link, {requestIP}")
