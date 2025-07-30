@@ -40,8 +40,11 @@ class Network(Base):
         else:
             return f"{self.subnetPrefix}.{self.config['id']}.0/24"
 
-    def getNodeSubnetv6(self):
-        return f"{self.config['subnetv6']}{self.config['id']}::/112"
+    def getNodeSubnetv6(self,isPeer=False):
+        if isPeer:
+            return f"{self.config['subnetPeerv6']}{self.config['id']}::/112"
+        else:
+            return f"{self.config['subnetv6']}{self.config['id']}::/112"
 
     def getPeerSubnets(self,isPeer=False):
         nodeSubnet = self.getNodeSubnet(isPeer)
@@ -50,8 +53,8 @@ class Network(Base):
         subnets = subnets[2:]
         return subnets
 
-    def getPeerSubnetsv6(self):
-        nodeSubnet = self.getNodeSubnetv6()
+    def getPeerSubnetsv6(self,isPeer=False):
+        nodeSubnet = self.getNodeSubnetv6(isPeer)
         network = ipaddress.ip_network(nodeSubnet)
         return list(network.subnets(new_prefix=127))
 

@@ -152,7 +152,7 @@ class Wireguard(Base):
         try:
             #Get available subnets
             peerSubnets = self.Network.getPeerSubnets(isPeer)
-            peerSubnetsv6 = self.Network.getPeerSubnetsv6()
+            peerSubnetsv6 = self.Network.getPeerSubnetsv6(isPeer)
             #Convert to network objects
             usedSubnets = {ipaddress.ip_network(subnet) for subnet in usedSubnets}
             usedSubnetsv6 = {ipaddress.ip_network(subnet) for subnet in usedSubnetsv6}
