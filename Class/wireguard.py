@@ -131,7 +131,7 @@ class Wireguard(Base):
         for i in range(min,min + 400):
             if i not in list and i % 2 == 0: return i
 
-    def minimal(self,files,port=51820):
+    def minimal(self,files,port=51820,isPeer=False):
         ports,usedSubnets,usedSubnetsv6,freeSubnet = [],[],[],""
         if port == 0: port = random.randint(1500, 55000)
         for file in files:
@@ -147,7 +147,7 @@ class Wireguard(Base):
         freePort = self.findLowest(port,ports)
         try:
             #Get available subnets
-            peerSubnets = self.Network.getPeerSubnets()
+            peerSubnets = self.Network.getPeerSubnets(isPeer)
             peerSubnetsv6 = self.Network.getPeerSubnetsv6()
             #Convert to network objects
             usedSubnets = {ipaddress.ip_network(subnet) for subnet in usedSubnets}

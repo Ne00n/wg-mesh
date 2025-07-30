@@ -56,14 +56,14 @@ class CLI(Base):
             #load existing tunnels / pipes
             configs = self.wg.getConfigs(False)
             #grab an available subnet + port
-            freeSubnet,freeSubnetv6,freePort = self.wg.minimal(configs,config['basePort'])
+            freeSubnet,freeSubnetv6,freePort = self.wg.minimal(files=configs,isPeer=True)
             #generate wireguard server config
             fakePayload = {'clientPublicKey':clientPublicKey,'linkType':'','prefix':'tunnel','area':0,'connectivity':{"ipv4":True}}
             interface = self.wg.getInterface(id=config['id'],prefix="tunnel")
             serverConfig = self.templator.genServer(interface,config,fakePayload,freeSubnet,freeSubnetv6,freePort)
             clientIP = self.wg.Network.getHost(freeSubnet)
             clientConfig = self.templator.genExternalClient(config,clientIP,clientPrivateKey,publicKeyServer,preSharedKey,freePort)
-            #saving interface
+            #save interface
             if os.path.isfile(f"{self.path}/links/{interface}.sh"): exit(f"{interface} already exists.")
             linkConfig = {'remote':f"{self.wg.Network.getSubnetPrefix()}.{config['id']}.1",'remotePublic':config['connectivity']['ipv4'],"linkType":"default"}
             self.wg.createInterface(interface,privateKeyServer,preSharedKey,serverConfig,linkConfig)

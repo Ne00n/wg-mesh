@@ -32,8 +32,10 @@ class Network(Base):
         configs = self.cmd('ip addr show')[0]
         return re.findall(f"({self.prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet ({subnetSplitted[0]}[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
 
-    def getNodeSubnet(self):
-        if self.config['subnet'].startswith("10."):
+    def getNodeSubnet(self,isPeer=False):
+        if isPeer:
+            return self.config['subnetPeer']
+        elif self.config['subnet'].startswith("10."):
             return f"{self.subnetPrefix}.{self.config['id']}.0/23"
         else:
             return f"{self.subnetPrefix}.{self.config['id']}.0/24"
@@ -41,8 +43,8 @@ class Network(Base):
     def getNodeSubnetv6(self):
         return f"{self.config['subnetLinkLocal']}{self.config['id']}::/112"
 
-    def getPeerSubnets(self):
-        nodeSubnet = self.getNodeSubnet()
+    def getPeerSubnets(self,isPeer=False):
+        nodeSubnet = self.getNodeSubnet(isPeer)
         network = ipaddress.ip_network(nodeSubnet)
         subnets = list(network.subnets(new_prefix=31))
         subnets = subnets[2:]
