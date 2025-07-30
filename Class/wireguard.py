@@ -77,7 +77,9 @@ class Wireguard(Base):
     def getConfigs(self,abort=True,isPeer=False):
         files = os.listdir(f'{self.path}/links/')
         for file in list(files):
-            if not file.endswith(".sh"): files.remove(file)
+            if not file.endswith(".sh"): 
+                files.remove(file)
+                continue
             if isPeer and not "tunnel" in file: files.remove(file)
         if not files and abort: exit(f"No {self.prefix} configs found")
         return files
