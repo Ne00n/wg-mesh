@@ -34,7 +34,7 @@ class Network(Base):
 
     def getNodeSubnet(self,isPeer=False):
         if isPeer:
-            return self.config['subnetPeer']
+            return f"{self.subnetPeerPrefix}.{self.config['id']}.0/24"
         elif self.config['subnet'].startswith("10."):
             return f"{self.subnetPrefix}.{self.config['id']}.0/23"
         else:
