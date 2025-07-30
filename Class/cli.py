@@ -64,6 +64,7 @@ class CLI(Base):
             clientIP = self.wg.Network.getHost(freeSubnet)
             clientConfig = self.templator.genExternalClient(config,clientIP,clientPrivateKey,publicKeyServer,preSharedKey,freePort)
             #saving interface
+            if os.path.isfile(f"{self.path}/links/{interface}.sh"): exit(f"{interface} already exists.")
             self.wg.saveFile(privateKeyServer,f"{self.path}/links/{interface}.key")
             self.wg.saveFile(preSharedKey,f"{self.path}/links/{interface}.pre")
             self.wg.saveFile(serverConfig,f"{self.path}/links/{interface}.sh")
