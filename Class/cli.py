@@ -236,7 +236,7 @@ class CLI(Base):
         print("You should reload the services to apply any config changes")
 
     def setOption(self,options):
-        validOptions = ["area","prefix","defaultLinkType","basePort","tick","reloadInterval","operationMode","networkID","loglevel","vxlanOffset","subnet","subnetVXLAN","subnetLinkLocal","AllowedPeers","gotifyUp","gotifyDown","gotifyError",'gotifyDiag','gotifyChanges']
+        validOptions = ["area","prefix","defaultLinkType","basePort","tick","reloadInterval","operationMode","networkID","loglevel","vxlanOffset","subnet","subnetv6","subnetVXLAN","subnetPeer","subnetPeerv6","AllowedPeers","gotifyUp","gotifyDown","gotifyError",'gotifyDiag','gotifyChanges']
         if len(sys.argv) == 0:
             print(f"Valid options: {', '.join(validOptions)}")
         else:

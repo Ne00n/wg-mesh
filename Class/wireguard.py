@@ -29,11 +29,12 @@ class Wireguard(Base):
         if not "vxlanOffset" in self.config: self.config['vxlanOffset'] = 0
         if not "networkID" in self.config: self.config['networkID'] = 0
         if not "subnet" in self.config: self.config['subnet'] = "10.0.0.0/16"
+        if not "subnetv6" in self.config: self.config['subnetv6'] = "fe82:"
         if not "subnetPeer" in self.config: self.config['subnetPeer'] = "172.31.0.0/16"
+        if not "subnetPeerv6" in self.config: self.config['subnetPeerv6'] = "fe81:"
         if not "subnetVXLAN" in self.config: 
             self.config['subnetVXLAN'] = "10.0.251.0/24"
             reconfigureDummy = True
-        if not "subnetLinkLocal" in self.config: self.config['subnetLinkLocal'] = "fe82:"
         if not "AllowedPeers" in self.config: self.config['AllowedPeers'] = []
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
@@ -107,8 +108,8 @@ class Wireguard(Base):
         #config
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6}
-        config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16","subnetPeer":"172.31.0.0/16",
-        "subnetVXLAN":"10.0.251.0/24","subnetLinkLocal":"fe82:","AllowedPeers":[],"prefix":"pipe","id":int(id),"networkID":0,"linkTypes":["default"],"linkSettings":{"awgGen":False},"defaultLinkType":"default","connectivity":connectivity,
+        config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16","subnetv6":"fe82:","subnetPeer":"172.31.0.0/16","subnetPeerv6":"fe81:",
+        "subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],"prefix":"pipe","id":int(id),"networkID":0,"linkTypes":["default"],"linkSettings":{"awgGen":False},"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"jitter":True,"area":0,"tick":1,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600},
         "latency":{"pingInterval":30},
         "notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""}}
