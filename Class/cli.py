@@ -48,20 +48,23 @@ class CLI(Base):
         if task == "create":
             print("Creating new tunnel")
             #generate new client key pair
-            clientPrivateKey, clientPublicKey = wg.genKeys()
+            clientPrivateKey, clientPublicKey = self.wg.genKeys()
             #generate new server key pair
-            privateKeyServer, publicKeyServer = wg.genKeys()
+            privateKeyServer, publicKeyServer = self.wg.genKeys()
             #generate new preshared secret
-            preSharedKey = wg.genPreShared()
+            preSharedKey = self.wg.genPreShared()
             #load existing tunnels / pipes
-            configs = wg.getConfigs(False)
+            configs = self.wg.getConfigs(False)
             #grab an available subnet + port
-            freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,config['basePort'])
+            freeSubnet,freeSubnetv6,freePort = self.wg.minimal(configs,config['basePort'])
             #generate wireguard server config
             fakePayload = {'clientPublicKey':clientPublicKey,'linkType':'','prefix':'tunnel','area':0,'connectivity':{"ipv4":True}}
-            interface = wg.getInterface(id=config['id'],prefix="tunnel")
+            interface = self.wg.getInterface(id=config['id'],prefix="tunnel")
             serverConfig = self.templator.genServer(interface,config,fakePayload,freeSubnet,freeSubnetv6,freePort)
             print(serverConfig)
+            clientIP = self.wg.Network.getHost(freeSubnet)
+            clientConfig = self.templator.genExternalClient(config,clientIP,clientPrivateKey,publicKeyServer,freePort)
+            print(clientConfig)
         elif task == "delete":
             if tunnel is None: exit("You have to provide a tunnel")
             print(tunnel)
