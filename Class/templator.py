@@ -34,11 +34,11 @@ else
 fi'''
         return template
 
-    def genExternalClient(self,config,clientIP,clientPrivateKey,publicKeyServer,preSharedKey,freePort):
+    def genExternalClient(self,config,clientIP,clientIPv6,clientPrivateKey,publicKeyServer,preSharedKey,freePort):
         template = f'''
 [Interface]
 PrivateKey = {clientPrivateKey}
-Address = {clientIP}
+Address = {clientIP}, {clientIPv6}
 [Peer]
 PublicKey = {publicKeyServer}
 PresharedKey = {preSharedKey}

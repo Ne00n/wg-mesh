@@ -62,7 +62,8 @@ class CLI(Base):
             interface = self.wg.getInterface(id=config['id'],prefix="tunnel")
             serverConfig = self.templator.genServer(interface,config,fakePayload,freeSubnet,freeSubnetv6,freePort)
             clientIP = self.wg.Network.getHost(freeSubnet)
-            clientConfig = self.templator.genExternalClient(config,clientIP,clientPrivateKey,publicKeyServer,preSharedKey,freePort)
+            clientIPv6 = self.wg.Network.getHost(freeSubnetv6,"127")
+            clientConfig = self.templator.genExternalClient(config,clientIP,clientIPv6,clientPrivateKey,publicKeyServer,preSharedKey,freePort)
             #save interface
             if os.path.isfile(f"{self.path}/links/{interface}.sh"): exit(f"{interface} already exists.")
             linkConfig = {'remote':f"{self.wg.Network.getSubnetPrefix()}.{config['id']}.1",'remotePublic':config['connectivity']['ipv4'],"linkType":"default"}
