@@ -65,7 +65,7 @@ class CLI(Base):
             freeSubnet,freeSubnetv6,freePort = self.wg.minimal(files=configs,isPeer=True)
             #generate wireguard server config
             fakePayload = {'clientPublicKey':clientPublicKey,'linkType':'','prefix':'tunnel','area':0,'connectivity':{"ipv4":True}}
-            interface = self.wg.getInterface(id=config['id'],prefix="tunnel")
+            interface = self.wg.getInterface(id=tunnelID,prefix="tunnel")
             serverConfig = self.templator.genServer(interface,config,fakePayload,freeSubnet,freeSubnetv6,freePort)
             clientIP = self.wg.Network.getHost(freeSubnet)
             clientIPv6 = self.wg.Network.getHost(freeSubnetv6,"127")
