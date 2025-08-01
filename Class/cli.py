@@ -3,7 +3,7 @@ from Class.wireguard import Wireguard
 from Class.templator import Templator
 from Class.base import Base
 from Class.bird import Bird
-import subprocess, logging, time, sys, os, re
+import subprocess, logging, random, time, sys, os, re
 
 class CLI(Base):
 
@@ -46,7 +46,13 @@ class CLI(Base):
         self.wg = Wireguard(self.path)
         config = self.wg.getConfig()
         if task == "create":
-            print("Creating new tunnel")
+            tunnelID = None
+            for run in range(1,10):
+                tunnelID = random.randint(1, 250)
+                if not os.path.isfile(f"{self.path}/links/tunnel{tunnelID}.sh"): break
+                tunnelID = None
+            if not tunnelID: exit("Unable to allocate tunnelID")
+            print(f"Creating new tunnel{tunnelID}")
             #generate new client key pair
             clientPrivateKey, clientPublicKey = self.wg.genKeys()
             #generate new server key pair
