@@ -127,7 +127,7 @@ class Base:
         return parsed[0]
 
     def call(self,url,payload,method="POST",headers={},max=5):
-        allowedCodes, crashed = [200,412], False
+        allowedCodes, crashed = [200,412,451], False
         for run in range(1,max):
             try:
                 if method == "POST":
