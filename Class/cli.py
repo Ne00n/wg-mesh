@@ -266,10 +266,10 @@ class CLI(Base):
                     else:
                         config['AllowedPeers'].append(value)
                 elif key == "blacklist":
-                    if value in config['geo']['blacklist']:
-                        config['geo']['blacklist'].remove(value)
+                    if value in config['connectivity']['blacklist']:
+                        config['connectivity']['blacklist'].remove(value)
                     else:
-                        config['geo']['blacklist'].append(value)
+                        config['connectivity']['blacklist'].append(value)
                 else:
                     #rewrite awg to amneziawg
                     if key == "defaultLinkType" and value == "awg": 
