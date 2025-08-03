@@ -244,7 +244,7 @@ class CLI(Base):
         print("You should reload the services to apply any config changes")
 
     def setOption(self,options):
-        validOptions = ["area","prefix","defaultLinkType","basePort","tick","reloadInterval","operationMode","networkID","loglevel","vxlanOffset","subnet","subnetv6","subnetVXLAN","subnetPeer","subnetPeerv6","AllowedPeers","gotifyUp","gotifyDown","gotifyError",'gotifyDiag','gotifyChanges']
+        validOptions = ["area","prefix","defaultLinkType","basePort","tick","reloadInterval","operationMode","networkID","loglevel","vxlanOffset","subnet","subnetv6","subnetVXLAN","subnetPeer","subnetPeerv6","AllowedPeers","gotifyUp","gotifyDown","gotifyError",'gotifyDiag','gotifyChanges','blacklist']
         if len(sys.argv) == 0:
             print(f"Valid options: {', '.join(validOptions)}")
         else:
@@ -265,6 +265,11 @@ class CLI(Base):
                         config['AllowedPeers'].remove(value)
                     else:
                         config['AllowedPeers'].append(value)
+                elif key == "blacklist":
+                    if value in config['geo']['blacklist']:
+                        config['geo']['blacklist'].remove(value)
+                    else:
+                        config['geo']['blacklist'].append(value)
                 else:
                     #rewrite awg to amneziawg
                     if key == "defaultLinkType" and value == "awg": 
