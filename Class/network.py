@@ -17,7 +17,7 @@ class Network(Base):
         return self.config[selector].split(".")
 
     def subnetSwitch(self,network=""):
-        if "Peer" in network:
+        if "Peer" in network or "tunnel" in network:
             return self.subnetPeerSplitted,self.subnetPeerPrefix
         else:
             return self.subnetSplitted,self.subnetPrefix
