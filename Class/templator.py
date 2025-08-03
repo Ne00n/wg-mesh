@@ -44,6 +44,7 @@ PublicKey = {publicKeyServer}
 PresharedKey = {preSharedKey}
 AllowedIPs = {config['subnet']}
 Endpoint = {config['connectivity']['ipv4']}:{freePort}
+#Endpoint = {config['connectivity']['ipv6']}:{freePort}
 PersistentKeepalive = 20
         '''
         return template
