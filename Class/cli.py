@@ -62,7 +62,7 @@ class CLI(Base):
             #load existing tunnels / pipes
             configs = self.wg.getConfigs(abort=False,isPeer=True)
             #grab an available subnet + port
-            freeSubnet,freeSubnetv6,freePort = self.wg.minimal(files=configs,isPeer=True)
+            freeSubnet,freeSubnetv6,freePort = self.wg.minimal(files=configs,isPeer=True,port=50820)
             #generate wireguard server config
             fakePayload = {'clientPublicKey':clientPublicKey,'linkType':'','prefix':'tunnel','area':0,'connectivity':{"ipv4":True}}
             interface = self.wg.getInterface(id=tunnelID,prefix="tunnel")
