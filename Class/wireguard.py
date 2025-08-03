@@ -35,7 +35,7 @@ class Wireguard(Base):
         if not "subnetVXLAN" in self.config: 
             self.config['subnetVXLAN'] = "10.0.251.0/24"
             reconfigureDummy = True
-        if not "blacklist" in config['connectivity']: config['connectivity']['blacklist'] = []
+        if not "blacklist" in self.config['connectivity']: self.config['connectivity']['blacklist'] = []
         if not "AllowedPeers" in self.config: self.config['AllowedPeers'] = []
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
