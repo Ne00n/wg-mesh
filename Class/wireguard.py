@@ -35,8 +35,7 @@ class Wireguard(Base):
         if not "subnetVXLAN" in self.config: 
             self.config['subnetVXLAN'] = "10.0.251.0/24"
             reconfigureDummy = True
-        if not "geo" in config: config['geo'] = {}
-        if not "blacklist" in config['geo']: config['geo']['blacklist'] = []
+        if not "blacklist" in config['connectivity']: config['connectivity']['blacklist'] = []
         if not "AllowedPeers" in self.config: self.config['AllowedPeers'] = []
         if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
@@ -109,12 +108,12 @@ class Wireguard(Base):
         print(f"Got {ipv4} and {ipv6}")
         #config
         print("Generating config.json")
-        connectivity = {"ipv4":ipv4,"ipv6":ipv6}
+        connectivity = {"ipv4":ipv4,"ipv6":ipv6,"blacklist":[]}
         config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16","subnetv6":"fe82:","subnetPeer":"172.31.0.0/16","subnetPeerv6":"fe81:",
         "subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],"prefix":"pipe","id":int(id),"networkID":0,"linkTypes":["default"],"linkSettings":{"awgGen":False},"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"jitter":True,"area":0,"tick":1,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600},
         "latency":{"pingInterval":30},
-        "notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""},"geo":{"blacklist":[]}}
+        "notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""}}
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response: exit("Unable to save config.json")
         #load configs
