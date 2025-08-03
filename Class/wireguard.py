@@ -439,7 +439,7 @@ class Wireguard(Base):
         result.append("-------\t-------\t-------\t-------\t-------")
         for ip,latency in latencyData.items(): 
             if latency > float(cutoff): terminate.append(mapping[ip]['target'])
-            result.append(f"{mapping[ip]['target']}\t{ip}\t{mapping[ip]['location']}\t{bool(ip in existing)}\t{latency}ms")
+            result.append(f"{mapping[ip]['target']}\t{ip}\t{mapping[ip]['location']}\t{bool(ip in existing)}\t{format(latency,'.2f')}ms")
         result = self.formatTable(result)
         if cutoff == 0: 
             print(result)
