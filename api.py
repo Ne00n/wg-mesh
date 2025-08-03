@@ -200,6 +200,11 @@ def index():
     if os.path.isfile(f"{folder}/links/{interface}.sh") or os.path.isfile(f"{folder}/links/{interface}Serv.sh"):
         logging.info(f"Link already exists, {requestIP}")
         return HTTPResponse(status=412, body="Link already exists")
+    #connectivity blacklist check
+    if "connectivity" in payload and "blacklist" in payload['connectivity']:
+        for country in config['connectivity']['blacklist']:
+            if country in payload['connectivity']['blacklist']:
+                return HTTPResponse(status=451,body="Country blacklisted")
     #block any other requests to prevent issues regarding port and ip assignment
     connectMutex.acquire()
     #generate new key pair
