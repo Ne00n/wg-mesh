@@ -245,7 +245,7 @@ class Wireguard(Base):
                         print(f"Ignoring {filename}")
                         continue
                     destination = f"{destination[0]}1"
-                elif "Peer" in filename:
+                elif "peer" in filename:
                     peerIP = re.findall("Peer\s([0-9.]+)",config, re.MULTILINE)
                     if not peerIP:
                         print(f"Unable to figure out peer for {filename}")

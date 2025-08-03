@@ -78,7 +78,7 @@ class Bird(Base):
                 targetIP = f"{ip}{int(lastByte)+1}"
             else:
                 targetIP = f"{ip}{int(lastByte)-1}"
-            if "Peer" in nic: peers.append({'nic':nic,'target':targetIP,'origin':origin})
+            if "peer" in nic: peers.append({'nic':nic,'target':targetIP,'origin':origin})
             result.append({'nic':nic,'target':targetIP,'origin':origin})
         return result,peers
 

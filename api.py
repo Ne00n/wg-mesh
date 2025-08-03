@@ -46,7 +46,7 @@ def validateToken(payload):
     if not "token" in payload: return False
     token = re.findall(r"^([A-Za-z0-9/.=+]{18,60})$",payload['token'],re.MULTILINE | re.DOTALL)
     if not token: return False
-    if "network" in payload and payload["network"] == "Peer":
+    if "network" in payload and payload["network"] == "peer":
         if payload['token'] not in tokens['peer']: return False
     else:
         if payload['token'] not in tokens['connect']: return False
@@ -207,7 +207,7 @@ def index():
     preSharedKey = wg.genPreShared()
     wgobfsSharedKey = secrets.token_urlsafe(24)
     #switch to peer subnet if required
-    isPeer = True if payload['network'] == "Peer" else False
+    isPeer = True if payload['network'] == "peer" else False
     #load configs
     configs = wg.getConfigs(False,isPeer)
     freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,payload['basePort'],isPeer)

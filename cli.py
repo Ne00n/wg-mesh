@@ -24,7 +24,7 @@ elif sys.argv[1] == "connect" or sys.argv[1] == "peer":
     token = "dummy" if len(sys.argv) <= 3 else sys.argv[3]
     linkType = "" if len(sys.argv) <= 4 else sys.argv[4]
     port = 51820 if len(sys.argv) <= 5 else sys.argv[5]
-    network = "Peer" if sys.argv[1] == "peer" else ""
+    network = "peer" if sys.argv[1] == "peer" else ""
     cli.connect(sys.argv[2],token,linkType,port,network)
 elif sys.argv[1] == "tunnel":
     if len(sys.argv) <= 2: exit("Parameter is missing")
