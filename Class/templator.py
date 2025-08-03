@@ -39,10 +39,12 @@ fi'''
 [Interface]
 PrivateKey = {clientPrivateKey}
 Address = {clientIP}, {clientIPv6}
+#Table = off
 [Peer]
 PublicKey = {publicKeyServer}
 PresharedKey = {preSharedKey}
 AllowedIPs = {serverIP}/32, {config['subnet']}
+#AllowedIPs = 0.0.0.0/0
 Endpoint = {config['connectivity']['ipv4']}:{freePort}
 #Endpoint = {config['connectivity']['ipv6']}:{freePort}
 PersistentKeepalive = 20
