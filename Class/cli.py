@@ -199,8 +199,10 @@ class CLI(Base):
             if "ipt_xor" in config['linkTypes']: config['linkTypes'].remove("ipt_xor")
         elif "amneziawg" in option or "awg" in option:
             if "amneziawg" in config['linkTypes']: config['linkTypes'].remove("amneziawg")
+        elif "neighbour" in option:
+            config['modules']['neighbour'] = False
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, jitter, wgobfs, ipt_xor, amneziawg / awg, client, notifications")
+            print("Valid options: mesh, ospfv2, ospfv3, jitter, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour")
             return
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response:
@@ -234,8 +236,10 @@ class CLI(Base):
         elif "amneziawg" in option or "awg" in option:
             if not "amneziawg" in config['linkTypes']: config['linkTypes'].append("amneziawg")
             print("You still need to install amneziawg with: bash /opt/wg-mesh/tools/amnezia.sh")
+        elif "neighbour" in option:
+            config['modules']['neighbour'] = True
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, jitter, wgobfs, ipt_xor, amneziawg / awg, client, notifications")
+            print("Valid options: mesh, ospfv2, ospfv3, jitter, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour")
             return
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response:

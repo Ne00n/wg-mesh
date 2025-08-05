@@ -130,6 +130,27 @@ def index():
     geo = config['geo'] if "geo" in config else {}
     return HTTPResponse(status=200, body={'connectivity':config['connectivity'],'geo':geo,'linkTypes':config['linkTypes'],'subnetPrefix':subnetPrefix})
 
+@route('/neighbour',method=POST)
+def index():
+    #is available
+    if not config['modules']['neighbour']:
+        return HTTPResponse(status=400, body="Bad Request")
+    #grab IP
+    requestIP = getReqIP()
+    isInternal = getInternal(requestIP)
+    payload = json.load(request.body)
+    #check blocklist
+    if block(requestIP,check=True):
+        logging.info(f"{requestIP} in blocklist")
+        return HTTPResponse(status=403, body="IP Blocked")
+    #validate token
+    if not isInternal and not validateToken(payload): 
+        logging.info(f"Invalid Token from {requestIP}")
+        block(requestIP)
+        return HTTPResponse(status=401, body="Invalid Token")
+    neighbours = wg.getNeighbours()
+    return HTTPResponse(status=200, body=neighbours)
+
 @route('/connect', method='POST')
 def index():
     requestIP = getReqIP()
