@@ -41,7 +41,7 @@ class Wireguard(Base):
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
         if not os.path.isfile("/etc/bird/bgp.conf"): self.cmd('touch /etc/bird/bgp.conf')
         if not "bird" in self.config: self.config['bird'] = {}
-        if not "modules" in self.config: self.config['modules'] = {"neighbour":False}
+        if not "modules" in self.config: self.config['modules'] = {"neighbour":False,"update":False}
         if not "linkSettings" in self.config: self.config['linkSettings'] = {"awgGen":False}
         if not "latency" in self.config: self.config['latency'] = {"pingInterval":30}
         if not "ospfv2" in self.config['bird']: self.config['bird']['ospfv2'] = True
@@ -113,7 +113,7 @@ class Wireguard(Base):
         config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16","subnetv6":"fe82:","subnetPeer":"172.31.0.0/16","subnetPeerv6":"fe81:",
         "subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],"prefix":"pipe","id":int(id),"networkID":0,"linkTypes":["default"],"linkSettings":{"awgGen":False},"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"jitter":True,"area":0,"tick":1,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600},
-        "modules":{"neighbour":False},"latency":{"pingInterval":30},
+        "modules":{"neighbour":False,"update":False},"latency":{"pingInterval":30},
         "notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""}}
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response: exit("Unable to save config.json")

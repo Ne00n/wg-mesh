@@ -276,6 +276,10 @@ def index():
 
 @route('/update', method='PATCH')
 def index():
+    #is available
+    if not config['modules']['update']:
+        return HTTPResponse(status=400, body="Bad Request")
+    #grab IP
     requestIP = getReqIP()
     payload = json.load(request.body)
     #check blocklist
