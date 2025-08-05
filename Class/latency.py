@@ -33,7 +33,7 @@ class Latency(Base):
             stdDev = max(variance ** 0.5, 0.5)
             dynamicGrace = stdDev * 2
         else:
-            avrg = self.getAvrg(row)
+            avrg = int(self.getAvrg(row))
             if avrg < 20:
                 gracePercent = 0.25
             elif avrg < 50:
