@@ -123,6 +123,8 @@ class CLI(Base):
             config['geo']['continent'] = geoData['continent']
             config['geo']['country'] = geoData['country']
             config['geo']['city'] = geoData['city']
+            config['geo']['lat'] = geoData['lat']
+            config['geo']['lon'] = geoData['lon']
             print(f"Updated geodata {config['geo']}")
             self.saveJson(config,f"{self.path}/configs/config.json")
 
