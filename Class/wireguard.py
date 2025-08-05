@@ -312,7 +312,7 @@ class Wireguard(Base):
         routes = lines.splitlines()
         neighbours = {}
         for index, line in enumerate(routes):
-            if ".0/30" in line:
+            if ".0/30" in line and not "direct" in line:
                 id = re.findall(r"([0-9]+)\.0\/30",line,re.MULTILINE | re.DOTALL)[0]
                 cost = re.findall(r"\([0-9]+/([0-9]+)/[0-9]+\)",line,re.MULTILINE | re.DOTALL)[0]
                 nextLine = routes[index +1]
