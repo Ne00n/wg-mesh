@@ -130,7 +130,7 @@ def index():
     geo = config['geo'] if "geo" in config else {}
     return HTTPResponse(status=200, body={'connectivity':config['connectivity'],'geo':geo,'linkTypes':config['linkTypes'],'subnetPrefix':subnetPrefix})
 
-@route('/neighbour',method=POST)
+@route('/neighbour',method='POST')
 def index():
     #is available
     if not config['modules']['neighbour']:
