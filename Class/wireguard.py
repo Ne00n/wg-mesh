@@ -315,7 +315,7 @@ class Wireguard(Base):
             if ".0/30" in line:
                 id = re.findall(r"([0-9]+)\.0\/30",line,re.MULTILINE | re.DOTALL)[0]
                 cost = re.findall(r"\([0-9]+/([0-9]+)/[0-9]+\)",line,re.MULTILINE | re.DOTALL)[0]
-                nextLine = newlines[index +1]
+                nextLine = routes[index +1]
                 if f"pipe{id}" in nextLine: neighbours[id] = int(cost) / 10
         return neighbours
 
