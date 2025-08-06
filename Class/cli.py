@@ -132,7 +132,6 @@ class CLI(Base):
             config['geo']['city'] = ipapiData['city']
             config['geo']['lat'] = ipapiData['lat']
             config['geo']['lon'] = ipapiData['lon']
-            print(f"Updated geodata {config['geo']}")
         if ipwhois:
             ipwhoisData = ipwhoisDataRaw.json()
             if ipapiData['countryCode'] != ipwhoisData['country_code'] or ipapiData['city'] != ipwhoisData['city']:
@@ -143,6 +142,7 @@ class CLI(Base):
                 config['geo']['city'] = ipwhoisData['city']
                 config['geo']['lat'] = ipwhoisData['latitude']
                 config['geo']['lon'] = ipwhoisData['longitude']
+        print(f"Updated geodata {config['geo']}")
         self.saveJson(config,f"{self.path}/configs/config.json")
 
     def recover(self):
