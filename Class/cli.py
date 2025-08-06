@@ -134,7 +134,7 @@ class CLI(Base):
             config['geo']['lon'] = ipapiData['lon']
         if ipwhois:
             ipwhoisData = ipwhoisDataRaw.json()
-            if ipapiData['countryCode'] != ipwhoisData['country_code'] or ipapiData['city'] != ipwhoisData['city']:
+            if not ipapi or ipapiData['countryCode'] != ipwhoisData['country_code'] or ipapiData['city'] != ipwhoisData['city']:
                 print("ipwho.is suggests, the location reported by ip-api is wrong")
                 config['geo']['countryCode'] = ipwhoisData['country_code']
                 config['geo']['continent'] = ipwhoisData['continent_code']
