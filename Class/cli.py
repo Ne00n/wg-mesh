@@ -137,12 +137,12 @@ class CLI(Base):
             ipwhoisData = ipwhoisDataRaw.json()
             if ipapiData['countryCode'] != ipwhoisData['country_code'] or ipapiData['city'] != ipwhoisData['city']:
                 print("ipwho.is suggests, the location reported by ip-api is wrong")
-                config['geo']['countryCode'] = ipinfoData['country_code']
-                config['geo']['continent'] = ipinfoData['continent_code']
-                config['geo']['country'] = ipapiData['country']
-                config['geo']['city'] = ipapiData['city']
-                config['geo']['lat'] = ipapiData['latitude']
-                config['geo']['lon'] = ipapiData['longitude']
+                config['geo']['countryCode'] = ipwhoisData['country_code']
+                config['geo']['continent'] = ipwhoisData['continent_code']
+                config['geo']['country'] = ipwhoisData['country']
+                config['geo']['city'] = ipwhoisData['city']
+                config['geo']['lat'] = ipwhoisData['latitude']
+                config['geo']['lon'] = ipwhoisData['longitude']
         self.saveJson(config,f"{self.path}/configs/config.json")
 
     def recover(self):
