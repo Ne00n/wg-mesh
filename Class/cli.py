@@ -115,20 +115,35 @@ class CLI(Base):
         self.wg.updateConfig()
 
     def geo(self):
+        config = self.readJson(f"{self.path}/configs/config.json")
+        if not config:
+            print("Unable to load config.json")
+            return
+        if not "geo" in config: config['geo'] = {}
+        requestIP = config['connectivity']['ipv4'] if config['connectivity']['ipv4'] else config['connectivity']['ipv6']
         headers = {"Origin":"https://ip-api.com"}
-        success, req = self.call("https://demo.ip-api.com/json/?fields=66842623",{},"GET",headers)
-        if success:
-            geoData = req.json()
-            config = self.readJson(f'{self.path}/configs/config.json')
-            if not "geo" in config: config['geo'] = {}
-            config['geo']['countryCode'] = geoData['countryCode']
-            config['geo']['continent'] = geoData['continent']
-            config['geo']['country'] = geoData['country']
-            config['geo']['city'] = geoData['city']
-            config['geo']['lat'] = geoData['lat']
-            config['geo']['lon'] = geoData['lon']
+        ipapi, ipapiDataRaw = self.call(f"https://demo.ip-api.com/json/{requestIP}?fields=66842623&lang=en",{},"GET",headers)
+        ipwhois, ipwhoisDataRaw = self.call(f"https://ipwho.is/{requestIP}",{},"GET")
+        if ipapi:
+            ipapiData = ipapiDataRaw.json()
+            config['geo']['countryCode'] = ipapiData['countryCode']
+            config['geo']['continent'] = ipapiData['continent']
+            config['geo']['country'] = ipapiData['country']
+            config['geo']['city'] = ipapiData['city']
+            config['geo']['lat'] = ipapiData['lat']
+            config['geo']['lon'] = ipapiData['lon']
             print(f"Updated geodata {config['geo']}")
-            self.saveJson(config,f"{self.path}/configs/config.json")
+        if ipwhois:
+            ipwhoisData = ipwhoisDataRaw.json()
+            if ipapiData['countryCode'] != ipwhoisData['country_code'] or ipapiData['city'] != ipwhoisData['city']:
+                print("ipwho.is suggests, the location reported by ip-api is wrong")
+                config['geo']['countryCode'] = ipinfoData['country_code']
+                config['geo']['continent'] = ipinfoData['continent_code']
+                config['geo']['country'] = ipapiData['country']
+                config['geo']['city'] = ipapiData['city']
+                config['geo']['lat'] = ipapiData['latitude']
+                config['geo']['lon'] = ipapiData['longitude']
+        self.saveJson(config,f"{self.path}/configs/config.json")
 
     def recover(self):
         stream_handler = logging.StreamHandler()
