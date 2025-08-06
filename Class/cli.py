@@ -60,9 +60,11 @@ class CLI(Base):
             #generate new preshared secret
             preSharedKey = self.wg.genPreShared()
             #load existing tunnels / pipes
-            configs = self.wg.getConfigs(abort=False,isPeer=True)
+            peerConfigs = self.wg.getConfigs(abort=False,isPeer=True)
+            allConfigs = self.wg.getConfigs(abort=False)
             #grab an available subnet + port
-            freeSubnet,freeSubnetv6,freePort = self.wg.minimal(files=configs,isPeer=True,port=50820)
+            freeSubnet,freeSubnetv6,freePort = self.wg.minimal(files=allConfigs,port=config['basePort'])
+            freeSubnet,freeSubnetv6,freePort = self.wg.minimal(files=peerConfigs,isPeer=True,port=freePort)
             #generate wireguard server config
             fakePayload = {'clientPublicKey':clientPublicKey,'linkType':'','prefix':'tunnel','area':0,'connectivity':{"ipv4":True}}
             interface = self.wg.getInterface(id=tunnelID,prefix="tunnel")
