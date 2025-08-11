@@ -18,6 +18,8 @@ class Latency(Base):
         self.path = path
         self.noWait = 0
         self.lastReload = int(time.time()) + 600
+        self.reloadsReset = int(time.time()) + 3600
+        self.reloads = 0
         self.currentLinks = self.wg.getLinks(False)
         self.config = self.readJson(f'{path}/configs/config.json')
         self.network = self.readJson(f"{path}/configs/network.json")
@@ -214,12 +216,15 @@ class Latency(Base):
                 birdConfig = self.Templator.genBird(latencyData,self.peers,self.config)
                 #write
                 self.saveFile(birdConfig,'/etc/bird/bird.conf')
+                #reset reloads
+                if int(time.time()) > self.reloadsReset: self.reloads = 0
                 #reload bird with updates only every 10 minutes or if reload is greater than 1
-                if int(time.time()) > self.lastReload or self.reload > 0:
+                if int(time.time()) > self.lastReload or self.reload > 0 and self.reloads <= 20:
                     #keep a copy with the current values in the bird config
                     self.latencyDataState = copy.deepcopy(self.latencyData)
                     #reload
                     self.logger.info("Reloading bird")
+                    self.reloads += 1
                     self.cmd('sudo systemctl reload bird')
                     self.lastReload = int(time.time()) + self.config['bird']['reloadInterval']
                 else:
