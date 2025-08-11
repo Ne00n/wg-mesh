@@ -231,7 +231,7 @@ class Latency(Base):
                     #keep a copy with the current values in the bird config
                     self.latencyDataState = copy.deepcopy(self.latencyData)
                     #reload
-                    self.logger.info("Reloading bird")
+                    self.logger.info(f"Reloading bird ({','.join(self.reload)})")
                     self.cmd('sudo systemctl reload bird')
                     self.lastReload = int(time.time()) + self.config['bird']['reloadInterval']
                 else:
