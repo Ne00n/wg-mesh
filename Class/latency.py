@@ -4,6 +4,7 @@ from Class.templator import Templator
 from datetime import datetime
 from threading import Thread
 from Class.base import Base
+from decimal import Decimal
 from random import randint
 
 class Latency(Base):
@@ -63,10 +64,10 @@ class Latency(Base):
         #ignore any negative changes
         if latency <= float(old): return False
         #to keep precision we multiplied them by 10
-        latency = round(latency / 10,1)
-        old = round(old / 10,1)
+        latency = Decimal(latency / 10)
+        old = Decimal(old / 10)
         #get diff and change in percentage
-        diff = int(latency - float(old))
+        diff = Decimal(latency - Decimal(old))
         percentage = round((abs(float(old) - latency) / latency) * 100.0,1)
         self.logger.debug(f"{nic} Current percentage: {percentage}%, (current {latency}, earlier {old}, diff {diff})")
         if latency < 10 and diff >= 2:
@@ -220,7 +221,7 @@ class Latency(Base):
                 nicReload = False
                 #if a link triggers more than 10 reloads per hour, ignore it.
                 for nic in self.reload:
-                    if self.linkState[nic]['reload'] < 10: nicReload = True
+                    if self.linkState[nic]['reload'] < 5: nicReload = True
                 #check if we need to reset self.linkReloadReset
                 if int(time.time()) > self.linkReloadReset:
                     self.linkReloadReset = int(time.time()) + 3600
