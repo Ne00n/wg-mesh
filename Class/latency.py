@@ -18,6 +18,7 @@ class Latency(Base):
         self.path = path
         self.noWait = 0
         self.lastReload = int(time.time()) + 600
+        self.linkReloadReset = int(time.time()) + 3600
         self.currentLinks = self.wg.getLinks(False)
         self.config = self.readJson(f'{path}/configs/config.json')
         self.network = self.readJson(f"{path}/configs/network.json")
@@ -107,7 +108,7 @@ class Latency(Base):
         if not latency:
             self.logger.warning("No pingable links found.")
             return False
-        total,ongoingLoss,ongoingJitter,self.reload,self.noWait,peers = 0,0,0,0,0,[]
+        total,ongoingLoss,ongoingJitter,self.reload,self.noWait,peers = 0,0,0,[],0,[]
         for node in list(config):
             for entry,row in latency.items():
                 if entry == node['target']:
@@ -145,7 +146,8 @@ class Latency(Base):
                         self.logger.debug(f"Loss {node['nic']} ({entry}) Weight: {old}, Latency: {current}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
                         if self.reloadPeacemaker(node['nic'],hasLoss,eventCount,node['cost'],old): 
                             self.logger.debug(f"{node['nic']} ({entry}) Triggering Packetloss reload")
-                            self.reload += 1
+                            self.linkState[node['nic']]['reload'] += 1
+                            self.reload.append(node['nic'])
                             self.noWait += 1
                         ongoingLoss += 1
 
@@ -165,7 +167,8 @@ class Latency(Base):
                             self.logger.debug(f"Jitter {node['nic']} ({entry}) Weight: {old}, Latency: {current}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
                             if self.reloadPeacemaker(node['nic'],hasJitter,eventCount,node['cost'],old):
                                 self.logger.debug(f"{node['nic']} ({entry}) Triggering Jitter reload")
-                                self.reload += 1
+                                self.linkState[node['nic']]['reload'] += 1
+                                self.reload.append(node['nic'])
                             ongoingJitter += 1
 
                     total += 1
@@ -214,8 +217,12 @@ class Latency(Base):
                 birdConfig = self.Templator.genBird(latencyData,self.peers,self.config)
                 #write
                 self.saveFile(birdConfig,'/etc/bird/bird.conf')
+                nicReload = False
+                #if a link triggers more than 10 reloads per hour, ignore it.
+                for nic in self.reload:
+                    if self.linkState[nic]['reload'] < 10: nicReload = True
                 #reload bird with updates only every 10 minutes or if reload is greater than 1
-                if int(time.time()) > self.lastReload or self.reload > 0:
+                if int(time.time()) > self.lastReload or nicReload:
                     #keep a copy with the current values in the bird config
                     self.latencyDataState = copy.deepcopy(self.latencyData)
                     #reload
@@ -231,7 +238,7 @@ class Latency(Base):
     def setLatencyData(self,latencyData,peers):
         #fill linkState
         for data in latencyData:
-            if not data['nic'] in self.linkState: self.linkState[data['nic']] = {"cost":0}
+            if not data['nic'] in self.linkState: self.linkState[data['nic']] = {"cost":0,"reload":0}
         #copy dicts
         self.latencyData = copy.deepcopy(latencyData)
         self.latencyDataState = copy.deepcopy(latencyData)
