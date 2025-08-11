@@ -221,6 +221,11 @@ class Latency(Base):
                 #if a link triggers more than 10 reloads per hour, ignore it.
                 for nic in self.reload:
                     if self.linkState[nic]['reload'] < 10: nicReload = True
+                #check if we need to reset self.linkReloadReset
+                if int(time.time()) > self.linkReloadReset:
+                    self.linkReloadReset = int(time.time()) + 3600
+                    for nic in self.linkState:
+                        self.linkState[nic]['reload'] = 0
                 #reload bird with updates only every 10 minutes or if reload is greater than 1
                 if int(time.time()) > self.lastReload or nicReload:
                     #keep a copy with the current values in the bird config
