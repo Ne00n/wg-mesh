@@ -70,15 +70,13 @@ class Latency(Base):
         diff = Decimal(latency - Decimal(old))
         percentage = (abs(old - latency) / latency) * Decimal('100')
         self.logger.debug(f"{nic} Current percentage: {percentage}%, (current {latency}, earlier {old}, diff {diff})")
-        if latency < 10 and diff >= 2:
+        if latency < 10 and percentage >= 50:
             return True
-        elif latency < 20 and diff >= 3:
+        elif latency > 10 and percentage >= 35:
             return True
-        elif latency < 50 and diff >= 5:
+        elif latency > 50 and percentage >= 25:
             return True
-        elif latency < 100 and diff >= 10:
-            return True
-        elif latency > 100 and percentage >= 10:
+        elif latency > 100 and percentage >= 15:
             return True
         else:
             return False
