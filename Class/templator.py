@@ -135,6 +135,7 @@ protocol bgp '''+peer["nic"]+''' {
         template = f'\n\t\tinterface "{nic}" {{' 
         template += '\n\t\t\tstub;' if "peer" in data ['nic'] else '\n\t\t\ttype ptmp;'
         if ospfType == 2 and not "peer" in data['nic']: template += f"\n\t\t\tneighbors {{ {data['target']}; }};"
+        template += f"\n\t\t\thello 15;"
         template += f"\n\t\t\tcost {data['cost']};\n\t\t}};"
         return template
 
