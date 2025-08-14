@@ -271,7 +271,7 @@ class CLI(Base):
         print("You should reload the services to apply any config changes")
 
     def setOption(self,options):
-        validOptions = ["area","prefix","defaultLinkType","basePort","tick","reloadInterval","operationMode","networkID","loglevel","vxlanOffset","subnet","subnetv6","subnetVXLAN","subnetPeer","subnetPeerv6","AllowedPeers","gotifyUp","gotifyDown","gotifyError",'gotifyDiag','gotifyChanges','blacklist']
+        validOptions = ["area","prefix","defaultLinkType","basePort","tick","reloadInterval","hello","operationMode","networkID","loglevel","vxlanOffset","subnet","subnetv6","subnetVXLAN","subnetPeer","subnetPeerv6","AllowedPeers","gotifyUp","gotifyDown","gotifyError",'gotifyDiag','gotifyChanges','blacklist']
         if len(sys.argv) == 0:
             print(f"Valid options: {', '.join(validOptions)}")
         else:
@@ -283,7 +283,7 @@ class CLI(Base):
                     return
                 if key == "basePort" or key == "vxlanOffset" or key == "operationMode" or key == "networkID":
                     config[key] = int(value)
-                elif key == "area" or key == "tick" or key == "reloadInterval":
+                elif key == "area" or key == "tick" or key == "reloadInterval" or key == "hello":
                     config['bird'][key] = int(value)
                 elif key == "gotifyUp" or key == "gotifyDown" or key == "gotifyError" or key == "gotifyDiag" or key == "gotifyChanges":
                     config['notifications'][key] = value

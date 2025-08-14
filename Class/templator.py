@@ -130,12 +130,12 @@ protocol bgp '''+peer["nic"]+''' {
 }
         '''
 
-    def genInterfaceOSPF(self,data,ospfType=2):
+    def genInterfaceOSPF(self,data,config,ospfType=2):
         nic = data['nic']
         template = f'\n\t\tinterface "{nic}" {{' 
         template += '\n\t\t\tstub;' if "peer" in data ['nic'] else '\n\t\t\ttype ptmp;'
         if ospfType == 2 and not "peer" in data['nic']: template += f"\n\t\t\tneighbors {{ {data['target']}; }};"
-        template += f"\n\t\t\thello 15;"
+        template += f"\n\t\t\thello {config['bird']['hello']};"
         template += f"\n\t\t\tcost {data['cost']};\n\t\t}};"
         return template
 
@@ -178,7 +178,7 @@ protocol bgp '''+peer["nic"]+''' {
             for area,latencyData in latency.items():
                 template += f"\n\tarea {area} {{"
                 for data in latencyData:
-                    template += self.genInterfaceOSPF(data)
+                    template += self.genInterfaceOSPF(data,config)
                 template += "\n\t};"
             template += "\n}"
 
@@ -189,7 +189,7 @@ protocol bgp '''+peer["nic"]+''' {
             for area,latencyData in latency.items():
                 template += f"\n\tarea {area} {{"
                 for data in latencyData:
-                    template += self.genInterfaceOSPF(data,3)
+                    template += self.genInterfaceOSPF(data,config,3)
                 template += "\n\t};"
             template += "\n}\n"
         
