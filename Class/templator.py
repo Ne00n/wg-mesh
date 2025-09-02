@@ -146,10 +146,10 @@ protocol bgp '''+peer["nic"]+''' {
         template += "\n\nprotocol device {\n\tscan time 10;\n}\n"
 
         localPTP = ""
-        for target,data in latency.items():
+        for row in latency:
             if localPTP != "":
                 localPTP += ","
-            localPTP += data['target']+"/32-"
+            localPTP += row['target']+"/32-"
 
         template += f"\nfunction avoid_local_ptp() {{\n\t### Avoid fucking around with direct peers\n\treturn net ~ [ {localPTP} ];\n}}"
         template += '\n\nprotocol direct {\n\tipv4;\n\tipv6;\n\tinterface "lo";\n\tinterface "tunnel*";\n}'
@@ -172,7 +172,7 @@ protocol bgp '''+peer["nic"]+''' {
             template += "\n\treject;\n}"
             template += f"\n\nprotocol ospf {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
             template += f"\n\tipv4 {{\n\t\timport all;\n\t\texport filter export_OSPF;\n\t}};"
-            for target,data in latency.items():
+            for row in latency:
                 template += self.genInterfaceOSPF(data,config)
             template += "\n}"
 
@@ -180,8 +180,8 @@ protocol bgp '''+peer["nic"]+''' {
             template += f"\n\nfilter export_OSPFv3 {{\n\tif (net.len > 48) then reject;\n\tif source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;\n\treject;\n}}"
             template += f"\n\nprotocol ospf v3 {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
             template += f"\n\tipv6 {{\n\t\texport filter export_OSPFv3;\n\t}};"
-            for target,data in latency.items():
-                template += self.genInterfaceOSPF(data,config,3)
+            for row in latency:
+                template += self.genInterfaceOSPF(row,config,3)
             template += "\n}\n"
         
         return template
