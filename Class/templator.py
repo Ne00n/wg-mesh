@@ -173,7 +173,7 @@ protocol bgp '''+peer["nic"]+''' {
             template += f"\n\nprotocol ospf {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
             template += f"\n\tipv4 {{\n\t\timport all;\n\t\texport filter export_OSPF;\n\t}};"
             for row in latency:
-                template += self.genInterfaceOSPF(data,config)
+                template += self.genInterfaceOSPF(row,config)
             template += "\n}"
 
         if config['bird']['ospfv3']:
