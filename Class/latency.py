@@ -208,7 +208,6 @@ class Latency(Base):
                 #save in memory so we don't have to read the config file again
                 self.notifications(latencyData)
                 self.latencyData = copy.deepcopy(latencyData)
-                latencyData = self.wg.groupByArea(latencyData)
                 birdConfig = self.Templator.genBird(latencyData,self.peers,self.config)
                 #write
                 self.saveFile(birdConfig,'/etc/bird/bird.conf')

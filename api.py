@@ -185,10 +185,6 @@ def index():
     if "linkType" in payload and not validateLinkType(payload['linkType']):
         logging.info(f"Invalid linkType from {requestIP}")
         return HTTPResponse(status=400, body="Invalid linkType")
-    #validate area
-    if "area" in payload and not validate.id(payload['area']):
-        logging.info(f"Invalid Area from {requestIP}")
-        return HTTPResponse(status=400, body="Invalid Area")
     #validate connectivity
     if "connectivity" in payload and not validateConnectivity(payload['connectivity']):
         logging.info(f"Invalid connectivity data from {requestIP}")
@@ -203,7 +199,6 @@ def index():
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
     if not "prefix" in payload: payload['prefix'] = f"{subnetPrefix}"
-    if not "area" in payload: payload['area'] = 0
     payload['basePort'] = config['basePort'] if not "port" in payload else payload['port']
     if not "ipv6" in payload: payload['ipv6'] = False
     #initial

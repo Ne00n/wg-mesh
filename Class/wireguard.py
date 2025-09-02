@@ -47,7 +47,6 @@ class Wireguard(Base):
         if not "ospfv2" in self.config['bird']: self.config['bird']['ospfv2'] = True
         if not "ospfv3" in self.config['bird']: self.config['bird']['ospfv3'] = True
         if not "jitter" in self.config['bird']: self.config['bird']['jitter'] = True
-        if not "area" in self.config['bird']: self.config['bird']['area'] = 0
         if not "tick" in self.config['bird']: self.config['bird']['tick'] = 1
         if not "hello" in self.config['bird']: self.config['bird']['hello'] = 15
         if not "client" in self.config['bird']: self.config['bird']['client'] = False
@@ -113,7 +112,7 @@ class Wireguard(Base):
         connectivity = {"ipv4":ipv4,"ipv6":ipv6,"blacklist":[]}
         config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16","subnetv6":"fe82:","subnetPeer":"172.31.0.0/16","subnetPeerv6":"fe81:",
         "subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],"prefix":"pipe","id":int(id),"networkID":0,"linkTypes":["default"],"linkSettings":{"awgGen":False},"defaultLinkType":"default","connectivity":connectivity,
-        "bird":{"ospfv2":True,"ospfv3":True,"jitter":True,"area":0,"tick":1,"hello":15,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600},
+        "bird":{"ospfv2":True,"ospfv3":True,"jitter":True,"tick":1,"hello":15,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600},
         "modules":{"neighbour":False,"update":False},"latency":{"pingInterval":30},
         "notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""}}
         response = self.saveJson(config,f"{self.path}/configs/config.json")
@@ -262,10 +261,7 @@ class Wireguard(Base):
             local, remote = self.getRemote(config,subnetSplitted)
             #grab publickey
             publicKey = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)[0]
-            #grab area
-            area = re.findall(f"Area\s([0-9]+)",config,re.MULTILINE)
-            area = int(area[0]) if area else 0
-            links[filename] = {"filename":filename,"vxlan":destination,"local":local,"remote":remote,'remotePublic':remotePublic,'publicKey':publicKey,"area":area,"config":config}
+            links[filename] = {"filename":filename,"vxlan":destination,"local":local,"remote":remote,'remotePublic':remotePublic,'publicKey':publicKey,"config":config}
         return links
 
     def genAmneziaConfig(self):
@@ -360,7 +356,7 @@ class Wireguard(Base):
             isv6 = True if protocol == "ipv6" else False
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
-            "ipv6":isv6,"initial":self.isInitial,"linkType":linkType,"area":self.config['bird']['area'],"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
+            "ipv6":isv6,"initial":self.isInitial,"linkType":linkType,"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
             if port != 51820: payload["port"] = port
             success, req = self.call(f'{dest}/connect',payload)
             if success == False: return status
@@ -478,16 +474,6 @@ class Wireguard(Base):
         links = self.filesToLinks(self.getFiles(),useJSON)
         if not links and shouldExit: exit("No links found.")
         return links
-
-    def groupByArea(self,latencyData):
-        results = {}
-        wgLinks = self.getLinks()
-        for data in latencyData:
-            if not f"{data['nic']}.sh" in wgLinks: continue
-            current = wgLinks[f"{data['nic']}.sh"]
-            if not current['area'] in results: results[current['area']] = []
-            results[current['area']].append(data)
-        return results
 
     def checkLinks(self,links):
         #fping

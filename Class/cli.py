@@ -66,7 +66,7 @@ class CLI(Base):
             freeSubnet,freeSubnetv6,freePort = self.wg.minimal(files=allConfigs,port=config['basePort'])
             freeSubnet,freeSubnetv6,freePort = self.wg.minimal(files=peerConfigs,isPeer=True,port=freePort)
             #generate wireguard server config
-            fakePayload = {'clientPublicKey':clientPublicKey,'linkType':'','prefix':'tunnel','area':0,'connectivity':{"ipv4":True}}
+            fakePayload = {'clientPublicKey':clientPublicKey,'linkType':'','prefix':'tunnel','connectivity':{"ipv4":True}}
             interface = self.wg.getInterface(id=tunnelID,prefix="tunnel")
             serverConfig = self.templator.genServer(interface,config,fakePayload,freeSubnet,freeSubnetv6,freePort)
             clientIP = self.wg.Network.getHost(freeSubnet)
@@ -271,7 +271,7 @@ class CLI(Base):
         print("You should reload the services to apply any config changes")
 
     def setOption(self,options):
-        validOptions = ["area","prefix","defaultLinkType","basePort","tick","reloadInterval","hello","operationMode","networkID","loglevel","vxlanOffset","subnet","subnetv6","subnetVXLAN","subnetPeer","subnetPeerv6","AllowedPeers","gotifyUp","gotifyDown","gotifyError",'gotifyDiag','gotifyChanges','blacklist']
+        validOptions = ["prefix","defaultLinkType","basePort","tick","reloadInterval","hello","operationMode","networkID","loglevel","vxlanOffset","subnet","subnetv6","subnetVXLAN","subnetPeer","subnetPeerv6","AllowedPeers","gotifyUp","gotifyDown","gotifyError",'gotifyDiag','gotifyChanges','blacklist']
         if len(sys.argv) == 0:
             print(f"Valid options: {', '.join(validOptions)}")
         else:
@@ -283,7 +283,7 @@ class CLI(Base):
                     return
                 if key == "basePort" or key == "vxlanOffset" or key == "operationMode" or key == "networkID":
                     config[key] = int(value)
-                elif key == "area" or key == "tick" or key == "reloadInterval" or key == "hello":
+                elif key == "tick" or key == "reloadInterval" or key == "hello":
                     config['bird'][key] = int(value)
                 elif key == "gotifyUp" or key == "gotifyDown" or key == "gotifyError" or key == "gotifyDiag" or key == "gotifyChanges":
                     config['notifications'][key] = value

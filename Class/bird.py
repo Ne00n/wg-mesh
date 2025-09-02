@@ -110,8 +110,6 @@ class Bird(Base):
         elif self.config['operationMode'] == 2:
             self.logger.info("IPerf messurement")
             latencyData = self.getIPerf(nodes)
-        latencyDataNoGroup = latencyData
-        latencyData = self.wg.groupByArea(latencyData)
         self.logger.info("Generating config")
         bird = self.Templator.genBird(latencyData,peers,self.config)
         if bird == "": 
@@ -121,7 +119,7 @@ class Bird(Base):
         self.saveFile(bird,'/etc/bird/bird.conf')
         self.logger.info("Reloading bird")
         self.cmd("sudo systemctl reload bird")
-        return latencyDataNoGroup,peers
+        return latencyData,peers
 
     def mesh(self):
         #check if bird is running

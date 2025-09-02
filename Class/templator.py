@@ -3,7 +3,7 @@ import ipaddress, time
 class Templator:
 
     def genServer(self,interface,config,payload,freeSubnet,freeSubnetv6,serverPort,wgobfsSharedKey=""):
-        clientPublicKey,linkType,prefix,area,connectivity = payload['clientPublicKey'],payload['linkType'],payload['prefix'],payload['area'],payload['connectivity']
+        clientPublicKey,linkType,prefix,connectivity = payload['clientPublicKey'],payload['linkType'],payload['prefix'],payload['connectivity']
         wgobfs,mtu = "",1412 if "v6" in interface else 1420
         amneziawg = ""
         wgPrefix = "awg" if linkType == "amneziawg" else "wg"
@@ -18,7 +18,6 @@ class Templator:
         if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I INPUT -p udp -s {connectivity["ipv4"]} -j XOR --keys "{wgobfsSharedKey}";\n'
         wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
-#Area {area}
 if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type {wgProtocol}
@@ -67,7 +66,6 @@ PersistentKeepalive = 20
         if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I INPUT -p udp -s {serverIPExternal} -j XOR --keys "{wgobfsSharedKey}";\n'
         wgobfsReverse = wgobfs.replace("mangle -I","mangle -D")
         template = f'''#!/bin/bash
-#Area {config['bird']["area"]}
 if [ "$1" == "up" ];  then
     {wgobfs}
     sudo ip link add dev {interface} type {wgProtocol}
@@ -148,11 +146,10 @@ protocol bgp '''+peer["nic"]+''' {
         template += "\n\nprotocol device {\n\tscan time 10;\n}\n"
 
         localPTP = ""
-        for area,latencyData in latency.items():
-            for data in latencyData:
-                if localPTP != "":
-                    localPTP += ","
-                localPTP += data['target']+"/32-"
+        for target,data in latency.items():
+            if localPTP != "":
+                localPTP += ","
+            localPTP += data['target']+"/32-"
 
         template += f"\nfunction avoid_local_ptp() {{\n\t### Avoid fucking around with direct peers\n\treturn net ~ [ {localPTP} ];\n}}"
         template += '\n\nprotocol direct {\n\tipv4;\n\tipv6;\n\tinterface "lo";\n\tinterface "tunnel*";\n}'
@@ -175,22 +172,16 @@ protocol bgp '''+peer["nic"]+''' {
             template += "\n\treject;\n}"
             template += f"\n\nprotocol ospf {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
             template += f"\n\tipv4 {{\n\t\timport all;\n\t\texport filter export_OSPF;\n\t}};"
-            for area,latencyData in latency.items():
-                template += f"\n\tarea {area} {{"
-                for data in latencyData:
-                    template += self.genInterfaceOSPF(data,config)
-                template += "\n\t};"
+            for target,data in latency.items():
+                template += self.genInterfaceOSPF(data,config)
             template += "\n}"
 
         if config['bird']['ospfv3']:
             template += f"\n\nfilter export_OSPFv3 {{\n\tif (net.len > 48) then reject;\n\tif source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;\n\treject;\n}}"
             template += f"\n\nprotocol ospf v3 {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
             template += f"\n\tipv6 {{\n\t\texport filter export_OSPFv3;\n\t}};"
-            for area,latencyData in latency.items():
-                template += f"\n\tarea {area} {{"
-                for data in latencyData:
-                    template += self.genInterfaceOSPF(data,config,3)
-                template += "\n\t};"
+            for target,data in latency.items():
+                template += self.genInterfaceOSPF(data,config,3)
             template += "\n}\n"
         
         return template
