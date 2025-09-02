@@ -172,16 +172,20 @@ protocol bgp '''+peer["nic"]+''' {
             template += "\n\treject;\n}"
             template += f"\n\nprotocol ospf {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
             template += f"\n\tipv4 {{\n\t\timport all;\n\t\texport filter export_OSPF;\n\t}};"
+            template += f"\n\tarea 0 {{"
             for row in latency:
                 template += self.genInterfaceOSPF(row,config)
+            template += "\n\t};"
             template += "\n}"
 
         if config['bird']['ospfv3']:
             template += f"\n\nfilter export_OSPFv3 {{\n\tif (net.len > 48) then reject;\n\tif source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;\n\treject;\n}}"
             template += f"\n\nprotocol ospf v3 {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
             template += f"\n\tipv6 {{\n\t\texport filter export_OSPFv3;\n\t}};"
+            template += f"\n\tarea 0 {{"
             for row in latency:
                 template += self.genInterfaceOSPF(row,config,3)
+            template += "\n\t};"
             template += "\n}\n"
         
         return template
