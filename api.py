@@ -229,7 +229,7 @@ def index():
     #switch to peer subnet if required
     isPeer = True if payload['network'] == "peer" else False
     #load configs
-    configs = wg.getConfigs(False,isPeer)
+    configs = wg.getConfigs(False)
     freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,payload['basePort'],isPeer)
     if not freeSubnet or not freeSubnetv6:
         connectMutex.release()
