@@ -294,9 +294,9 @@ class Wireguard(Base):
     def getAmneziaConfig(self):
         return self.amneziaConfig
 
-    def AskProtocol(self,dest,token=""):
+    def AskProtocol(self,dest,token="",network=""):
         #ask remote about available protocols
-        success, req = self.call(f'{dest}/connectivity',{"token":token})
+        success, req = self.call(f'{dest}/connectivity',{"token":token,"network":network})
         if success == False: return False
         if req.status_code != 200:
             print("Failed to request connectivity info")
@@ -333,7 +333,7 @@ class Wireguard(Base):
         self.isInitial = False if links else True
         status = {"ipv4":{"status":False,"http":0},"ipv6":{"status":False,"http":0}}
         #ask remote about available protocols
-        data = self.AskProtocol(dest,token)
+        data = self.AskProtocol(dest,token,network)
         if not data: return status
         availableProtocols = []
         #start with the protocol which is available
