@@ -173,7 +173,10 @@ class Wireguard(Base):
 
     def getInterface(self,id,type="",network="",prefix=""):
         if not prefix: prefix = self.prefix
-        return f"{prefix}{network}{id}{type}"
+        if network == "peer":
+            return f"{network}{id}{type}"
+        else:
+            return f"{prefix}{network}{id}{type}"
 
     def filterInterface(self,interface):
         return interface.replace(".sh","")
