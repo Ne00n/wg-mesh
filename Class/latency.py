@@ -60,7 +60,7 @@ class Latency(Base):
         #needs to be ongoing
         if not ongoing: return False
         #ignore links dead or nearly dead links
-        if latency > 20000 and float(old) > 20000: return False
+        if latency > 10000 and float(old) > 10000: return False
         #ignore any negative changes
         if latency <= float(old): return False
         #to keep precision we multiplied them by 10
