@@ -168,7 +168,7 @@ class Latency(Base):
 
                     total += 1
                     #if within 200-255 range (client) adjust base cost/weight to avoid transit
-                    if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (node['cost'] + 10000) < 65534: node['cost'] += 10000
+                    if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (node['cost'] + 1000) < 65534: node['cost'] += 1000
                     #make sure its always int
                     node['cost'] = int(round(node['cost']))
                     #make sure we stay below max int

@@ -108,7 +108,7 @@ class Bird(Base):
             #if client adjust base latency to avoid transit
             for data in latencyData:
                 linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",data['nic'], re.MULTILINE)[0]
-                if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65534: data['cost'] += 10000
+                if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 1000) < 65534: data['cost'] += 1000
         elif self.config['operationMode'] == 2:
             self.logger.info("IPerf messurement")
             latencyData = self.getIPerf(nodes)
