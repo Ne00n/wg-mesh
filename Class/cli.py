@@ -92,6 +92,10 @@ class CLI(Base):
         self.wg = Wireguard(self.path)
         self.wg.proximity(cutoff)
 
+    def reconnect(self):
+        self.wg = Wireguard(self.path)
+        self.wg.reconnect()
+
     def disconnect(self,links=[],force=False):
         self.wg = Wireguard(self.path)
         self.wg.disconnect(links,force)
