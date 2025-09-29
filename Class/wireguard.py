@@ -225,12 +225,12 @@ class Wireguard(Base):
         links = {}
         for findex, filename in enumerate(files):
             if not filename.endswith(".sh") or filename == "dummy.sh": continue
+            link = filename.replace(".sh","")
             linkConfig = self.readJson(f"{self.path}/links/{link}.json")
             config = self.readFile(f"{self.path}/links/{filename}")
             if not config or linkConfig:
                 print(f"Unable to read link file/json")
                 continue
-            link = filename.replace(".sh","")
             subnetSplitted,subnetPrefix = self.Network.subnetSwitch(filename)
             remotePublic = linkConfig['remotePublic']
             destination = linkConfig['remote']
