@@ -493,21 +493,19 @@ class Wireguard(Base):
         for link,data in links.items():
             print(f"Disconnecting {link}")
             status = self.disconnect([link])
-            if status[link]:
-                print(f"Disconnected {link}")
-                time.sleep(5)
-                print(f"Reconnting {link}")
-                status = self.connect(f'http://{data["vxlan"]}:{self.config["listenPort"]}')
-                interfaceType = "ipv6" if "v6" in link else "ipv4"
-                if status[interfaceType]:
-                    print(f"Reconnected {link}")
-                else:
-                    print(f"Failed to reconenct {link}")
-                    break
-            else:
+            if not status[link]:
                 print(f"Failed to disconnect {link}")
                 if req is not None: print(f"Got {req.status_code} with {req.text} aborting")
                 break
+            print(f"Disconnected {link}")
+            time.sleep(5)
+            print(f"Reconnting {link}")
+            status = self.connect(f'http://{data["vxlan"]}:{self.config["listenPort"]}')
+            interfaceType = "ipv6" if "v6" in link else "ipv4"
+            if not status[interfaceType]:
+                print(f"Failed to reconnect {link}")
+                break
+            print(f"Reconnected {link}")
             time.sleep(5)
 
     def disconnect(self,links=[],force=False):
