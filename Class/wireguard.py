@@ -201,8 +201,8 @@ class Wireguard(Base):
         self.setInterface(interface,"down")
         self.cleanInterface(interface)
 
-    def clean(self,ignoreJSON,ignoreEndpoint):
-        links =  self.getLinks(True,ignoreJSON)
+    def clean(self,ignoreEndpoint):
+        links =  self.getLinks(True)
         offline,online = self.checkLinks(links)
         for link in offline:
             data = links[link]
@@ -221,41 +221,19 @@ class Wireguard(Base):
         for filename, row in links.items():
             if row['remote'] == remote: return filename
 
-    def filesToLinks(self,files,useJSON=True):
+    def filesToLinks(self,files):
         links = {}
         for findex, filename in enumerate(files):
             if not filename.endswith(".sh") or filename == "dummy.sh": continue
+            linkConfig = self.readJson(f"{self.path}/links/{link}.json")
             config = self.readFile(f"{self.path}/links/{filename}")
-            if not config:
-                print(f"{filename} is empty!")
+            if not config or linkConfig:
+                print(f"Unable to read link file/json")
                 continue
             link = filename.replace(".sh","")
-            linkConfig = self.readJson(f"{self.path}/links/{link}.json")
             subnetSplitted,subnetPrefix = self.Network.subnetSwitch(filename)
-            if linkConfig and useJSON:
-                remotePublic = linkConfig['remotePublic']
-                destination = linkConfig['remote']
-            else:
-                remotePublic = ""
-                destination = ""
-                #grab wg server ip from client wg config
-                if "endpoint" in config:
-                    remotePublic = re.findall(f'endpoint\s(.*):',config, re.MULTILINE)[0]
-                    destination = re.findall(f'({subnetSplitted[0]}\.{subnetSplitted[1]}\.[0-9]+\.)',config, re.MULTILINE)
-                    if not destination:
-                        print(f"Ignoring {filename}")
-                        continue
-                    destination = f"{destination[0]}1"
-                elif "peer" in filename:
-                    peerIP = re.findall("Peer\s([0-9.]+)",config, re.MULTILINE)
-                    if not peerIP:
-                        print(f"Unable to figure out peer for {filename}")
-                        continue
-                    destination = peerIP[0]
-                elif "listen-port" in config:
-                    #grab ID from filename
-                    linkID = re.findall(f"{self.prefix}.*?([0-9]+)",filename, re.MULTILINE)[0]
-                    destination = f"{subnetPrefix}.{linkID}.1"
+            remotePublic = linkConfig['remotePublic']
+            destination = linkConfig['remote']
             #get remote endpoint
             local, remote = self.getRemote(config,subnetSplitted)
             #grab publickey
@@ -469,8 +447,8 @@ class Wireguard(Base):
         files = os.listdir(f"{self.path}/links/")
         return [x for x in files if self.filter(x)]
 
-    def getLinks(self,shouldExit=True,useJSON=True):
-        links = self.filesToLinks(self.getFiles(),useJSON)
+    def getLinks(self,shouldExit=True):
+        links = self.filesToLinks(self.getFiles())
         if not links and shouldExit: exit("No links found.")
         return links
 

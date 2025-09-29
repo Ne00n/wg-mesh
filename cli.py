@@ -49,9 +49,11 @@ elif sys.argv[1] == "reconnect":
 elif sys.argv[1] == "up" or sys.argv[1] == "down":
     cli.links(sys.argv[1])
 elif sys.argv[1] == "clean":
-    ignoreJSON = False if len(sys.argv) <= 2 else True
-    ignoreEndpoint = False if len(sys.argv) <= 3 else True
-    cli.clean(ignoreJSON,ignoreEndpoint)
+    ignoreEndpoint = False
+    sys.argv = sys.argv[2:]
+    for param in sys.argv:
+        if param.lower() == "ignoreEndpoint": ignoreEndpoint = True
+    cli.clean(ignoreEndpoint)
 elif sys.argv[1] == "migrate":
     cli.migrate()
 elif sys.argv[1] == "recover":
