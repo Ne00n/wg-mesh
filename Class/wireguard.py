@@ -488,9 +488,11 @@ class Wireguard(Base):
                 offline.append(filename) if "100%" in row else online.append(filename)
         return offline,online
 
-    def reconnect(self):
+    def reconnect(self,upgrade):
         links = self.getLinks()
         for link,data in links.items():
+            filename = link.replace(".sh",".json")
+            if upgrade and os.path.isfile(f"{self.path}/links/{filename}"): continue
             print(f"Disconnecting {link}")
             status = self.disconnect([link])
             if not status[link]:
