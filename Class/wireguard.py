@@ -83,7 +83,6 @@ class Wireguard(Base):
             if not file.endswith(".sh"): 
                 files.remove(file)
                 continue
-            if "tunnel" in file: files.remove(file)
         if not files and abort: exit(f"No {self.prefix} configs found")
         return files
 
@@ -488,6 +487,10 @@ class Wireguard(Base):
                 filename = self.getFilename(links,ip)
                 offline.append(filename) if "100%" in row else online.append(filename)
         return offline,online
+
+    def reconnect(self):
+        status = self.getLinks()
+        print(status)
 
     def disconnect(self,links=[],force=False):
         currentLinks, status = self.getLinks(),{}
