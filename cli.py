@@ -52,7 +52,7 @@ elif sys.argv[1] == "clean":
     ignoreEndpoint = False
     sys.argv = sys.argv[2:]
     for param in sys.argv:
-        if param.lower() == "ignoreEndpoint": ignoreEndpoint = True
+        if param == "ignoreEndpoint": ignoreEndpoint = True
     cli.clean(ignoreEndpoint)
 elif sys.argv[1] == "migrate":
     cli.migrate()
