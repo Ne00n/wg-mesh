@@ -228,8 +228,11 @@ class Wireguard(Base):
             link = filename.replace(".sh","")
             linkConfig = self.readJson(f"{self.path}/links/{link}.json")
             config = self.readFile(f"{self.path}/links/{filename}")
-            if not config or linkConfig:
-                print(f"Unable to read link file/json")
+            if not config:
+                print(f"Unable to read {filename}")
+                continue
+            if not linkConfig:
+                print(f"Unable to read {link}.json")
                 continue
             subnetSplitted,subnetPrefix = self.Network.subnetSwitch(filename)
             remotePublic = linkConfig['remotePublic']
