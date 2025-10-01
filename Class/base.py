@@ -5,7 +5,7 @@ from decimal import Decimal
 class Base:
 
     def __init__(self):
-        self.fpingMatch = re.compile(r"([0-9.:a-z]+).*?([0-9]+.[0-9]+|timed out).*?([0-9]+)% loss")
+        self.fpingMatch = re.compile(r"([0-9\.:a-z]+).*?([0-9]+\.[0-9]+|timed out).*?([0-9]+)% loss")
         self.fpingUnreachable = re.compile(r"ICMP Host Unreachable from [0-9.]+ for ICMP Echo sent to ([0-9.]+)")
     
     def cmd(self,cmd,timeout=None):
