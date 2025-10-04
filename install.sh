@@ -46,6 +46,11 @@ echo "net.ipv4.conf.default.rp_filter=0" >> /etc/sysctl.d/wg-mesh.conf
 echo "net.core.default_qdisc=fq " >> /etc/sysctl.d/wg-mesh.conf
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.d/wg-mesh.conf
 echo "net.ipv6.conf.all.forwarding=1" >> /etc/sysctl.d/wg-mesh.conf
+echo "net.ipv4.tcp_low_latency=0" >> /etc/sysctl.d/wg-mesh.conf
+echo "net.ipv4.tcp_delayed_ack=0" >> /etc/sysctl.d/wg-mesh.conf
+echo "net.core.netdev_max_backlog = 1000" >> /etc/sysctl.d/wg-mesh.conf
+echo "kernel.sched_latency_ns = 20000000" >> /etc/sysctl.d/wg-mesh.conf
+echo "kernel.nmi_watchdog = 1" >> /etc/sysctl.d/wg-mesh.conf
 sysctl --system
 #systemd wg-mesh service
 cp /opt/wg-mesh/configs/wgmesh.service /etc/systemd/system/wgmesh.service
