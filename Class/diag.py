@@ -59,7 +59,7 @@ class Diag(Base):
                 continue
             endpoint = data['vxlan']
             self.logger.debug(f"Pinging vxlan {endpoint}")
-            pings = self.fping([endpoint],3,True)
+            pings = self.fping([endpoint],3)
             if not pings[endpoint]:
                 self.logger.info(f"Unable to reach vxlan endpoint {link} ({endpoint})")
                 continue
@@ -67,7 +67,7 @@ class Diag(Base):
             remotePublic = data['remotePublic']
             if remotePublic:
                 self.logger.debug(f"Pinging public ip {remotePublic}")
-                pings = self.fping([remotePublic],3,True)
+                pings = self.fping([remotePublic],3)
                 if not pings[remotePublic]:
                     self.logger.info(f"Unable to reach public ip address, likely routing problems {link}")
                     continue

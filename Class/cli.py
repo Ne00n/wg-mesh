@@ -328,7 +328,7 @@ class CLI(Base):
             if f"{targetLink}.sh" == currentLink:
                 mapping = {details['remote']:"Remote",details['vxlan']:"VXLAN",details['remotePublic']:"Public"}
                 targets = [details['vxlan'],details['remote'],details['remotePublic']]
-                fping = self.wg.fping(targets,3,True)
+                fping = self.wg.fping(targets,3)
                 break
         if not mapping: return
         print("Ping results")

@@ -88,8 +88,6 @@ class Base:
         result,actual = 0,0
         if not row: return 65534
         for entry in row:
-            #ignore timed out
-            if entry[0] == "timed out": continue
             result += Decimal(entry[0])
             actual += 1
         #do not return 0, never, ever
@@ -99,7 +97,7 @@ class Base:
         result =  Decimal(result / actual)
         return result
 
-    def fping(self,targets,pings=3,dropTimeout = False):
+    def fping(self,targets,pings=3):
         fping = f"fping -c {pings} "
         fping += " ".join(targets)
         result = self.cmd(fping)
@@ -111,12 +109,11 @@ class Base:
         for row in parsed:
             for ip,ms,loss in row:
                 if ip not in latency: latency[ip] = []
-                if dropTimeout and ms == "timed out": continue
+                if ms == "timed out": continue
                 latency[ip].append([ms,loss])
         for row in unreachable:
             for ip in row:
                 if ip not in latency: latency[ip] = []
-                if not dropTimeout: latency[ip].append([65534,100])
         return latency
 
     def iperf(self,target):

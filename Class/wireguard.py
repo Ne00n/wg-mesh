@@ -208,7 +208,7 @@ class Wireguard(Base):
             data = links[link]
             parsed, remote = self.getRemote(data['config'],self.Network.getSubnetSplitted())
             print(f"Found dead link {link} ({remote})")
-            pings = self.fping([data['vxlan']],3,True)
+            pings = self.fping([data['vxlan']],3)
             if ignoreEndpoint or not pings or not pings[data['vxlan']]:
                 print(f"Unable to reach endpoint {link} ({data['vxlan']})")
                 print(f"Removing {link} ({data['vxlan']})")

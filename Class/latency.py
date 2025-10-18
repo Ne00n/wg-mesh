@@ -52,7 +52,6 @@ class Latency(Base):
         dynamicGrace = max(minGrace, min(dynamicGrace, maxGrace))
 
         for entry in row:
-            if entry[0] == "timed out": continue
             if float(entry[0]) > avrg + dynamicGrace: return True,round(float(entry[0]) - (avrg + dynamicGrace),2)
         return False,0
 
@@ -99,7 +98,7 @@ class Latency(Base):
     def getLatency(self,config,pings=4):
         targets = []
         for row in config: targets.append(row['target'])
-        latency =  self.fping(targets,pings,True)
+        latency =  self.fping(targets,pings)
         if not latency:
             self.logger.warning("No pingable links found.")
             return False
@@ -120,10 +119,7 @@ class Latency(Base):
                     #if latency doesn't exist in network.json create it
                     if not "latency" in self.network[entry]: self.network[entry]['latency'] = []
                     #Save raw latency values per interface
-                    for ping in row:
-                        #ignore timed out
-                        if ping[0] == "timed out": continue
-                        self.network[entry]['latency'].append(float(ping[0]))
+                    for ping in row: self.network[entry]['latency'].append(float(ping[0]))
                     #Keep only the last 100 records
                     self.network[entry]['latency'] = self.network[entry]['latency'][-100:]
                     #Packetloss
