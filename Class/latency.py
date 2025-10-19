@@ -202,7 +202,6 @@ class Latency(Base):
                 self.logger.warning("Nothing todo")
             else:
                 #save in memory so we don't have to read the config file again
-                self.notifications(latencyData)
                 self.latencyData = copy.deepcopy(latencyData)
                 birdConfig = self.Templator.genBird(latencyData,self.peers,self.config)
                 #write
