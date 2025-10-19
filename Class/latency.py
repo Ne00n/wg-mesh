@@ -208,7 +208,7 @@ class Latency(Base):
                 #write
                 self.saveFile(birdConfig,'/etc/bird/bird.conf')
                 nicReload = False
-                #if a link triggers more than 10 reloads per hour, ignore it.
+                #if a link triggers more than 5 reloads per hour, ignore it.
                 for nic in self.reload:
                     if self.linkState[nic]['reload'] < 5: nicReload = True
                 #check if we need to reset self.linkReloadReset
