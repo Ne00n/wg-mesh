@@ -39,6 +39,7 @@ fi'''
 PrivateKey = {clientPrivateKey}
 Address = {clientIP}, {clientIPv6}
 #Table = off
+MTU = 1412
 [Peer]
 PublicKey = {publicKeyServer}
 PresharedKey = {preSharedKey}
