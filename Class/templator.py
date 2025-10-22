@@ -4,7 +4,7 @@ class Templator:
 
     def genServer(self,interface,config,payload,freeSubnet,freeSubnetv6,serverPort,wgobfsSharedKey=""):
         clientPublicKey,linkType,prefix,connectivity = payload['clientPublicKey'],payload['linkType'],payload['prefix'],payload['connectivity']
-        wgobfs,mtu = "",1412 if "v6" in interface else 1420
+        wgobfs,mtu = "",1412
         amneziawg = ""
         wgPrefix = "awg" if linkType == "amneziawg" else "wg"
         if linkType == "amneziawg" and "amneziawg" in payload:
