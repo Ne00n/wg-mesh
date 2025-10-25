@@ -69,7 +69,7 @@ class Bird(Base):
             origin = ip+lastByte
             #Client or Server roll the dice or rather not, so we ping the correct ip
             target = self.resolve(f"{ip}{int(lastByte)+1}",origin,31)
-            subnet = f"{ip}.0/30"
+            subnet = f"{ip}0/30"
             targetIP = f"{ip}{int(lastByte)+1}" if target else f"{ip}{int(lastByte)-1}"
             if "peer" in nic: 
                 peers.append({'nic':nic,'target':targetIP,'origin':origin,"subnet":subnet})
