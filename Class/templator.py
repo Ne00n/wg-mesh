@@ -146,13 +146,10 @@ protocol bgp '''+peer["nic"]+''' {
         template = f'log "/etc/bird/bird.log" {logLevels};\nrouter id {routerID}; #generated {int(time.time())}'
         template += "\n\nprotocol device {\n\tscan time 10;\n}\n"
 
-        localPTP = ""
-        for row in latency:
-            if localPTP != "":
-                localPTP += ","
-            localPTP += row['target']+"/32-"
+        localPTP = []
+        for row in latency: localPTP.append(row['target']+"/32-")
 
-        template += f"\nfunction avoid_local_ptp() {{\n\t### Avoid fucking around with direct peers\n\treturn net ~ [ {localPTP} ];\n}}"
+        template += f"\nfunction avoid_local_ptp() {{\n\t### Avoid fucking around with direct peers\n\treturn net ~ [ {','.join(localPTP)} ];\n}}"
         template += '\n\nprotocol direct {\n\tipv4;\n\tipv6;\n\tinterface "lo";\n\tinterface "tunnel*";\n}'
         template += f'\n\nprotocol static {{\n\tipv4;\n\troute {subnetPrefix}.0.0/16 unreachable;\n\tinclude "static.conf";\n\n}}'
         template += '\ninclude "bgp.conf";'
