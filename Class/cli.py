@@ -225,8 +225,10 @@ class CLI(Base):
             config['modules']['neighbour'] = False
         elif "update" in option:
             config['modules']['update'] = False
+        elif "leakPrevention" in option:
+            config['leakPrevention'] = False
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, jitter, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update")
+            print("Valid options: mesh, ospfv2, ospfv3, jitter, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update, leakPrevention")
             return
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response:
@@ -264,8 +266,10 @@ class CLI(Base):
             config['modules']['neighbour'] = True
         elif "update" in option:
             config['modules']['update'] = True
+        elif "leakPrevention" in option:
+            config['leakPrevention'] = True
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, jitter, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update")
+            print("Valid options: mesh, ospfv2, ospfv3, jitter, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update, leakPrevention")
             return
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response:
