@@ -28,6 +28,9 @@ class Wireguard(Base):
         if not "loglevel" in self.config: self.config['loglevel'] = "info"
         if not "vxlanOffset" in self.config: self.config['vxlanOffset'] = 0
         if not "networkID" in self.config: self.config['networkID'] = 0
+        if not "leakPrevention" in self.config: 
+            self.config['leakPrevention'] = True
+            reconfigureDummy = True
         if not "subnet" in self.config: self.config['subnet'] = "10.0.0.0/16"
         if not "subnetv6" in self.config: self.config['subnetv6'] = "fe82:"
         if not "subnetPeer" in self.config: self.config['subnetPeer'] = "172.31.0.0/16"
@@ -110,7 +113,7 @@ class Wireguard(Base):
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6,"blacklist":[]}
         config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16","subnetv6":"fe82:","subnetPeer":"172.31.0.0/16","subnetPeerv6":"fe81:",
-        "subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],"prefix":"pipe","id":int(id),"networkID":0,"linkTypes":["default"],"linkSettings":{"awgGen":False},"defaultLinkType":"default","connectivity":connectivity,
+        "subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],"prefix":"pipe","id":int(id),"networkID":0,"leakPrevention":True,"linkTypes":["default"],"linkSettings":{"awgGen":False},"defaultLinkType":"default","connectivity":connectivity,
         "bird":{"ospfv2":True,"ospfv3":True,"jitter":True,"tick":1,"hello":15,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600},
         "modules":{"neighbour":False,"update":False},"latency":{"pingInterval":30},
         "notifications":{"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""}}
