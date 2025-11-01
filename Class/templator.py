@@ -93,9 +93,10 @@ fi'''
         serverID += config['vxlanOffset']
         vxlanID = config['subnetVXLAN'].split(".")[2]
         prefix = ".".join(config['subnet'].split(".")[:2])
-        masquerade = ""
+        masquerade, leakPrevention = "",""
         if connectivity['ipv4']: masquerade += "sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
         if connectivity['ipv6']: masquerade += "sudo ip6tables -t nat -A POSTROUTING -o $(ip -6 route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
+        if config['leakPrevention']: leakPrevention = f"sudo iptables -A OUTPUT -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -d {prefix}.0.0/16 -j DROP"
         masqueradeReverse = masquerade.replace("-A POSTROUTING","-D POSTROUTING")
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
@@ -107,7 +108,7 @@ if [ "$1" == "up" ];  then
     sudo ip link set vxlan1 up; sudo ip -6 link set vxlan1v6 up;
     sudo ip addr add {self.getNodeVXLAN(config)} dev vxlan1;
     sudo ip -6 addr add fd10:{vxlanID}::{serverID}/64 dev vxlan1v6;
-    sudo iptables -A OUTPUT -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -d {prefix}.0.0/16 -j DROP
+    {leakPrevention}
 else
     {masqueradeReverse}
     sudo ip addr del {prefix}.{serverID}.1/30 dev lo;
