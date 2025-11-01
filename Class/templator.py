@@ -96,7 +96,7 @@ fi'''
         masquerade, leakPrevention = "",""
         if connectivity['ipv4']: masquerade += "sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
         if connectivity['ipv6']: masquerade += "sudo ip6tables -t nat -A POSTROUTING -o $(ip -6 route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
-        if config['leakPrevention']: leakPrevention = f"sudo iptables -A OUTPUT -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -d {prefix}.0.0/16 -j DROP"
+        if connectivity['ipv4'] and config['leakPrevention']: leakPrevention = f"sudo iptables -A OUTPUT -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -d {prefix}.0.0/16 -j DROP"
         masqueradeReverse = masquerade.replace("-A POSTROUTING","-D POSTROUTING")
         template = f'''#!/bin/bash
 if [ "$1" == "up" ];  then
