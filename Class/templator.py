@@ -107,6 +107,7 @@ if [ "$1" == "up" ];  then
     sudo ip link set vxlan1 up; sudo ip -6 link set vxlan1v6 up;
     sudo ip addr add {self.getNodeVXLAN(config)} dev vxlan1;
     sudo ip -6 addr add fd10:{vxlanID}::{serverID}/64 dev vxlan1v6;
+    sudo iptables -A OUTPUT -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -d {prefix}.0.0/16 -j DROP
 else
     {masqueradeReverse}
     sudo ip addr del {prefix}.{serverID}.1/30 dev lo;
