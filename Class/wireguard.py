@@ -244,7 +244,7 @@ class Wireguard(Base):
             local, remote = self.getRemote(config,subnetSplitted)
             #grab publickey
             publicKey = re.findall(f"peer\s([A-Za-z0-9/.=+]+)",config,re.MULTILINE)[0]
-            links[filename] = {"filename":filename,"vxlan":destination,"local":local,"remote":remote,'remotePublic':remotePublic,'publicKey':publicKey,"config":config}
+            links[filename] = {"filename":filename,"vxlan":destination,"local":local,"remote":remote,'remotePublic':remotePublic,'publicKey':publicKey,"config":config,"linkConfig":linkConfig}
         return links
 
     def genAmneziaConfig(self):
