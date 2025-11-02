@@ -482,7 +482,7 @@ class Wireguard(Base):
             linkState = self.disconnect([link])
             if not linkState[link]['status']:
                 print(f"Failed to disconnect {link}")
-                if req is not None: print(f"Got {req.status_code} with {req.text} aborting")
+                print(f"Got {linkState[link]['http']} with {linkState[link]['message']} aborting")
                 break
             print(f"Disconnected {link}")
             time.sleep(5)
