@@ -479,17 +479,17 @@ class Wireguard(Base):
             if "peer" in filename: continue
             if upgrade and os.path.isfile(f"{self.path}/links/{filename}"): continue
             print(f"Disconnecting {link}")
-            status = self.disconnect([link])
-            if not status[link]:
+            linkState = self.disconnect([link])
+            if not linkState[link]['status']:
                 print(f"Failed to disconnect {link}")
                 if req is not None: print(f"Got {req.status_code} with {req.text} aborting")
                 break
             print(f"Disconnected {link}")
             time.sleep(5)
             print(f"Reconnting {link}")
-            status = self.connect(f'http://{data["vxlan"]}:{self.config["listenPort"]}')
+            linkState = self.connect(f'http://{data["vxlan"]}:{self.config["listenPort"]}')
             interfaceType = "ipv6" if "v6" in link else "ipv4"
-            if not status[interfaceType]:
+            if not linkState[interfaceType]['status']:
                 print(f"Failed to reconnect {link}")
                 break
             print(f"Reconnected {link}")
