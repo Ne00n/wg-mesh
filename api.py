@@ -250,7 +250,7 @@ def index():
     wg.saveFile(preSharedKey,f"{folder}/links/{interface}.pre")
     wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
     remotePublic = payload['connectivity']['ipv6'] if "v6" in interface else payload['connectivity']['ipv4']
-    linkConfig = {'remote':f"{payload['prefix']}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType']}
+    linkConfig = {'remote':f"{payload['prefix']}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType'],"mtu":1412}
     wg.saveJson(linkConfig,f"{folder}/links/{interface}.json")
     logging.debug(f"{interface} up")
     wg.setInterface(interface,"up")
