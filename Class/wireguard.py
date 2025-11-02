@@ -477,7 +477,6 @@ class Wireguard(Base):
         for link,data in links.items():
             filename = link.replace(".sh",".json")
             if "peer" in filename: continue
-            if upgrade and os.path.isfile(f"{self.path}/links/{filename}"): continue
             if upgrade and "mtu" in data: continue
             print(f"Disconnecting {link}")
             linkState = self.disconnect([link])
