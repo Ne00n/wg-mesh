@@ -32,6 +32,9 @@ class Wireguard(Base):
         if not "leakPrevention" in self.config['iptables']: 
             self.config['iptables']['leakPrevention'] = True
             reconfigureDummy = True
+        if not "clampMtu" in self.config['iptables']:
+            self.config['iptables']['clampMtu'] = True
+            reconfigureDummy = True
         if not "subnet" in self.config: self.config['subnet'] = "10.0.0.0/16"
         if not "subnetv6" in self.config: self.config['subnetv6'] = "fe82:"
         if not "subnetPeer" in self.config: self.config['subnetPeer'] = "172.31.0.0/16"
@@ -113,7 +116,7 @@ class Wireguard(Base):
         #config
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6,"blacklist":[]}
-        iptables = {"leakPrevention":True}
+        iptables = {"leakPrevention":True,clampMtu:True}
         bird = {"ospfv2":True,"ospfv3":True,"jitter":True,"tick":1,"hello":15,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600}
         modules = {"neighbour":False,"update":False}
         notifications = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""}
