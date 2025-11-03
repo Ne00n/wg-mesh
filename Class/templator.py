@@ -94,7 +94,7 @@ fi'''
         vxlanID = config['subnetVXLAN'].split(".")[2]
         prefix = ".".join(config['subnet'].split(".")[:2])
         masquerade, clampMtu, leakPrevention = "","",""
-        if config['iptables']['clampMtu']: "iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu"
+        if config['iptables']['clampMtu']: clampMtu = "iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu"
         if connectivity['ipv4']: masquerade += "sudo iptables -t nat -A POSTROUTING -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
         if connectivity['ipv6']: masquerade += "sudo ip6tables -t nat -A POSTROUTING -o $(ip -6 route show default | awk '/default/ {{print $5}}' | tail -1) -j MASQUERADE;\n"
         if connectivity['ipv4'] and config['leakPrevention']: leakPrevention = f"sudo iptables -A OUTPUT -o $(ip route show default | awk '/default/ {{print $5}}' | tail -1) -d {prefix}.0.0/16 -j DROP"
