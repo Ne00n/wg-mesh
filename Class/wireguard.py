@@ -116,7 +116,7 @@ class Wireguard(Base):
         #config
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6,"blacklist":[]}
-        iptables = {"leakPrevention":True,clampMtu:True}
+        iptables = {"leakPrevention":True,"clampMtu":True}
         bird = {"ospfv2":True,"ospfv3":True,"jitter":True,"tick":1,"hello":15,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600}
         modules = {"neighbour":False,"update":False}
         notifications = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""}
