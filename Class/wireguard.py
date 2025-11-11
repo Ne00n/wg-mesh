@@ -429,7 +429,7 @@ class Wireguard(Base):
         for ip in mapping:
             if ip != None: fpingTargets.append(ip)
         print("Getting Latency")
-        fping = self.fping(fpingTargets,10)
+        fping = self.fping(fpingTargets,30)
         latencyData = {}
         print("Parsing Results")
         for ip in fping: latencyData[ip] = self.getAvrg(fping[ip])
