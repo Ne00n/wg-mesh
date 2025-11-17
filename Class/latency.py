@@ -85,7 +85,7 @@ class Latency(Base):
                     if current > 65534: current = 65534
                     node['base'] = node['cost'] = current
                     if node['nic'] in self.linkState: node['cost'] += self.linkState[node['nic']]['cost']
-                    if entry not in self.network: self.network[entry] = {"packetloss":{},"jitter":{},"latency":[],"outages":0,"state":1}
+                    if entry not in self.network: self.network[entry] = {"packetloss":{},"latency":[],"outages":0,"state":1}
                     #if latency doesn't exist in network.json create it
                     if not "latency" in self.network[entry]: self.network[entry]['latency'] = []
                     #Save raw latency values per interface
@@ -128,7 +128,7 @@ class Latency(Base):
         #clear out old peers
         for entry in list(self.network):
             if entry not in peers: del self.network[entry]
-        self.logger.info(f"Total {total}, Jitter {ongoingJitter}, Packetloss {ongoingLoss}")
+        self.logger.info(f"Total {total}, Packetloss {ongoingLoss}")
         self.network['updated'] = int(time.time())
         return config
 
