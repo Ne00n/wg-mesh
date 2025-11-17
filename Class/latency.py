@@ -152,7 +152,7 @@ class Latency(Base):
                             self.network[entry]['jitter'][int(time.time()) + randint(1700,2100)] = {"peak":peakJitter,"latency":current}
                             self.logger.info(f"{node['nic']} ({entry}) High Jitter dectected")
 
-                        eventCount,eventScore = self.countEvents(entry,'jitter')
+                        eventCount,eventScore = 0,0
                         if eventCount > 0:
                             node['cost'] += eventScore
                             self.logger.debug(f"Jitter {node['nic']} ({entry}) Weight: {old}, Latency: {current}, Modified: {node['cost']}, Score: {eventScore}, Count: {eventCount}")
