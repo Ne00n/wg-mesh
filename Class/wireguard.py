@@ -53,7 +53,6 @@ class Wireguard(Base):
         if not "latency" in self.config: self.config['latency'] = {"pingInterval":30}
         if not "ospfv2" in self.config['bird']: self.config['bird']['ospfv2'] = True
         if not "ospfv3" in self.config['bird']: self.config['bird']['ospfv3'] = True
-        if not "jitter" in self.config['bird']: self.config['bird']['jitter'] = True
         if not "tick" in self.config['bird']: self.config['bird']['tick'] = 1
         if not "hello" in self.config['bird']: self.config['bird']['hello'] = 15
         if not "client" in self.config['bird']: self.config['bird']['client'] = False
@@ -117,7 +116,7 @@ class Wireguard(Base):
         print("Generating config.json")
         connectivity = {"ipv4":ipv4,"ipv6":ipv6,"blacklist":[]}
         iptables = {"leakPrevention":True,"clampMtu":True}
-        bird = {"ospfv2":True,"ospfv3":True,"jitter":True,"tick":1,"hello":15,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600}
+        bird = {"ospfv2":True,"ospfv3":True,"tick":1,"hello":15,"client":False,"loglevel":"{ warning, fatal}","reloadInterval":600}
         modules = {"neighbour":False,"update":False}
         notifications = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""}
         config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16","subnetv6":"fe82:","subnetPeer":"172.31.0.0/16","subnetPeerv6":"fe81:",
