@@ -25,36 +25,6 @@ class Latency(Base):
         self.network = self.readJson(f"{path}/configs/network.json")
         if not self.network: self.network = {"created":int(time.time()),"updated":0}
 
-    def checkJitter(self,row,interface):
-        historyRaw, history = self.network[interface]['latency'][-60:], []
-        for ping in historyRaw: history.append(ping)
-        #generate grace
-        if len(history) >= 5:
-            avrg = mean = sum(history) / len(history)
-            variance = sum((x - mean) ** 2 for x in history) / len(history)
-            stdDev = max(variance ** 0.5, 0.5)
-            dynamicGrace = stdDev * 2
-        else:
-            avrg = int(self.getAvrg(row))
-            if avrg < 20:
-                gracePercent = 0.25
-            elif avrg < 50:
-                gracePercent = 0.20
-            elif avrg < 100:
-                gracePercent = 0.15
-            else:
-                gracePercent = 0.10
-            dynamicGrace = max(avrg * gracePercent, 1.0)
-
-        minGrace = 5
-        maxGrace = 25
-        #cap dynamicGrace
-        dynamicGrace = max(minGrace, min(dynamicGrace, maxGrace))
-
-        for entry in row:
-            if float(entry[0]) > avrg + dynamicGrace: return True,round(float(entry[0]) - (avrg + dynamicGrace),2)
-        return False,0
-
     def reloadPeacemaker(self,nic,ongoing,eventCount,latency,old):
         #needs to be ongoing
         if not ongoing: return False
