@@ -31,7 +31,7 @@ class CLI(Base):
             if not pipeTarget: exit("Failed to parse pipe")
             subnetPrefix = ".".join(config['subnet'].split(".")[:2])
             dest = f"http://{subnetPrefix}.{pipeTarget[0]}.1:{config['listenPort']}"
-        if linkType == "awg": linkType == "amneziawg"
+        if linkType == "awg": linkType = "amneziawg"
         status = self.wg.connect(dest,token,linkType,port,network)
         if self.wg.getInitial():
             if not status['ipv4']['status'] and not status['ipv6']['status']:
