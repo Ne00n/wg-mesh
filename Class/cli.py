@@ -83,7 +83,7 @@ class CLI(Base):
         elif task == "delete":
             if tunnel is None: exit("You have to provide a tunnel")
             if not "tunnel" in tunnel: exit(f"{tunnel} invalid name")
-            if not os.path.isfile(f"{self.path}/links/{tunnel}.sh"): exit(f"{tunnel} doesn't exists.")
+            if not os.path.isfile(f"{self.path}/links/{tunnel}.sh"): exit(f"{tunnel} doesn't exist.")
             print(f"Deleting {tunnel}")
             self.wg.removeInterface(tunnel)
 
