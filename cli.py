@@ -29,7 +29,7 @@ elif sys.argv[1] == "connect" or sys.argv[1] == "peer":
 elif sys.argv[1] == "tunnel":
     tunnel = re.findall(f"(create|delete) ([a-z0-9]*)"," ".join(sys.argv[2:]), re.MULTILINE)
     if not tunnel: exit("Usage: create tunnel default/awg, delete tunnel tunnel120")
-    cli.tunnel(tunnel[0],tunnel[1])
+    cli.tunnel(tunnel[0][0],tunnel[0][1])
 elif sys.argv[1] == "proximity":
     cutoff = sys.argv[2] if len(sys.argv) == 3 else 0
     cli.proximity(cutoff)
