@@ -209,8 +209,6 @@ class CLI(Base):
             config['bird']['ospfv2'] = False
         elif "ospfv3" in option:
             config['bird']['ospfv3'] = False
-        elif "jitter" in option:
-            config['bird']['jitter'] = False
         elif "client" in option:
             config['bird']['client'] = False
         elif "notifications" in option:
@@ -228,7 +226,7 @@ class CLI(Base):
         elif "leakPrevention" in option:
             config['leakPrevention'] = False
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, jitter, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update, leakPrevention")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update, leakPrevention")
             return
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response:
@@ -247,8 +245,6 @@ class CLI(Base):
             config['bird']['ospfv2'] = True
         elif "ospfv3" in option:
             config['bird']['ospfv3'] = True
-        elif "jitter" in option:
-            config['bird']['jitter'] = True
         elif "client" in option:
             config['bird']['client'] = True
         elif "notifications" in option:
@@ -269,7 +265,7 @@ class CLI(Base):
         elif "leakPrevention" in option:
             config['leakPrevention'] = True
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, jitter, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update, leakPrevention")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update, leakPrevention")
             return
         response = self.saveJson(config,f"{self.path}/configs/config.json")
         if not response:
