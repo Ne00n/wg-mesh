@@ -7,11 +7,11 @@ class Templator:
         wgobfs,mtu = "",1412
         amneziawg = ""
         wgPrefix = "awg" if linkType == "amneziawg" or linkType == "awg" else "wg"
-        if linkType == "amneziawg" and "amneziawg" in payload:
+        if wgPrefix == "awg" and "amneziawg" in payload:
             amneziawg = f"sudo {wgPrefix} set {interface}"
             for key, value in payload['amneziawg'].items():
                 amneziawg += f" {key} {value} "
-        wgProtocol = "amneziawg" if linkType == "amneziawg" else "wireguard"
+        wgProtocol = "amneziawg" if wgPrefix == "awg" else "wireguard"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
         if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I OUTPUT -p udp -d {connectivity["ipv4"]} -j XOR --keys "{wgobfsSharedKey}";\n'
@@ -56,11 +56,11 @@ PersistentKeepalive = 20
         wgobfs,mtu = "",1412
         amneziawg = ""
         wgPrefix = "awg" if linkType == "amneziawg" or linkType == "awg" else "wg"
-        if linkType == "amneziawg" and "amneziawg" in resp:
+        if wgPrefix == "awg" and "amneziawg" in resp:
             amneziawg = f"sudo {wgPrefix} set {interface}"
             for key, value in resp['amneziawg'].items():
                 amneziawg += f" {key} {value}"
-        wgProtocol = "amneziawg" if linkType == "amneziawg" else "wireguard"
+        wgProtocol = "amneziawg" if wgPrefix == "awg" else "wireguard"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
         if linkType == "ipt_xor" and not "v6" in interface: wgobfs += f'sudo iptables -t mangle -I OUTPUT -p udp -d {serverIPExternal} -j XOR --keys "{wgobfsSharedKey}";\n'
