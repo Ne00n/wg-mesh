@@ -6,7 +6,7 @@ class Templator:
         clientPublicKey,linkType,prefix,connectivity = payload['clientPublicKey'],payload['linkType'],payload['prefix'],payload['connectivity']
         wgobfs,mtu = "",1412
         amneziawg = ""
-        wgPrefix = "awg" if linkType == "amneziawg" else "wg"
+        wgPrefix = "awg" if linkType == "amneziawg" or linkType == "awg" else "wg"
         if linkType == "amneziawg" and "amneziawg" in payload:
             amneziawg = f"sudo {wgPrefix} set {interface}"
             for key, value in payload['amneziawg'].items():
@@ -55,7 +55,7 @@ PersistentKeepalive = 20
         serverID,freeSubnet,freeSubnetv6,serverPort,serverPublicKey,wgobfsSharedKey = resp['id'],resp['freeSubnet'],resp['freeSubnetv6'],resp['freePort'],resp['publicKeyServer'],resp['wgobfsSharedKey']
         wgobfs,mtu = "",1412
         amneziawg = ""
-        wgPrefix = "awg" if linkType == "amneziawg" else "wg"
+        wgPrefix = "awg" if linkType == "amneziawg" or linkType == "awg" else "wg"
         if linkType == "amneziawg" and "amneziawg" in resp:
             amneziawg = f"sudo {wgPrefix} set {interface}"
             for key, value in resp['amneziawg'].items():
