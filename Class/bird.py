@@ -146,7 +146,7 @@ class Bird(Base):
             splitted = ip.split(".")
             if not ip in vxlan: 
                 self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1 dst {ip}")
-                self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1v6 dst fd10:0:{splitted[2]}::1")
+                self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1v6 dst fd10:0:{splitted[2]}::1 permanent")
         #To prevent creating connections to new nodes joined afterwards, save state
         if os.path.isfile(f"{self.path}/configs/state.json"):
             self.logger.debug("state.json already exist, skipping")
