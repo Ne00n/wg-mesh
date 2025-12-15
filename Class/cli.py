@@ -336,6 +336,6 @@ class CLI(Base):
             print(f"{mapping[ip]}: {len(pings)} of 3 ({ip})")
         if details['remotePublic']:
             print(f"Running MTR to {details['remotePublic']}")
-            mtr = self.cmd(f'mtr {details["remotePublic"]} --report --report-cycles 5')
+            mtr = self.cmd(f'mtr {details["remotePublic"]} --report --aslookup --report-cycles 5')
             if not mtr[0] and mtr[1]: mtr[0] = mtr[1]
             print(mtr[0])
