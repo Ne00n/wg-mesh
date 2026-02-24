@@ -178,25 +178,22 @@ class CLI(Base):
         if not network:
             print("Unable to load network.json")
             return
-        print("Destination\tStatus\tPacketloss\tJitter")
-        jittar,loss,online,offline = 0,0,0,0
+        print("Destination\tStatus\tPacketloss")
+        loss,online,offline = 0,0,0,0
         for dest,data in network.items():
             hasLoss,hasJitter = "No","No"
             if dest == "updated": continue
             if data['packetloss']:
                 hasLoss = "Yes"
                 loss += 1
-            if data['jitter']:
-                hasJitter = "Yes"
-                jittar += 1
             if data['state']:
                 state = "Online"
                 online += 1
             else:
                 state = "Offline"
                 offline += 1
-            print(f"{dest}\t{state}\t{hasLoss}\t\t{hasJitter}")
-        print(f"{len(network) -1}\t\t{online}/{offline}\t{loss}\t\t{jittar}")
+            print(f"{dest}\t{state}\t{hasLoss}")
+        print(f"{len(network) -1}\t\t{online}/{offline}\t{loss}")
 
     def disable(self,option):
         config = self.readJson(f"{self.path}/configs/config.json")
