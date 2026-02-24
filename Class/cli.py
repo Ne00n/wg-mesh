@@ -179,7 +179,7 @@ class CLI(Base):
             print("Unable to load network.json")
             return
         print("Destination\tStatus\tPacketloss")
-        loss,online,offline = 0,0,0,0
+        loss,online,offline = 0,0,0
         for dest,data in network.items():
             hasLoss,hasJitter = "No","No"
             if dest == "updated": continue
