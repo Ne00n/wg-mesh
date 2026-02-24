@@ -177,7 +177,7 @@ class Latency(Base):
                     self.lastReload = int(time.time()) + self.config['bird']['reloadInterval']
                 else:
                     self.logger.debug(f"Next reload {self.lastReload}")
-            #however save any packetloss or jitter detected
+            #however save any packetloss detected
             self.saveJson(self.network,f"{self.path}/configs/network.json")
         return self.noWait
 
