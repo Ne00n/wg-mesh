@@ -213,7 +213,7 @@ def index():
     interfaceType = "v6" if payload['ipv6'] else ""
     interface = wg.getInterface(payload['id'],interfaceType,payload['network'])
     #check if interface exists
-    if os.path.isfile(f"{folder}/links/{interface}.sh") or os.path.isfile(f"{folder}/links/{interface}Serv.sh"):
+    if os.path.isfile(f"{folder}/links/{interface}.sh"):
         logging.info(f"Link already exists, {requestIP}")
         return HTTPResponse(status=412, body="Link already exists")
     #connectivity blacklist check
@@ -324,8 +324,6 @@ def index():
     if not interface:
         logging.info(f"Invalid interface name from {requestIP}")
         return HTTPResponse(status=400, body="Invalid link name")
-    #support older versions that are using Serv
-    if os.path.isfile(f"{folder}/links/{payload['interface']}Serv.sh"): payload['interface'] = f"{payload['interface']}Serv"
     #block any other requests to prevent issues regarding port and ip assignment
     connectMutex.acquire()
     #check if interface exists
