@@ -33,21 +33,8 @@ logger.info(f"Ready")
 while not shutdown:
     currentTime = int(time.time())
     if currentTime > waitUntil:
-        #check for lock file
-        if os.path.isfile(f"{path}/cron/lock"):
-            if time.time() - os.path.getmtime(f"{path}/cron/lock") > (60 * 60 * 3):
-                logger.info(f"Lockfile is older than 3 hours, removing")
-                os.unlink(f"{path}/cron/lock")
-                continue
-            logger.info(f"Waiting for lock")
-            time.sleep(60)
-            continue
-        #we need a lock file, since rotate and diag could conflict with each other
-        open(f"{path}/cron/lock",'w').close()
         logger.info(f"Running")
         diag.run()
-        #clear lock file
-        os.unlink(f"{path}/cron/lock")
         waitUntil = currentTime + random.randint(3600,7200)
     else:
         time.sleep(2)
