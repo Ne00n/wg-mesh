@@ -42,16 +42,6 @@ try:
 except:
     logging.warning("Failed to write token file")
 
-def validateToken(payload):
-    if not "token" in payload: return False
-    token = re.findall(r"^([A-Za-z0-9/.=+]{18,60})$",payload['token'],re.MULTILINE | re.DOTALL)
-    if not token: return False
-    if "network" in payload and payload["network"] == "peer":
-        if payload['token'] not in tokens['peer']: return False
-    else:
-        if payload['token'] not in tokens['connect']: return False
-    return True
-
 def block(requestIP,check=False):
     if check and requestIP not in blocklist:
         return False
@@ -61,27 +51,6 @@ def block(requestIP,check=False):
         del blocklist[requestIP]
     else:
         return True
-
-def validatePort(port):
-    result = re.findall(r"^[0-9]{4,5}$",str(port),re.MULTILINE | re.DOTALL)
-    if not result: return False
-    return True
-
-def validateNetwork(network):
-    result = re.findall(r"^[A-Za-z]{3,6}$",network,re.MULTILINE | re.DOTALL)
-    if not result: return False
-    return True
-
-def validateLinkType(linkType):
-    linkTypes = ["default","wgobfs","ipt_xor","amneziawg"]
-    if not linkType in linkTypes: return False
-    if not linkType in config['linkTypes']: return False
-    return True
-
-def validatePrefix(prefix):
-    result = re.findall(r"^[0-9.]{4,6}$",prefix,re.MULTILINE | re.DOTALL)
-    if not result: return False
-    return True
 
 def validateConnectivity(connectivity):
     if "ipv4" not in connectivity or "ipv6" not in connectivity: return False
@@ -123,7 +92,7 @@ def index():
         logging.info(f"{requestIP} in blocklist")
         return HTTPResponse(status=403, body="IP Blocked")
     #validate token
-    if not isInternal and not validateToken(payload): 
+    if not isInternal and not validate.token(payload,tokens): 
         logging.info(f"Invalid Token from {requestIP}")
         block(requestIP)
         return HTTPResponse(status=401, body="Invalid Token")
@@ -144,7 +113,7 @@ def index():
         logging.info(f"{requestIP} in blocklist")
         return HTTPResponse(status=403, body="IP Blocked")
     #validate token
-    if not isInternal and not validateToken(payload): 
+    if not isInternal and not validate.token(payload,tokens): 
         logging.info(f"Invalid Token from {requestIP}")
         block(requestIP)
         return HTTPResponse(status=401, body="Invalid Token")
@@ -161,7 +130,7 @@ def index():
         logging.info(f"{requestIP} in blocklist")
         return HTTPResponse(status=403, body="IP Blocked")
     #validate token
-    if not isInternal and not validateToken(payload): 
+    if not isInternal and not validate.token(payload,tokens): 
         logging.info(f"Invalid Token from {requestIP}")
         block(requestIP)
         return HTTPResponse(status=401, body="Invalid Token")
@@ -170,19 +139,19 @@ def index():
         logging.info(f"Invalid ID from {requestIP}")
         return HTTPResponse(status=400, body="Invalid ID")
     #validate port
-    if "port" in payload and not validatePort(payload['port']): 
+    if "port" in payload and not validate.port(payload['port']): 
         logging.info(f"Invalid Port from {requestIP}")
         return HTTPResponse(status=400, body="Invalid Port")
     #validate prefix
-    if "prefix" in payload and not validatePrefix(payload['prefix']):
+    if "prefix" in payload and not validate.prefix(payload['prefix']):
         logging.info(f"Invalid Prefix from {requestIP}")
         return HTTPResponse(status=400, body="Invalid Prefix")
     #validate network
-    if "network" in payload and payload['network'] != "" and not validateNetwork(payload['network']):
+    if "network" in payload and payload['network'] != "" and not validate.network(payload['network']):
         logging.info(f"Invalid Network from {requestIP}")
         return HTTPResponse(status=400, body="Invalid Network")
     #validate linkType
-    if "linkType" in payload and not validateLinkType(payload['linkType']):
+    if "linkType" in payload and not validate.linkType(payload['linkType'],config):
         logging.info(f"Invalid linkType from {requestIP}")
         return HTTPResponse(status=400, body="Invalid linkType")
     #validate connectivity
