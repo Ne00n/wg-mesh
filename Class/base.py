@@ -28,7 +28,7 @@ class Base:
     def readFile(self,file,isJson=False):
         if os.path.isfile(file):
             try:
-                if isJson:
+                if isJson or file.endswith(".json"):
                     with open(file) as handle: return json.loads(handle.read())
                 else:
                     with open(file, 'r') as file: return file.read()
@@ -43,7 +43,7 @@ class Base:
         usagePercent = (used / total) * 100
         if usagePercent >= 98: return False
         try:
-            if isJson:
+            if isJson or path.endswith(".json"):
                 with open(path, 'w') as f: json.dump(data, f, indent=4)
             else:
                 with open(path, 'w') as file: file.write(data)
