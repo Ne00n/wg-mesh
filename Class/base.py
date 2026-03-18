@@ -25,42 +25,28 @@ class Base:
         lastOctet = int(parsed[2])
         return parsed,f"{parsed[1]}{lastOctet-1}" if self.sameNetwork(f"{parsed[1]}{lastOctet-1}",parsed[0]) else f"{parsed[1]}{lastOctet+1}"
 
-    def readJson(self,file):
+    def readFile(self,file,isJson=False):
         if os.path.isfile(file):
             try:
-                with open(file) as handle: return json.loads(handle.read())
-            except Exception as e:
-                return {}
-        else:
-            return {}
-
-    def readFile(self,file):
-        if os.path.isfile(file):
-            try:
-                with open(file, 'r') as file: return file.read()
+                if isJson:
+                    with open(file) as handle: return json.loads(handle.read())
+                else:
+                    with open(file, 'r') as file: return file.read()
             except Exception as e:
                 return ""
         else:
             return ""
 
-    def saveFile(self,data,path):
+    def saveFile(self,data,path,isJson=False):
         #Prevent file corruption
         total, used, free = shutil.disk_usage("/")
         usagePercent = (used / total) * 100
         if usagePercent >= 98: return False
         try:
-            with open(path, 'w') as file: file.write(data)
-        except Exception as e:
-            return False
-        return True
-
-    def saveJson(self,data,path):
-        #Prevent file corruption
-        total, used, free = shutil.disk_usage("/")
-        usagePercent = (used / total) * 100
-        if usagePercent >= 98: return False
-        try:
-            with open(path, 'w') as f: json.dump(data, f, indent=4)
+            if isJson:
+                with open(path, 'w') as f: json.dump(data, f, indent=4)
+            else:
+                with open(path, 'w') as file: file.write(data)
         except Exception as e:
             return False
         return True
