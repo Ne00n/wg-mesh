@@ -118,7 +118,7 @@ class CLI(Base):
         self.wg.updateConfig()
 
     def geo(self):
-        config = self.readJson(f"{self.path}/configs/config.json")
+        config = self.readFile(f"{self.path}/configs/config.json")
         if not config:
             print("Unable to load config.json")
             return
@@ -157,7 +157,7 @@ class CLI(Base):
         self.bird.bird(True)
 
     def token(self):
-        tokens = self.readJson(f"{self.path}/tokens.json")
+        tokens = self.readFile(f"{self.path}/tokens.json")
         if tokens:
             print(f"Connect: {', '.join(tokens['connect'])}")
             print(f"Peer: {', '.join(tokens['peer'])}")
@@ -174,7 +174,7 @@ class CLI(Base):
         wgmeshBirdRunning = "wgmesh-bird is not running." if not "running" in proc else "wgmesh-bird is running."
         print(f"{birdRunning}\t{wgmeshRunning}\t{wgmeshBirdRunning}")
         print("--- Wireguard ---")
-        network = self.readJson(f"{self.path}/configs/network.json")
+        network = self.readFile(f"{self.path}/configs/network.json")
         if not network:
             print("Unable to load network.json")
             return
@@ -196,7 +196,7 @@ class CLI(Base):
         print(f"{len(network) -1}\t\t{online}/{offline}\t{loss}")
 
     def disable(self,option):
-        config = self.readJson(f"{self.path}/configs/config.json")
+        config = self.readFile(f"{self.path}/configs/config.json")
         if not config:
             print("Unable to load config.json")
             return
@@ -232,7 +232,7 @@ class CLI(Base):
         print("You should reload the services to apply any config changes")
             
     def enable(self,option):
-        config = self.readJson(f"{self.path}/configs/config.json")
+        config = self.readFile(f"{self.path}/configs/config.json")
         if not config:
             print("Unable to load config.json")
             return
@@ -277,7 +277,7 @@ class CLI(Base):
         else:
             key, value = options
             if key in validOptions:
-                config = self.readJson(f"{self.path}/configs/config.json")
+                config = self.readFile(f"{self.path}/configs/config.json")
                 if not config:
                     print(f"Unable to read config.json")
                     return

@@ -9,12 +9,12 @@ class Diag(Base):
         self.logger = logger
         super().__init__()
         self.path = path
-        self.diagnostic = self.readJson(f"{self.path}/configs/diagnostic.json")
-        self.config = self.readJson(f'{self.path}/configs/config.json')
+        self.diagnostic = self.readFile(f"{self.path}/configs/diagnostic.json")
+        self.config = self.readFile(f'{self.path}/configs/config.json')
 
     def run(self):
         #refresh network.json on each run
-        self.network = self.readJson(f"{self.path}/configs/network.json")
+        self.network = self.readFile(f"{self.path}/configs/network.json")
         self.logger.info("Starting diagnostic")
         if not os.path.isfile(f"{self.path}/configs/state.json"):
             self.logger.warning("state.json does not exist")
@@ -37,7 +37,7 @@ class Diag(Base):
             elif "endpoint" in data['config']: 
                 self.logger.debug(f"{link} is client, skipping")
                 continue
-            linkConfig = self.readJson(f'{self.path}/links/{data["filename"]}.json')
+            linkConfig = self.readFile(f'{self.path}/links/{data["filename"]}.json')
             #have to check the linkType, currently no logic for different link types so we just skip them for now
             if "linkType" in linkConfig and not linkConfig['linkType'] in allowedLinkType:
                 self.logger.warning(f"{link} has non default linkType, skipping")

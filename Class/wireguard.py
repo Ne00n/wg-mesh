@@ -13,7 +13,7 @@ class Wireguard(Base):
         self.isInitial = False
         if skip: return
         if not os.path.isfile(f"{self.path}/configs/config.json"): exit("Config missing")
-        self.config = self.readJson(f'{self.path}/configs/config.json')
+        self.config = self.readFile(f'{self.path}/configs/config.json')
         if onlyConfig: return
         self.amneziaConfig = {}
         self.Network = Network(self.config)
@@ -234,7 +234,7 @@ class Wireguard(Base):
         for findex, filename in enumerate(files):
             if not filename.endswith(".sh") or filename == "dummy.sh": continue
             link = filename.replace(".sh","")
-            linkConfig = self.readJson(f"{self.path}/links/{link}.json")
+            linkConfig = self.readFile(f"{self.path}/links/{link}.json")
             config = self.readFile(f"{self.path}/links/{filename}")
             if not config:
                 print(f"Unable to read {filename}")

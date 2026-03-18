@@ -9,7 +9,7 @@ class Bird(Base):
 
     def __init__(self,path,logger):
         super().__init__() 
-        self.config = self.readJson(f'{path}/configs/config.json')
+        self.config = self.readFile(f'{path}/configs/config.json')
         self.prefix = self.config['prefix']
         self.Network = Network(self.config)
         self.wg = Wireguard(path)

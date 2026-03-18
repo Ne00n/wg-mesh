@@ -9,13 +9,13 @@ class Rotate(Base):
         self.logger = logger
         self.wg = Wireguard(path)
         self.path = path
-        self.config = self.readJson(f'{self.path}/configs/config.json')
+        self.config = self.readFile(f'{self.path}/configs/config.json')
 
     def setRemoteCost(self,config,data,interfaceRemote,cost=0):
         return self.call(f'http://{data["vxlan"]}:{config["listenPort"]}/update',{"cost":cost,"publicKeyServer":data['publicKey'],"interface":interfaceRemote},'PATCH')
 
     def run(self,targetInterface):
-        self.rotate = self.readJson(f"{self.path}/configs/rotate.json")
+        self.rotate = self.readFile(f"{self.path}/configs/rotate.json")
         self.logger.info(f"Running")
         links = self.wg.getLinks()
         for link, data in links.items():
