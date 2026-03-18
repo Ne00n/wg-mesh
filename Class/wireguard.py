@@ -61,7 +61,7 @@ class Wireguard(Base):
         if not "notifications" in self.config: self.config['notifications'] = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""}
         if not "gotifyChanges" in self.config['notifications']: self.config['notifications']['gotifyChanges'] = ""
         if not "gotifyDiag" in self.config['notifications']: self.config['notifications']['gotifyDiag'] = ""
-        self.saveJson(self.config,f"{self.path}/configs/config.json")
+        self.saveFile(self.config,f"{self.path}/configs/config.json")
         if reconfigureDummy: self.reconfigureDummy()
 
     def genKeys(self):
@@ -122,7 +122,7 @@ class Wireguard(Base):
         config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16","subnetv6":"fe82:","subnetPeer":"172.31.0.0/16","subnetPeerv6":"fe81:",
         "subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],"prefix":"pipe","id":int(id),"networkID":0,"linkTypes":["default"],"linkSettings":{"awgGen":False},"defaultLinkType":"default","connectivity":connectivity,
         "iptables":iptables,"bird":bird,"modules":modules,"latency":{"pingInterval":30},"notifications":notifications}
-        response = self.saveJson(config,f"{self.path}/configs/config.json")
+        response = self.saveFile(config,f"{self.path}/configs/config.json")
         if not response: exit("Unable to save config.json")
         #load configs
         self.prefix = "pipe"
@@ -203,7 +203,7 @@ class Wireguard(Base):
         self.saveFile(privateKey,f"{self.path}/links/{interface}.key")
         self.saveFile(preSharedKey,f"{self.path}/links/{interface}.pre")
         self.saveFile(config,f"{self.path}/links/{interface}.sh")
-        self.saveJson(linkConfig,f"{self.path}/links/{interface}.json")
+        self.saveFile(linkConfig,f"{self.path}/links/{interface}.json")
 
     def removeInterface(self,interface):
         self.setInterface(interface,"down")
@@ -365,13 +365,13 @@ class Wireguard(Base):
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
                 self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
                 linkConfig = {'remote':f"{data['subnetPrefix']}.{resp['id']}.1",'remotePublic':connectivity.replace("[","").replace("]",""),"linkType":linkType,"mtu":1412}
-                self.saveJson(linkConfig,f"{self.path}/links/{interface}.json")
+                self.saveFile(linkConfig,f"{self.path}/links/{interface}.json")
                 self.setInterface(interface,"up")
                 status[protocol]['status'] = True
                 #updating networkID on initial setup
                 if 'networkID' in resp and resp['networkID'] != 0 and self.isInitial and self.validate.id(resp['networkID']):
                     self.config['networkID'] = resp['networkID']
-                    self.saveJson(self.config,f'{self.path}/configs/config.json')
+                    self.saveFile(self.config,f'{self.path}/configs/config.json')
             else:
                 print(f"Failed to connect to {dest}")
                 print(f"Got {req.text} as response")

@@ -146,7 +146,7 @@ class CLI(Base):
                 config['geo']['lat'] = ipwhoisData['latitude']
                 config['geo']['lon'] = ipwhoisData['longitude']
         print(f"Updated geodata {config['geo']}")
-        self.saveJson(config,f"{self.path}/configs/config.json")
+        self.saveFile(config,f"{self.path}/configs/config.json")
 
     def recover(self):
         stream_handler = logging.StreamHandler()
@@ -201,7 +201,7 @@ class CLI(Base):
             print("Unable to load config.json")
             return
         if "mesh" in option:
-            self.wg.saveJson({},f"{self.path}/configs/state.json")
+            self.wg.saveFile({},f"{self.path}/configs/state.json")
         elif "ospfv2" in option:
             config['bird']['ospfv2'] = False
         elif "ospfv3" in option:
@@ -225,7 +225,7 @@ class CLI(Base):
         else:
             print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update, leakPrevention")
             return
-        response = self.saveJson(config,f"{self.path}/configs/config.json")
+        response = self.saveFile(config,f"{self.path}/configs/config.json")
         if not response:
             print("Failed to save config.json")
             return
@@ -264,7 +264,7 @@ class CLI(Base):
         else:
             print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update, leakPrevention")
             return
-        response = self.saveJson(config,f"{self.path}/configs/config.json")
+        response = self.saveFile(config,f"{self.path}/configs/config.json")
         if not response:
             print("Failed to save config.json")
             return
@@ -302,7 +302,7 @@ class CLI(Base):
                     if key == "defaultLinkType" and value == "awg": 
                         value = "amneziawg"
                     config[key] = value
-                response = self.saveJson(config,f"{self.path}/configs/config.json")
+                response = self.saveFile(config,f"{self.path}/configs/config.json")
                 if not response:
                     print("Failed to save config.json")
                     return

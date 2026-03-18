@@ -38,7 +38,7 @@ for i in range(3):
     logging.info(f"Adding peer token {token}")
     tokens['peer'].append(token)
 try:
-    wg.saveJson(tokens,f"{folder}/tokens.json")
+    wg.saveFile(tokens,f"{folder}/tokens.json")
 except:
     logging.warning("Failed to write token file")
 
@@ -220,7 +220,7 @@ def index():
     wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
     remotePublic = payload['connectivity']['ipv6'] if "v6" in interface else payload['connectivity']['ipv4']
     linkConfig = {'remote':f"{payload['prefix']}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType'],"mtu":1412}
-    wg.saveJson(linkConfig,f"{folder}/links/{interface}.json")
+    wg.saveFile(linkConfig,f"{folder}/links/{interface}.json")
     logging.debug(f"{interface} up")
     wg.setInterface(interface,"up")
     #check for dummy

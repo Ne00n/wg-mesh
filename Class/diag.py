@@ -117,5 +117,5 @@ class Diag(Base):
                 if notifications['enabled'] and notifications['gotifyDiag']: 
                     self.wg.notify(notifications['gotifyDiag'],f"{link} reconnect failure",f"Node {self.config['id']} failed to reconnect {link}")
         self.logger.info(f"Loop done")
-        self.saveJson(self.diagnostic,f"{self.path}/configs/diagnostic.json")
+        self.saveFile(self.diagnostic,f"{self.path}/configs/diagnostic.json")
         return True

@@ -178,7 +178,7 @@ class Latency(Base):
                 else:
                     self.logger.debug(f"Next reload {self.lastReload}")
             #however save any packetloss detected
-            self.saveJson(self.network,f"{self.path}/configs/network.json")
+            self.saveFile(self.network,f"{self.path}/configs/network.json")
         return self.noWait
 
     def setLatencyData(self,latencyData,peers):
