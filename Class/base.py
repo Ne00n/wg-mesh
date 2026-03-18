@@ -144,6 +144,11 @@ class Base:
                 return False,None
             time.sleep(2)
 
+    def notify(self,server,title,message,priority=5):
+        payload = {'title':title, 'message':message, 'priority':priority}
+        success, req = self.call(server,payload,"POST")
+        if success: return True
+
     def formatTable(self,list):
         longest,response = {},""
         for row in list:
@@ -161,8 +166,3 @@ class Base:
                 response += f"{entry}" if response.endswith("\n") or response == "" else f" {entry}"
             if i < len(list) -1: response += "\n"
         return response
-
-    def notify(self,server,title,message,priority=5):
-        payload = {'title':title, 'message':message, 'priority':priority}
-        success, req = self.call(server,payload,"POST")
-        if success: return True
