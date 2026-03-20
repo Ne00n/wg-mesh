@@ -151,16 +151,14 @@ class Bird(Base):
         if os.path.isfile(f"{self.path}/configs/state.json"):
             self.logger.debug("state.json already exist, skipping")
         else:
+            #remove local machine from list
+            localIP = f"{'.'.join(self.config['subnet'].split('.')[:2])}.{self.config['id']}.1"
+            targets = self.Network.filterLocalIP(targets,localIP)
             #fetch network interfaces and parse
             links = self.Network.getBirdLinks()
-            localIP = f"{'.'.join(self.config['subnet'].split('.')[:2])}.{self.config['id']}.1"
             if not links: 
                 self.logger.warning("No wireguard interfaces found") 
                 return False
-            #remove local machine from list
-            for ip in list(targets):
-                if self.resolve(localIP,ip.replace("/30",""),30):
-                    targets.remove(ip)
             #run against existing links
             for ip in list(targets):
                 for link in links:

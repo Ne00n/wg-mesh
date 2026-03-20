@@ -62,6 +62,12 @@ class Network(Base):
         peerSubnet = ipaddress.ip_network(freeSubnet)
         return f"{list(peerSubnet.hosts())[1]}/{suffix}"
 
+    def filterLocalIP(self,targets,localIP):
+        for ip in list(targets):
+            if self.resolve(localIP,ip.replace("/30",""),30):
+                targets.remove(ip)
+                return targets
+
     def getSubnetSplitted(self):
         return self.subnetSplitted
 
