@@ -14,13 +14,13 @@ class Diag(Base):
         self.config = self.readFile(f'{self.path}/configs/config.json')
         self.Network = Network(self.config)
 
-    def run(self):
+    def randDelay(self):
+        return int(time.time()) + random.randint(21600,43200)
+
+    def runDiagnostic(self):
         #refresh network.json on each run
         self.network = self.readFile(f"{self.path}/configs/network.json")
         self.logger.info("Starting diagnostic")
-        if not os.path.isfile(f"{self.path}/configs/state.json"):
-            self.logger.warning("state.json does not exist")
-            return False
         targets = self.wg.Network.getRoutes()
         if not targets: 
             self.logger.warning("bird returned no routes, did you setup bird?")
@@ -49,7 +49,7 @@ class Diag(Base):
                 self.logger.debug(f"Skipping {link} due to cooldown")
                 continue
             self.logger.info(f"Found dead link {link} ({remote})")
-            self.diagnostic[remote]['cooldown'] = current + random.randint(21600,43200)
+            self.diagnostic[remote]['cooldown'] = self.randDelay()
             self.diagnostic[remote]['retries'] += 1
             if not remote in self.network:
                 self.logger.warning(f"{link} no data in network.json, skipping")
@@ -120,12 +120,25 @@ class Diag(Base):
                     self.wg.notify(notifications['gotifyDiag'],f"{link} reconnect failure",f"Node {self.config['id']} failed to reconnect {link}")
         self.saveFile(self.diagnostic,f"{self.path}/configs/diagnostic.json")
         self.logger.info(f"Diagnostics done")
+
+    def run(self):
+        if not os.path.isfile(f"{self.path}/configs/state.json"):
+            self.logger.warning("state.json does not exist")
+            return False
+        self.runDiagnostic()
+        self.runMesh()
+        self.logger.info(f"Loop done")
+        return True
+
+    def runMesh(self):
         self.logger.info(f"Starting re-meshing")
+        if not "re-mesh" in self.diagnostic: self.diagnostic["re-mesh"] = {"cooldown":self.randDelay()}
+        if self.diagnostic['re-mesh']['cooldown'] > current: 
+            self.logger.debug(f"Skipping re-mesh, due to cooldown")
+            continue
+        self.diagnostic['re-mesh']['cooldown'] = self.randDelay()
         if int(self.config['id']) >= 200:
             self.logger.info("Skipping re-mesh, ID is in client range")
-        if not os.path.isfile(f"{self.path}/configs/state.json"):
-            self.logger.warning("Skipping re-mesh, state.json not found")
-            return False
         targets = self.Network.getRoutes()
         if not targets: 
             self.logger.warning("Skipping re-mesh, no routes from bird")
@@ -139,5 +152,4 @@ class Diag(Base):
         targets = self.Network.filterExisting(targets,links)
         targets = self.Network.filterLocalLinks(targets,links)
         self.logger.info(f"Possible targets {targets}")
-        self.logger.info(f"Loop done")
         return True
