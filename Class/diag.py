@@ -118,9 +118,11 @@ class Diag(Base):
                 self.logger.info(f"Could not reconnect {link} ({remote})")
                 if notifications['enabled'] and notifications['gotifyDiag']: 
                     self.wg.notify(notifications['gotifyDiag'],f"{link} reconnect failure",f"Node {self.config['id']} failed to reconnect {link}")
-        self.logger.info(f"Diagnostics done")
         self.saveFile(self.diagnostic,f"{self.path}/configs/diagnostic.json")
+        self.logger.info(f"Diagnostics done")
         self.logger.info(f"Starting re-meshing")
+        if int(self.config['id']) >= 200:
+            self.logger.info("Skipping re-mesh, ID is in client range")
         if not os.path.isfile(f"{self.path}/configs/state.json"):
             self.logger.warning("Skipping re-mesh, state.json not found")
             return False
