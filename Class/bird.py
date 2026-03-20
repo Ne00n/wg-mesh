@@ -159,19 +159,8 @@ class Bird(Base):
             if not links: 
                 self.logger.warning("No wireguard interfaces found") 
                 return False
-            #run against existing links
-            for ip in list(targets):
-                for link in links:
-                    if self.resolve(link[1],ip.replace("/30",""),24):
-                        #multiple links in the same subnet
-                        if ip in targets: targets.remove(ip)
-            #run against local link names
-            for ip in list(targets):
-                for link in links:
-                    splitted = ip.split(".")
-                    if f"pipe{splitted[2]}" in link[0]:
-                        #multiple links in the same subnet
-                        if ip in targets: targets.remove(ip)
+            targets = self.Network.filterExisting(targets,links)
+            targets = self.Network.filterLocalLinks(targets,links)
             self.logger.info(f"Possible targets {targets}")
             #wireguard
             self.logger.info("meshing")

@@ -68,6 +68,23 @@ class Network(Base):
                 targets.remove(ip)
                 return targets
 
+    def filterExisting(self,targets,links):
+        for ip in list(targets):
+            for link in links:
+                if self.resolve(link[1],ip.replace("/30",""),24):
+                    #multiple links in the same subnet
+                    if ip in targets: targets.remove(ip)
+        return targets
+
+    def filterLocalLinks(self,targets,links):
+        for ip in list(targets):
+            for link in links:
+                splitted = ip.split(".")
+                if f"pipe{splitted[2]}" in link[0]:
+                    #multiple links in the same subnet
+                    if ip in targets: targets.remove(ip)
+        return targets
+
     def getSubnetSplitted(self):
         return self.subnetSplitted
 
