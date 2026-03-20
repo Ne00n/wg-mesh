@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from Class.cli import CLI
-import sys, os, re
+import sys, os
 
 options = "init <id>, status, used, bender, migrate, recover, connect/peer <http://IP/DOMAIN:8080> <token>, tunnel, reconnect, disconnect, up, down, clean, proximity, token, disable, enable, set, cost"
 #path
@@ -27,9 +27,8 @@ elif sys.argv[1] == "connect" or sys.argv[1] == "peer":
     network = "peer" if sys.argv[1] == "peer" else ""
     cli.connect(sys.argv[2],token,linkType,port,network)
 elif sys.argv[1] == "tunnel":
-    tunnel = re.findall(f"(create|delete) ([a-z0-9]*)"," ".join(sys.argv[2:]), re.MULTILINE)
-    if not tunnel: exit("Usage: create tunnel default/awg, delete tunnel tunnel120")
-    cli.tunnel(tunnel[0][0],tunnel[0][1])
+    if len(sys.argv) <= 2: exit("tunnel create default/awg or tunnel delete tunnel120")
+    cli.tunnel(sys.argv[2:])
 elif sys.argv[1] == "proximity":
     cutoff = sys.argv[2] if len(sys.argv) == 3 else 0
     cli.proximity(cutoff)
@@ -74,11 +73,11 @@ elif sys.argv[1] == "set":
     sys.argv = sys.argv[2:]
     cli.setOption(sys.argv)
 elif sys.argv[1] == "cost":
-    if len(sys.argv) <= 2: exit("link missing")
+    if len(sys.argv) <= 2: exit("Link missing")
     cost = None if len(sys.argv) <= 3 else int(sys.argv[3])
     cli.cost(sys.argv[2],cost)
 elif sys.argv[1] == "debug":
-    if len(sys.argv) <= 2: exit("link missing")
+    if len(sys.argv) <= 2: exit("Link missing")
     cli.debug(sys.argv[2])
 else:
     print(options)

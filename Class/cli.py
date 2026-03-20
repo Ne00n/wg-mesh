@@ -43,9 +43,12 @@ class CLI(Base):
                 time.sleep(1)
             print("Meshing seems to have failed.")
 
-    def tunnel(self,task,tunnel=None):
+    def tunnel(self,params):
         self.wg = Wireguard(self.path)
         config = self.wg.getConfig()
+        raw = re.findall(f"(create|delete) ([a-z0-9]*)"," ".join(params), re.MULTILINE)
+        if not raw: exit("tunnel create default/awg or tunnel delete tunnel120")
+        task, tunnel = raw[0][0], raw[0][1]
         if task == "create":
             tunnelID = None
             for run in range(1,10):
