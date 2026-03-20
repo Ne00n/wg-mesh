@@ -19,7 +19,7 @@ class Diag(Base):
         if not os.path.isfile(f"{self.path}/configs/state.json"):
             self.logger.warning("state.json does not exist")
             return False
-        targets = self.getRoutes()
+        targets = self.wg.Network.getRoutes()
         if not targets: 
             self.logger.warning("bird returned no routes, did you setup bird?")
             return False
