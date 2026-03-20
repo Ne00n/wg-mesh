@@ -135,7 +135,7 @@ class Diag(Base):
         if not "re-mesh" in self.diagnostic: self.diagnostic["re-mesh"] = {"cooldown":self.randDelay()}
         if self.diagnostic['re-mesh']['cooldown'] > current: 
             self.logger.debug(f"Skipping re-mesh, due to cooldown")
-            continue
+            return False
         self.diagnostic['re-mesh']['cooldown'] = self.randDelay()
         if int(self.config['id']) >= 200:
             self.logger.info("Skipping re-mesh, ID is in client range")
