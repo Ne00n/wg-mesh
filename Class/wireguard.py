@@ -308,9 +308,8 @@ class Wireguard(Base):
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
         #initial check
-        configs = self.cmd('ip addr show')[0]
         subnetSplitted,subnetPrefix = self.Network.subnetSwitch(network)
-        links = self.getBirdLinks(configs,self.prefix,subnetSplitted)
+        links = self.Network.getBirdLinks()
         self.isInitial = False if links else True
         status = {"ipv4":{"status":False,"http":0},"ipv6":{"status":False,"http":0}}
         #ask remote about available protocols

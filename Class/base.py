@@ -51,9 +51,6 @@ class Base:
             return False
         return True
 
-    def getBirdLinks(self,configs,prefix="pipe",subnetPrefixSplitted=[10,0]):
-        return re.findall(f"({prefix}[A-Za-z0-9]+): <POINTOPOINT.*?inet ({subnetPrefixSplitted[0]}[0-9.]+\.[0-9]+)",configs, re.MULTILINE | re.DOTALL)
-
     def resolve(self,ip,range,netmask):
         rangeDecimal = int(netaddr.IPAddress(range))
         ipDecimal = int(netaddr.IPAddress(ip))
