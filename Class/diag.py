@@ -133,7 +133,7 @@ class Diag(Base):
     def runMesh(self):
         self.logger.info(f"Starting re-meshing")
         if not "re-mesh" in self.diagnostic: self.diagnostic["re-mesh"] = {"cooldown":self.randDelay()}
-        if self.diagnostic['re-mesh']['cooldown'] > current: 
+        if self.diagnostic['re-mesh']['cooldown'] > int(time.time()): 
             self.logger.debug(f"Skipping re-mesh, due to cooldown")
             return False
         self.diagnostic['re-mesh']['cooldown'] = self.randDelay()
