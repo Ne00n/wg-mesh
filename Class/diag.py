@@ -1,5 +1,6 @@
 import random, time, json, re, os
 from Class.wireguard import Wireguard
+from Class.network import Network
 from Class.base import Base
 
 class Diag(Base):
@@ -11,6 +12,7 @@ class Diag(Base):
         self.path = path
         self.diagnostic = self.readFile(f"{self.path}/configs/diagnostic.json")
         self.config = self.readFile(f'{self.path}/configs/config.json')
+        self.Network = Network(self.config)
 
     def run(self):
         #refresh network.json on each run
