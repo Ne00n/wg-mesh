@@ -116,6 +116,24 @@ class Diag(Base):
                 self.logger.info(f"Could not reconnect {link} ({remote})")
                 if notifications['enabled'] and notifications['gotifyDiag']: 
                     self.wg.notify(notifications['gotifyDiag'],f"{link} reconnect failure",f"Node {self.config['id']} failed to reconnect {link}")
-        self.logger.info(f"Loop done")
+        self.logger.info(f"Diagnostics done")
         self.saveFile(self.diagnostic,f"{self.path}/configs/diagnostic.json")
+        self.logger.info(f"Starting re-meshing")
+        if not os.path.isfile(f"{self.path}/configs/state.json"):
+            self.logger.warning("Skipping re-mesh, state.json not found")
+            return False
+        targets = self.Network.getRoutes()
+        if not targets: 
+            self.logger.warning("Skipping re-mesh, no routes from bird")
+            return False
+        links = self.Network.getBirdLinks()
+        if not links: 
+            self.logger.warning("Skipping re-mesh, no links found") 
+            return False
+        localIP = f"{'.'.join(self.config['subnet'].split('.')[:2])}.{self.config['id']}.1"
+        targets = self.Network.filterLocalIP(targets,localIP)
+        targets = self.Network.filterExisting(targets,links)
+        targets = self.Network.filterLocalLinks(targets,links)
+        self.logger.info(f"Possible targets {targets}")
+        self.logger.info(f"Loop done")
         return True
