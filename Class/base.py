@@ -26,16 +26,18 @@ class Base:
         return parsed,f"{parsed[1]}{lastOctet-1}" if self.sameNetwork(f"{parsed[1]}{lastOctet-1}",parsed[0]) else f"{parsed[1]}{lastOctet+1}"
 
     def readFile(self,file,isJson=False):
+        if file.endswith(".json"): isJson = True
         if os.path.isfile(file):
             try:
-                if isJson or file.endswith(".json"):
+                if isJson:
                     with open(file) as handle: return json.loads(handle.read())
                 else:
                     with open(file, 'r') as file: return file.read()
             except Exception as e:
-                return ""
+                return {} if isJson else ""
         else:
-            return ""
+            return {} if isJson else ""
+
 
     def saveFile(self,data,path,isJson=False):
         #Prevent file corruption
