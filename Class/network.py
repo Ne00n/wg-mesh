@@ -85,6 +85,12 @@ class Network(Base):
                     if ip in targets: targets.remove(ip)
         return targets
 
+    def filterClients(self,targets):
+        for ip in list(targets):
+            splitted = ip.split(".")
+            if int(splitted[2]) >= 200: targets.remove(ip)
+        return targets
+
     def getSubnetSplitted(self):
         return self.subnetSplitted
 

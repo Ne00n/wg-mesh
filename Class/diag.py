@@ -151,5 +151,6 @@ class Diag(Base):
         targets = self.Network.filterLocalIP(targets,localIP)
         targets = self.Network.filterExisting(targets,links)
         targets = self.Network.filterLocalLinks(targets,links)
+        targets = self.Network.filterClients(targets)
         self.logger.info(f"Possible targets {targets}")
         return True
