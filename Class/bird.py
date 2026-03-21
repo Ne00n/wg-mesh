@@ -161,7 +161,7 @@ class Bird(Base):
                 return False
             targets = self.Network.filterExisting(targets,links)
             targets = self.Network.filterLocalLinks(targets,links)
-            targets = self.Network.filterClients(targets)
+            targets = self.Network.filterIDs(targets)
             self.logger.info(f"Possible targets {targets}")
             #wireguard
             self.logger.info("meshing")
