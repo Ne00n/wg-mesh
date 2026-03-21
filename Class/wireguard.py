@@ -49,7 +49,8 @@ class Wireguard(Base):
         if not os.path.isfile("/etc/bird/bgp.conf"): self.cmd('touch /etc/bird/bgp.conf')
         if not "bird" in self.config: self.config['bird'] = {}
         if not "modules" in self.config: self.config['modules'] = {"neighbour":False,"update":False}
-        if not "linkSettings" in self.config: self.config['linkSettings'] = {"awgGen":False}
+        if not "linkSettings" in self.config: self.config['linkSettings'] = {"awgGen":False,"reMesh":False}
+        if not "reMesh" in self.config['linkSettings']: self.config['linkSettings']['reMesh'] = False
         if not "latency" in self.config: self.config['latency'] = {"pingInterval":30}
         if not "ospfv2" in self.config['bird']: self.config['bird']['ospfv2'] = True
         if not "ospfv3" in self.config['bird']: self.config['bird']['ospfv3'] = True

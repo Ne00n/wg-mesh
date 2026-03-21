@@ -126,7 +126,7 @@ class Diag(Base):
             self.logger.warning("state.json does not exist")
             return False
         self.runDiagnostic()
-        self.runMesh()
+        if self.config['linkSettings']['reMesh']: self.runMesh()
         self.logger.info(f"Loop done")
         return True
 
@@ -153,4 +153,14 @@ class Diag(Base):
         targets = self.Network.filterLocalLinks(targets,links)
         targets = self.Network.filterIDs(targets,True)
         self.logger.info(f"Possible targets {targets}")
+        self.logger.info("re-meshing...")
+        for target in targets:
+            dest = target.replace(".0/30",".1")
+            #no token needed but external IP for the client
+            self.logger.info(f"Setting up link to {dest}")
+            status = self.wg.connect(f"http://{dest}:{self.config['listenPort']}")
+            if status['ipv4']['status'] or status['ipv6']['status']:
+                self.logger.info(f"Link established to http://{dest}:{self.config['listenPort']}")
+            else:
+                self.logger.warning(f"Failed to setup link to http://{dest}:{self.config['listenPort']}")
         return True
