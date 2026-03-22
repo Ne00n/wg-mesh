@@ -115,7 +115,7 @@ class Diag(Base):
                 self.logger.info(f"Reconnected {link} ({remote}) with Port {port}")
                 if notifications['enabled'] and notifications['gotifyDiag']: 
                     self.wg.notify(notifications['gotifyDiag'],f"{link} reconnected ({self.diagnostic[remote]['retries']})",f"Node {self.config['id']} reconnected {link}")
-                    self.diagnostic[remote]['events'][int(time.time())] = {"linkType":linkType}
+                    self.diagnostic[remote]['events'][int(time.time())] = {"linkType":linkType,"port":port}
             else:
                 self.logger.info(f"Could not reconnect {link} ({remote})")
                 if notifications['enabled'] and notifications['gotifyDiag']: 
