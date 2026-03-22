@@ -126,7 +126,9 @@ class Diag(Base):
             self.logger.warning("state.json does not exist")
             return False
         self.runDiagnostic()
-        if self.config['linkSettings']['reMesh']: self.runMesh()
+        if self.config['linkSettings']['reMesh']: 
+            self.runMesh()
+            self.logger.info("Done re-meshing")
         self.logger.info(f"Loop done")
         return True
 
@@ -153,6 +155,7 @@ class Diag(Base):
         targets = self.Network.filterLocalLinks(targets,links)
         targets = self.Network.filterIDs(targets,True)
         self.logger.info(f"Possible targets {targets}")
+        if not targets: return True
         self.logger.info("re-meshing...")
         for target in targets:
             dest = target.replace(".0/30",".1")
