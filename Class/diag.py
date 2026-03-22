@@ -44,7 +44,8 @@ class Diag(Base):
             if "linkType" in linkConfig and not linkConfig['linkType'] in allowedLinkType:
                 self.logger.warning(f"{link} has non default linkType, skipping")
                 continue
-            if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0,"retries":0}
+            if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0,"retries":0,"events":{}}
+            if not "events" in self.diagnostic[remote]: self.diagnostic[remote]['events'] = {}
             if self.diagnostic[remote]['cooldown'] > current: 
                 self.logger.info(f"Skipping {link} due to cooldown")
                 continue
@@ -114,6 +115,7 @@ class Diag(Base):
                 self.logger.info(f"Reconnected {link} ({remote}) with Port {port}")
                 if notifications['enabled'] and notifications['gotifyDiag']: 
                     self.wg.notify(notifications['gotifyDiag'],f"{link} reconnected ({self.diagnostic[remote]['retries']})",f"Node {self.config['id']} reconnected {link}")
+                    self.diagnostic[remote]['events'][int(time.time())] = {"linkType":linkType}
             else:
                 self.logger.info(f"Could not reconnect {link} ({remote})")
                 if notifications['enabled'] and notifications['gotifyDiag']: 
