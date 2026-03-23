@@ -80,7 +80,7 @@ class Network(Base):
         for ip in list(targets):
             for link in links:
                 splitted = ip.split(".")
-                if f"pipe{splitted[2]}" in link[0]:
+                if f"pipe{splitted[2]}" == link[0]:
                     #multiple links in the same subnet
                     if ip in targets: targets.remove(ip)
         return targets
