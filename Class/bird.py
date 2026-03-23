@@ -23,9 +23,9 @@ class Bird(Base):
         if not latency:
             self.logger.warning("No pingable links found.")
             return False
-        for entry,row in latency.items():
-            row = row[2:] #drop the first 2 pings
-            row.sort()
+        for ip,pings in latency.items():
+            pings = pings[2:] #drop the first 2 pings
+            pings.sort()
         for data in list(targets):
             for entry,row in latency.items():
                 if entry == data['target']:
