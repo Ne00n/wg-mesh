@@ -109,7 +109,7 @@ class Diag(Base):
                 linkType = random.choice(availableLinkTypes)
                 self.logger.info(f"Selected linkType is {linkType}")
             self.logger.info(f"Reconnecting {link}")
-            port = random.randint(1024, 50000)
+            port = random.randint(1024, 65000)
             status = self.wg.connect(f"http://{endpoint}:8080","dummy",linkType,port)
             if status['ipv4']['status'] or status['ipv6']['status']:
                 self.logger.info(f"Reconnected {link} ({remote}) with Port {port}")
