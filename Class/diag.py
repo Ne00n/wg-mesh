@@ -47,7 +47,7 @@ class Diag(Base):
             if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0,"retries":0,"events":{}}
             if not "events" in self.diagnostic[remote]: self.diagnostic[remote]['events'] = {}
             if self.diagnostic[remote]['cooldown'] > current: 
-                self.logger.info(f"Skipping {link} due to cooldown")
+                self.logger.debug(f"Skipping {link} due to cooldown")
                 continue
             self.logger.info(f"Found dead link {link} ({remote})")
             self.diagnostic[remote]['cooldown'] = self.randDelay()
