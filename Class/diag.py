@@ -136,11 +136,6 @@ class Diag(Base):
 
     def runMesh(self):
         self.logger.info(f"Starting re-meshing")
-        if not "re-mesh" in self.diagnostic: self.diagnostic["re-mesh"] = {"cooldown":self.randDelay()}
-        if self.diagnostic['re-mesh']['cooldown'] > int(time.time()): 
-            self.logger.info(f"Skipping re-mesh, due to cooldown")
-            return False
-        self.diagnostic['re-mesh']['cooldown'] = self.randDelay()
         if int(self.config['id']) >= 200:
             self.logger.info("Skipping re-mesh, ID is in client range")
         targets = self.Network.getRoutes()
@@ -161,7 +156,12 @@ class Diag(Base):
         self.logger.info("re-meshing...")
         for target in targets:
             dest = target.replace(".0/30",".1")
-            #no token needed but external IP for the client
+            if not dest in self.diagnostic: self.diagnostic[dest] = {"cooldown":self.randDelay(),"retries":0}
+            if self.diagnostic[dest]['cooldown'] > int(time.time()): 
+                self.logger.info(f"Skipping {dest}, due to cooldown")
+                continue
+            self.diagnostic[dest]['cooldown'] = self.randDelay()
+            self.diagnostic[dest]['retries'] += 1
             self.logger.info(f"Setting up link to {dest}")
             status = self.wg.connect(f"http://{dest}:{self.config['listenPort']}")
             if status['ipv4']['status'] or status['ipv6']['status']:
