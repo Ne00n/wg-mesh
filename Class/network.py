@@ -91,7 +91,7 @@ class Network(Base):
             if int(splitted[2]) >= 200: 
                 targets.remove(ip)
                 continue
-            if dropHigher and int(splitted[2]) > self.config['id']:
+            if dropHigher and int(splitted[2]) > int(self.config['id']):
                 targets.remove(ip)
         return targets
 
