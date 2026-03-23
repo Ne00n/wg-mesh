@@ -14,8 +14,8 @@ class Diag(Base):
         self.config = self.readFile(f'{self.path}/configs/config.json')
         self.Network = Network(self.config)
 
-    def randDelay(self):
-        return int(time.time()) + random.randint(21600,43200)
+    def randDelay(self,start=21600,end=43200):
+        return int(time.time()) + random.randint(start,end)
 
     def runDiagnostic(self):
         #refresh network.json on each run
@@ -156,7 +156,7 @@ class Diag(Base):
         self.logger.info("re-meshing...")
         for target in targets:
             dest = target.replace(".0/30",".1")
-            if not dest in self.diagnostic: self.diagnostic[dest] = {"cooldown":self.randDelay(),"retries":0}
+            if not dest in self.diagnostic: self.diagnostic[dest] = {"cooldown":self.randDelay(3600,7200),"retries":0}
             if self.diagnostic[dest]['cooldown'] > int(time.time()): 
                 self.logger.info(f"Skipping {dest}, due to cooldown")
                 continue
