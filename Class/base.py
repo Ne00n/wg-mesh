@@ -78,23 +78,18 @@ class Base:
         result =  Decimal(result / actual)
         return result
 
-    def fping(self,targets,pings=3):
+    def fping(self,ips,pings=3):
         fping = f"fping -c {pings} "
-        fping += " ".join(targets)
+        fping += " ".join(ips)
         result = self.cmd(fping)
-        parsed, unreachable = [], []
+        latency, parsed = {}, []
+        for ip in ips: latency[ip] = []
         for row in result[0].splitlines(): parsed.append(re.findall(self.fpingMatch,row))
-        for row in result[1].splitlines(): unreachable.append(re.findall(self.fpingUnreachable,row))
         if not parsed: return {}
-        latency =  {}
         for row in parsed:
             for ip,ms,loss in row:
-                if ip not in latency: latency[ip] = []
                 if ms == "timed out": continue
                 latency[ip].append([ms,loss])
-        for row in unreachable:
-            for ip in row:
-                if ip not in latency: latency[ip] = []
         return latency
 
     def iperf(self,target):
