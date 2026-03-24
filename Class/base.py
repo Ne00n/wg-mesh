@@ -85,7 +85,7 @@ class Base:
         latency, parsed = {}, []
         for ip in ips: latency[ip] = []
         for row in result[0].splitlines(): parsed.append(re.findall(self.fpingMatch,row))
-        if not parsed: return {}
+        if not parsed: return latency
         for row in parsed:
             for ip,ms,loss in row:
                 if ms == "timed out": continue
