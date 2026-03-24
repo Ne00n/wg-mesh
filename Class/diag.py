@@ -72,7 +72,7 @@ class Diag(Base):
                 self.logger.debug(f"Pinging public ip {remotePublic}")
                 pings = self.fping([remotePublic],3)
                 if not pings[remotePublic]:
-                    self.logger.info(f"Unable to reach public ip address, likely routing problems {link}")
+                    self.logger.info(f"Unable to reach public ip address {remotePublic}, likely routing problems {link}")
                     continue
                 if len(pings[remotePublic]) != 3:
                     self.logger.info(f"Link {link} has packet loss, skipping for now")
