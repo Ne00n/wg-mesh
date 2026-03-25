@@ -38,7 +38,6 @@ class Diag(Base):
             elif "endpoint" in data['config']: 
                 self.logger.debug(f"{link} is client, skipping")
                 continue
-            linkConfig = self.readFile(f'{self.path}/links/{data["filename"]}.json')
             if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0,"retries":0,"events":{}}
             if not "events" in self.diagnostic[remote]: self.diagnostic[remote]['events'] = {}
             if self.diagnostic[remote]['cooldown'] > current: 
@@ -94,6 +93,7 @@ class Diag(Base):
                         self.wg.notify(notifications['gotifyDiag'],f"{link} disconnect failure ({self.diagnostic[remote]['retries']})",f"Node {self.config['id']} failed to disconnect {link}")
                     continue
             time.sleep(3)
+            linkConfig = self.readFile(f'{self.path}/links/{data["filename"]}.json')
             if "linkType" in linkConfig:
                 self.logger.info(f"Current linkType is {linkConfig['linkType']}")
             self.logger.debug(f"Selecting linkType")
