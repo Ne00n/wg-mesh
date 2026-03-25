@@ -99,7 +99,7 @@ class Latency(Base):
                         self.network[entry]['packetloss'][int(time.time()) + (2100 * int(peakLoss))] = {"peak":peakLoss,"latency":current}
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
                         #if we have loss and it isn't a dead link, set noWait
-                        if len(row) > 1: self.noWait +1
+                        if len(row) > 1: self.noWait += 1
 
                     eventCount,eventScore = self.countEvents(entry,'packetloss')
                     #multiply by 10 otherwise small package loss may not result in routing changes
