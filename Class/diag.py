@@ -29,7 +29,6 @@ class Diag(Base):
         self.logger.info(f"Checking {len(links)} Links")
         offline,online = self.wg.checkLinks(links)
         self.logger.info(f"Found {len(offline)} dead link(s)")
-        allowedLinkType = ["default","amneziawg"]
         for link in offline:
             count, data, current = 0, links[link], int(time.time())
             isDead = int(time.time()) - 50400 # 14 hours
@@ -40,10 +39,6 @@ class Diag(Base):
                 self.logger.debug(f"{link} is client, skipping")
                 continue
             linkConfig = self.readFile(f'{self.path}/links/{data["filename"]}.json')
-            #have to check the linkType, currently no logic for different link types so we just skip them for now
-            if "linkType" in linkConfig and not linkConfig['linkType'] in allowedLinkType:
-                self.logger.warning(f"{link} has non default linkType, skipping")
-                continue
             if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0,"retries":0,"events":{}}
             if not "events" in self.diagnostic[remote]: self.diagnostic[remote]['events'] = {}
             if self.diagnostic[remote]['cooldown'] > current: 

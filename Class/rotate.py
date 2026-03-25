@@ -81,5 +81,4 @@ class Rotate(Base):
                     self.logger.warning(f"{link} Unable to verify connectivity")
                     if notifications['enabled']: self.wg.notify(config['notifications']['gotifyError'],f"{link} xor exchange error",f"Node {config['id']} Unable to verify connectivity")
                 self.logger.info(f"{link} done swapping xor keys")
-        #run every hour
         self.wg.saveFile(self.rotate,f"{self.path}/configs/rotate.json")
