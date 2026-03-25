@@ -72,7 +72,7 @@ while True:
             skip = latency.run(messages)
             if skip > 0: 
                 skipUntil = time.time() + 60
-                logger.info(f"Skipping 10s wait for 60s")
+                logger.info(f"Reducing wait by half.")
             elif skip == -1 and int(time.time()) > restartCooldown:
                 logger.info(f"Triggering bird restart")
                 os.system("sudo systemctl restart bird")
@@ -81,7 +81,10 @@ while True:
                 logger.info(f"Triggering bird config regenerate")
                 links.append("dummy")
                 regenCooldown = int(time.time()) + 1800
-        if skipUntil < time.time(): time.sleep(config['latency']['pingInterval'])
+        if skipUntil < time.time(): 
+            time.sleep(config['latency']['pingInterval'])
+        else:
+            time.sleep(config['latency']['pingInterval'] / 2)
     except Exception as e:
         logger.exception(f'Bird routine crashed {e}')
         time.sleep(300)
