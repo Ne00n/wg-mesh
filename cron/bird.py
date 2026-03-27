@@ -71,7 +71,7 @@ while True:
             while not messagesQueue.empty(): messages.append(messagesQueue.get())
             skip = latency.run(messages)
             if skip > 0: 
-                skipUntil = time.time() + 300
+                skipUntil = time.time() + 600
                 logger.info(f"Reducing wait for the next 300s")
             elif skip == -1 and int(time.time()) > restartCooldown:
                 logger.info(f"Triggering bird restart")
