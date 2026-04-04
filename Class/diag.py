@@ -103,6 +103,11 @@ class Diag(Base):
                 availableLinkTypes = self.wg.availableLinkTypes(self.config,linkData)
                 linkType = random.choice(availableLinkTypes)
                 self.logger.info(f"Selected linkType is {linkType}")
+            self.logger.info(f"Checking latency")
+            connect = self.shouldConnect(endpoint)
+            if not connect['ipv4'] and not connect['ipv6']:
+                self.logger.info(f"Skipping {endpoint}, direct latency to high")
+                continue
             self.logger.info(f"Reconnecting {link}")
             port = random.randint(1024, 65000)
             status = self.wg.connect(f"http://{endpoint}:8080","dummy",linkType,port)
@@ -157,6 +162,7 @@ class Diag(Base):
                 continue
             self.diagnostic[dest]['cooldown'] = self.randDelay()
             self.diagnostic[dest]['retries'] += 1
+            self.logger.info(f"Checking latency")
             connect = self.shouldConnect(dest)
             if not connect['ipv4'] and not connect['ipv6']:
                 self.logger.info(f"Skipping {dest}, direct latency to high")
@@ -181,7 +187,7 @@ class Diag(Base):
         if data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']: 
             toPing.append(data['connectivity']['ipv6'])
             mapping['ipv6'] = data['connectivity']['ipv6']
-        pings = self.fping([toPing],3)
+        pings = self.fping(toPing,3)
         direct4, direct6, indirect = 0, 0, 0
         for ip, results in pings.items():
             current = int(self.getAvrg(results))
