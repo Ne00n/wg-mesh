@@ -188,7 +188,7 @@ class Diag(Base):
             toPing.append(data['connectivity']['ipv6'])
             mapping['ipv6'] = data['connectivity']['ipv6']
         pings = self.fping(toPing,3)
-        direct4, direct6, indirect = 0, 0, 0
+        direct4, direct6, indirect = 999, 999, 0
         for ip, results in pings.items():
             current = int(self.getAvrg(results))
             if ip == mapping['direct']: indirect = current
