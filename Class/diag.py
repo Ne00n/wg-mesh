@@ -157,6 +157,10 @@ class Diag(Base):
                 continue
             self.diagnostic[dest]['cooldown'] = self.randDelay()
             self.diagnostic[dest]['retries'] += 1
+            connect = self.shouldConnect(dest)
+            if not connect['ipv4'] and not connect['ipv6']:
+                self.logger.info(f"Skipping {dest}, direct latency to high")
+                continue
             self.logger.info(f"Setting up link to {dest}")
             status = self.wg.connect(f"http://{dest}:{self.config['listenPort']}")
             if status['ipv4']['status'] or status['ipv6']['status']:
@@ -164,3 +168,24 @@ class Diag(Base):
             else:
                 self.logger.warning(f"Failed to setup link to http://{dest}:{self.config['listenPort']}")
         return True
+
+    def shouldConnect(self,dest):
+        data = self.AskProtocol(dest)
+        if not data:
+            self.logger.info(f"Unable to fetch connectivity info from {dest}")
+            return False
+        mapping, toPing = {"direct":dest,"ipv4":"","ipv6":""}, [dest]
+        if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']: 
+            toPing.append(data['connectivity']['ipv4'])
+            mapping['ipv4'] = data['connectivity']['ipv4']
+        if data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']: 
+            toPing.append(data['connectivity']['ipv6'])
+            mapping['ipv6'] = data['connectivity']['ipv6']
+        pings = self.fping([toPing],3)
+        direct4, direct6, indirect = 0, 0, 0
+        for ip, results in pings.items():
+            current = int(self.getAvrg(results))
+            if ip == mapping['direct']: indirect = current
+            if ip == mapping['ipv4']: direct4 = current
+            if ip == mapping['ipv6']: direct6 = current
+        return {"ipv4":bool(direct4 < (indirect * 1.5)),"ipv6":bool(direct6 < (indirect * 1.5))}
