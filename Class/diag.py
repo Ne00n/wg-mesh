@@ -170,7 +170,7 @@ class Diag(Base):
         return True
 
     def shouldConnect(self,dest):
-        data = self.wg.AskProtocol(dest)
+        data = self.wg.AskProtocol(f"http://{dest}")
         if not data:
             self.logger.info(f"Unable to fetch connectivity info from {dest}")
             return {"ipv4":False,"ipv6":False}
