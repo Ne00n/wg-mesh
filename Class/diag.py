@@ -106,7 +106,7 @@ class Diag(Base):
             self.logger.info(f"Checking latency")
             connect = self.shouldConnect(endpoint)
             if not connect['ipv4'] and not connect['ipv6']:
-                self.logger.info(f"Skipping {endpoint}, direct latency to high")
+                self.logger.info(f"Skipping {endpoint}, direct latency {connect['direct4']}ms to high")
                 continue
             self.logger.info(f"Reconnecting {link}")
             port = random.randint(1024, 65000)
