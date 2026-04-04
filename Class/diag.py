@@ -179,7 +179,7 @@ class Diag(Base):
         data = self.wg.AskProtocol(f"http://{dest}:{self.config['listenPort']}")
         if not data:
             self.logger.info(f"Unable to fetch connectivity info from {dest}")
-            return {"ipv4":False,"ipv6":False}
+            return {"ipv4":False,"ipv6":False,"indirect":-1,"direct4":-1,"direct6":-1}
         mapping, toPing = {"direct":dest,"ipv4":"","ipv6":""}, [dest]
         if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']: 
             toPing.append(data['connectivity']['ipv4'])
@@ -194,4 +194,4 @@ class Diag(Base):
             if ip == mapping['direct']: indirect = current
             if ip == mapping['ipv4']: direct4 = current
             if ip == mapping['ipv6']: direct6 = current
-        return {"ipv4":bool(direct4 < (indirect * 1.5)),"ipv6":bool(direct6 < (indirect * 1.5))}
+        return {"ipv4":bool(direct4 < (indirect * 1.5)),"ipv6":bool(direct6 < (indirect * 1.5)),"indirect":indirect,"direct4":direct4,"direct6":direct6}
