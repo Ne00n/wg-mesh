@@ -173,7 +173,7 @@ class Diag(Base):
         data = self.wg.AskProtocol(dest)
         if not data:
             self.logger.info(f"Unable to fetch connectivity info from {dest}")
-            return False
+            return {"ipv4":False,"ipv6":False}
         mapping, toPing = {"direct":dest,"ipv4":"","ipv6":""}, [dest]
         if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']: 
             toPing.append(data['connectivity']['ipv4'])
