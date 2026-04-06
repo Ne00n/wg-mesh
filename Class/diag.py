@@ -186,7 +186,7 @@ class Diag(Base):
         if data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']: 
             toPing.append(data['connectivity']['ipv6'])
             mapping['ipv6'] = data['connectivity']['ipv6']
-        pings = self.fping(toPing,3)
+        pings = self.fping(toPing,10)
         direct4, direct6, indirect = 999, 999, 0
         for ip, results in pings.items():
             current = int(self.getAvrg(results))
