@@ -153,7 +153,7 @@ class Diag(Base):
         targets = self.Network.filterIDs(targets,True)
         self.logger.info(f"Possible targets {targets}")
         if not targets: return True
-        for target in targets:
+        for target in targets[:2]:
             dest = target.replace(".0/30",".1")
             if not dest in self.diagnostic: self.diagnostic[dest] = {"cooldown":self.randDelay(3600,7200),"retries":0}
             if self.diagnostic[dest]['cooldown'] > int(time.time()): 
