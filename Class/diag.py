@@ -153,7 +153,6 @@ class Diag(Base):
         targets = self.Network.filterIDs(targets,True)
         self.logger.info(f"Possible targets {targets}")
         if not targets: return True
-        self.logger.info("re-meshing...")
         for target in targets:
             dest = target.replace(".0/30",".1")
             if not dest in self.diagnostic: self.diagnostic[dest] = {"cooldown":self.randDelay(3600,7200),"retries":0}
@@ -162,7 +161,7 @@ class Diag(Base):
                 continue
             self.diagnostic[dest]['cooldown'] = self.randDelay()
             self.diagnostic[dest]['retries'] += 1
-            self.logger.info(f"Checking latency")
+            self.logger.info(f"Checking latency for {dest}")
             connect = self.shouldConnect(dest)
             if not connect['ipv4'] and not connect['ipv6']:
                 self.logger.info(f"Skipping {dest}, direct latency to high, {connect['direct4']}ms vs {connect['indirect']}ms")
