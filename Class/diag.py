@@ -193,5 +193,5 @@ class Diag(Base):
             if ip == mapping['direct']: indirect = current
             if ip == mapping['ipv4']: direct4 = current
             if ip == mapping['ipv6']: direct6 = current
-        mp = 1.5 if indirect < 100 else 1.2
+        mp = 1.0
         return {"ipv4":bool(direct4 < (indirect * mp)),"ipv6":bool(direct6 < (indirect * mp)),"indirect":indirect,"direct4":direct4,"direct6":direct6}
