@@ -35,6 +35,6 @@ while not shutdown:
     if currentTime > waitUntil:
         logger.info(f"Running")
         diag.run()
-        waitUntil = currentTime + random.randint(3600,7200)
+        waitUntil = currentTime + random.randint(1800,3600)
     else:
         time.sleep(2)
