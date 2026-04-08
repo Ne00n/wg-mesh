@@ -154,11 +154,11 @@ class Diag(Base):
         if not targets: return True
         random.shuffle(targets)
         self.logger.info(f"Possible targets {targets}")
-        for target in targets[:2]:
+        for target in targets:
             dest = target.replace(".0/30",".1")
             if not dest in self.diagnostic: self.diagnostic[dest] = {"cooldown":self.randDelay(3600,7200),"retries":0}
             if self.diagnostic[dest]['cooldown'] > int(time.time()): 
-                self.logger.info(f"Skipping {dest}, due to cooldown")
+                self.logger.debug(f"Skipping {dest}, due to cooldown")
                 continue
             self.diagnostic[dest]['cooldown'] = self.randDelay()
             self.diagnostic[dest]['retries'] += 1
@@ -171,6 +171,7 @@ class Diag(Base):
             status = self.wg.connect(f"http://{dest}:{self.config['listenPort']}")
             if status['ipv4']['status'] or status['ipv6']['status']:
                 self.logger.info(f"Link established to http://{dest}:{self.config['listenPort']}")
+                break
             else:
                 self.logger.warning(f"Failed to setup link to http://{dest}:{self.config['listenPort']}")
         return True
