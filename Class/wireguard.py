@@ -354,7 +354,7 @@ class Wireguard(Base):
             elif req.status_code == 200:
                 resp = req.json()
                 #check if v6 or v4
-                interfaceType = "v6" if isv6 else ""
+                interfaceType = "v6" if protocol == "ipv6" else ""
                 connectivity =  f"[{resp['connectivity']['ipv6']}]"  if protocol == "ipv6" else resp['connectivity']['ipv4']
                 #interface
                 interface = self.getInterface(resp['id'],interfaceType,network)
