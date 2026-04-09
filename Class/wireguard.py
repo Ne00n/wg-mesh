@@ -312,7 +312,7 @@ class Wireguard(Base):
             if linkType in local['linkTypes']: available.append(linkType)
         return available
 
-    def connect(self,dest,token="",linkType="",port=51820,network=""):
+    def connect(self,dest,token="",linkType="",port=51820,network="",protocols=["ipv4","ipv6"]):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
@@ -326,9 +326,9 @@ class Wireguard(Base):
         if not data: return status
         availableProtocols = []
         #start with the protocol which is available
-        if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']:
+        if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4'] and "ipv4" in protocols:
             availableProtocols.append("ipv4")
-        if data['connectivity']['ipv6'] and self.config['connectivity']['ipv6']:
+        if data['connectivity']['ipv6'] and self.config['connectivity']['ipv6'] and "ipv6" in protocols:
             availableProtocols.append("ipv6")
         #if neither of these are available, leave it
         if not availableProtocols: return status
