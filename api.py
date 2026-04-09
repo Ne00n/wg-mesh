@@ -63,11 +63,6 @@ def validateConnectivity(connectivity):
         return False
     return True
 
-def validateProtocol(protocol):
-    allowedProtocols = ["ipv4","ipv6"]
-    if not protocol in allowedProtocols: return False
-    return True
-
 def terminateLink(folder,interface,wait=True):
     wg = Wireguard(folder)
     if wait: time.sleep(2)
@@ -164,7 +159,7 @@ def index():
         logging.info(f"Invalid connectivity data from {requestIP}")
         return HTTPResponse(status=400, body="Invalid connectivity data")
     #validate protocol
-    if not "protocol" in payload and not validateProtocol(payload['protocol']):
+    if not "protocol" in payload and not validate.protocol(payload['protocol']):
         logging.info(f"Invalid protocol from {requestIP}")
         return HTTPResponse(status=400, body="Missing protocol")
     #prevent local connects

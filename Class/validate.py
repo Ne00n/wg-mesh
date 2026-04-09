@@ -37,3 +37,8 @@ class Validate():
         else:
             if payload['token'] not in tokens['connect']: return False
         return True
+
+    def protocol(self,protocol):
+        allowedProtocols = ["ipv4","ipv6"]
+        if not protocol in allowedProtocols: return False
+        return True
