@@ -63,6 +63,11 @@ def validateConnectivity(connectivity):
         return False
     return True
 
+def validateProtocol(protocol):
+    allowedProtocols = ["ipv4","ipv6"]
+    if not protocol in allowedProtocols: return False
+    return True
+
 def terminateLink(folder,interface,wait=True):
     wg = Wireguard(folder)
     if wait: time.sleep(2)
@@ -158,6 +163,10 @@ def index():
     if "connectivity" in payload and not validateConnectivity(payload['connectivity']):
         logging.info(f"Invalid connectivity data from {requestIP}")
         return HTTPResponse(status=400, body="Invalid connectivity data")
+    #validate protocol
+    if not "protocol" in payload and not validateProtocol(payload['protocol']):
+        logging.info(f"Invalid protocol from {requestIP}")
+        return HTTPResponse(status=400, body="Missing protocol")
     #prevent local connects
     if payload['id'] == config['id']:
         logging.info(f"Invalid connection from {requestIP}")
@@ -169,7 +178,6 @@ def index():
     if not "initial" in payload: payload['initial'] = False
     if not "prefix" in payload: payload['prefix'] = f"{subnetPrefix}"
     payload['basePort'] = config['basePort'] if not "port" in payload else payload['port']
-    if not "protocol" in payload: payload['protocol'] = "ipv4"
     #initial
     if payload['initial']:
         routes = wg.cmd("birdc show route")[0]
