@@ -169,7 +169,7 @@ def index():
     if not "initial" in payload: payload['initial'] = False
     if not "prefix" in payload: payload['prefix'] = f"{subnetPrefix}"
     payload['basePort'] = config['basePort'] if not "port" in payload else payload['port']
-    if not "ipv6" in payload: payload['ipv6'] = False
+    if not "protocol" in payload: payload['protocol'] = "ipv4"
     #initial
     if payload['initial']:
         routes = wg.cmd("birdc show route")[0]
@@ -179,7 +179,7 @@ def index():
             logging.info(f"ID Collision from {requestIP}")
             return HTTPResponse(status=416, body="Collision")
     #generate interface name
-    interfaceType = "v6" if payload['ipv6'] else ""
+    interfaceType = "v6" if payload['protocol'] == "ipv6" else ""
     interface = wg.getInterface(payload['id'],interfaceType,payload['network'])
     #check if interface exists
     if os.path.isfile(f"{folder}/links/{interface}.sh"):

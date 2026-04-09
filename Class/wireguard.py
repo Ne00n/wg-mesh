@@ -342,10 +342,9 @@ class Wireguard(Base):
             if not linkType in data['linkTypes']:
                 linkType = "default"
         for protocol in availableProtocols:
-            isv6 = True if protocol == "ipv6" else False
             #call destination
-            payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,
-            "ipv6":isv6,"initial":self.isInitial,"linkType":linkType,"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
+            payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"protocol":protocol,
+            "initial":self.isInitial,"linkType":linkType,"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
             if port != 51820: payload["port"] = port
             success, req = self.call(f'{dest}/connect',payload)
             if success == False: return status
@@ -356,7 +355,7 @@ class Wireguard(Base):
                 resp = req.json()
                 #check if v6 or v4
                 interfaceType = "v6" if isv6 else ""
-                connectivity =  f"[{resp['connectivity']['ipv6']}]"  if isv6 else resp['connectivity']['ipv4']
+                connectivity =  f"[{resp['connectivity']['ipv6']}]"  if protocol == "ipv6" else resp['connectivity']['ipv4']
                 #interface
                 interface = self.getInterface(resp['id'],interfaceType,network)
                 #generate config
