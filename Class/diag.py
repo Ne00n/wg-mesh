@@ -195,10 +195,10 @@ class Diag(Base):
             if ip == mapping['dest']: response['indirect'] = current
             if ip == mapping['ipv4']: response['direct4'] = current
             if ip == mapping['ipv6']: response['direct6'] = current
-        if direct4 < indirect:
+        if response['direct4'] < response['indirect']:
             response['ipv4'] = True
             response['connect'].append("ipv4")
-        if direct6 < indirect:
+        if response['direct6'] < response['indirect']:
             response['ipv6'] = True
             response['connect'].append("ipv6")
         return response
