@@ -105,7 +105,7 @@ class Diag(Base):
                 self.logger.info(f"Selected linkType is {linkType}")
             self.logger.info(f"Checking latency")
             connect = self.shouldConnect(endpoint)
-            if not connect['ipv4'] and not connect['ipv6']:
+            if not connect['connect']:
                 self.logger.info(f"Skipping {endpoint}, direct latency to high, {connect['direct4']}ms vs {connect['indirect']}ms")
                 continue
             self.logger.info(f"Reconnecting {link}")
@@ -164,7 +164,7 @@ class Diag(Base):
             self.diagnostic[dest]['retries'] += 1
             self.logger.info(f"Checking latency for {dest}")
             connect = self.shouldConnect(dest)
-            if not connect['ipv4'] and not connect['ipv6']:
+            if not connect['connect']:
                 self.logger.info(f"Skipping {dest}, direct latency to high, {connect['direct4']}ms vs {connect['indirect']}ms")
                 continue
             self.logger.info(f"Setting up link to {dest}")
@@ -178,7 +178,7 @@ class Diag(Base):
 
     def shouldConnect(self,dest):
         data = self.wg.AskProtocol(f"http://{dest}:{self.config['listenPort']}")
-        response = {"ipv4":False,"ipv6":False,"indirect":-1,"direct4":-1,"direct6":-1,"connect":[]}
+        response = {"indirect":-1,"direct4":-1,"direct6":-1,"connect":[]}
         if not data:
             self.logger.info(f"Unable to fetch connectivity info from {dest}")
             return response
@@ -195,10 +195,6 @@ class Diag(Base):
             if ip == mapping['dest']: response['indirect'] = current
             if ip == mapping['ipv4']: response['direct4'] = current
             if ip == mapping['ipv6']: response['direct6'] = current
-        if response['direct4'] < response['indirect']:
-            response['ipv4'] = True
-            response['connect'].append("ipv4")
-        if response['direct6'] < response['indirect']:
-            response['ipv6'] = True
-            response['connect'].append("ipv6")
+        if response['direct4'] < response['indirect']: response['connect'].append("ipv4")
+        if response['direct6'] < response['indirect']: response['connect'].append("ipv6")
         return response
