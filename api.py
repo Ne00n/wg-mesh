@@ -211,7 +211,7 @@ def index():
     amneziaConfig = wg.genAmneziaConfig()
     #check if amnezia is requested but also if we are using vanilla amnezia or with modded config
     if payload['linkType'] == "amneziawg" and config['linkSettings']['awgGen'] and amneziaConfig:
-        payload["amneziawg"] = wg.genAmneziaConfig()
+        payload["amneziawg"] = amneziaConfig
         configAsString = ''.join(f"{k}:{v}," for k, v in amneziaConfig.items())
         logging.info(f"Used config for amneziawg: {configAsString}")
     #generate wireguard config
