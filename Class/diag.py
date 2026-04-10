@@ -178,10 +178,11 @@ class Diag(Base):
 
     def shouldConnect(self,dest):
         data = self.wg.AskProtocol(f"http://{dest}:{self.config['listenPort']}")
+        response = {"ipv4":False,"ipv6":False,"indirect":-1,"direct4":-1,"direct6":-1,"connect":[]}
         if not data:
             self.logger.info(f"Unable to fetch connectivity info from {dest}")
-            return {"ipv4":False,"ipv6":False,"indirect":-1,"direct4":-1,"direct6":-1}
-        mapping, toPing = {"direct":dest,"ipv4":"","ipv6":""}, [dest]
+            return response
+        mapping, toPing = {"dest":dest,"ipv4":"","ipv6":""}, [dest]
         if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']: 
             toPing.append(data['connectivity']['ipv4'])
             mapping['ipv4'] = data['connectivity']['ipv4']
@@ -189,11 +190,15 @@ class Diag(Base):
             toPing.append(data['connectivity']['ipv6'])
             mapping['ipv6'] = data['connectivity']['ipv6']
         pings = self.fping(toPing,10)
-        direct4, direct6, indirect = 999, 999, 0
         for ip, results in pings.items():
             current = int(self.getAvrg(results))
-            if ip == mapping['direct']: indirect = current
-            if ip == mapping['ipv4']: direct4 = current
-            if ip == mapping['ipv6']: direct6 = current
-        mp = 1.0
-        return {"ipv4":bool(direct4 < (indirect * mp)),"ipv6":bool(direct6 < (indirect * mp)),"indirect":indirect,"direct4":direct4,"direct6":direct6}
+            if ip == mapping['dest']: response['indirect'] = current
+            if ip == mapping['ipv4']: response['direct4'] = current
+            if ip == mapping['ipv6']: response['direct6'] = current
+        if direct4 < indirect:
+            response['ipv4'] = True
+            response['connect'].append("ipv4")
+        if direct6 < indirect:
+            response['ipv6'] = True
+            response['connect'].append("ipv6")
+        return response
