@@ -178,7 +178,7 @@ class Diag(Base):
 
     def shouldConnect(self,dest):
         data = self.wg.AskProtocol(f"http://{dest}:{self.config['listenPort']}")
-        response = {"indirect":-1,"direct4":-1,"direct6":-1,"connect":[]}
+        response = {"indirect":-1,"direct4":9999,"direct6":9999,"connect":[]}
         if not data:
             self.logger.info(f"Unable to fetch connectivity info from {dest}")
             return response
