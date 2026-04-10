@@ -165,7 +165,7 @@ def index():
     #prevent local connects
     if payload['id'] == config['id']:
         logging.info(f"Invalid connection from {requestIP}")
-        return HTTPResponse(status=400,body="Are you trying to connect to yourself?!")
+        return HTTPResponse(status=400,body="Invalid Origin")
     #defaults
     if not "connectivity" in payload: payload['connectivity'] = {"ipv4":"","ipv6":""}
     if not "linkType" in payload: payload['linkType'] = "default"
