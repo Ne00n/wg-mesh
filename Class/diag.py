@@ -106,7 +106,7 @@ class Diag(Base):
             self.logger.info(f"Checking latency")
             connect = self.shouldConnect(endpoint)
             if not connect['connect']:
-                self.logger.info(f"Skipping {endpoint}, direct latency to high, {connect['direct4']}ms vs {connect['indirect']}ms")
+                self.logger.info(f"Skipping {endpoint}, direct latency to high, {connect['direct4']}/{connect['direct6']}ms vs {connect['indirect']}ms")
                 continue
             self.logger.info(f"Reconnecting {link}")
             port = random.randint(1024, 65000)
@@ -165,7 +165,7 @@ class Diag(Base):
             self.logger.info(f"Checking latency for {dest}")
             connect = self.shouldConnect(dest)
             if not connect['connect']:
-                self.logger.info(f"Skipping {dest}, direct latency to high, {connect['direct4']}ms vs {connect['indirect']}ms")
+                self.logger.info(f"Skipping {dest}, direct latency to high, {connect['direct4']}/{connect['direct6']}ms vs {connect['indirect']}ms")
                 continue
             self.logger.info(f"Setting up link to {dest}")
             status = self.wg.connect(dest=f"http://{dest}:{self.config['listenPort']}",protocols=connect['connect'])
