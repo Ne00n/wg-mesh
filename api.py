@@ -161,7 +161,7 @@ def index():
     #validate protocol
     if not "protocol" in payload and not validate.protocol(payload['protocol']):
         logging.info(f"Invalid protocol from {requestIP}")
-        return HTTPResponse(status=400, body="Missing protocol")
+        return HTTPResponse(status=400, body="Invalid protocol")
     #prevent local connects
     if payload['id'] == config['id']:
         logging.info(f"Invalid connection from {requestIP}")
