@@ -1,4 +1,4 @@
-import ipaddress, threading, socket, random, logging, string, secrets, json, time, os, re
+import ipaddress, threading, socket, logging, string, secrets, json, time, os, re
 from bottle import HTTPResponse, route, run, request, template
 from logging.handlers import RotatingFileHandler
 from Class.wireguard import Wireguard
@@ -30,11 +30,11 @@ blocklist = {}
 #token
 tokens = {"connect":[],"peer":[]}
 for i in range(3):
-    token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=18))
+    token =  phrase = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(18))
     logging.info(f"Adding connect token {token}")
     tokens['connect'].append(token)
 for i in range(3):
-    token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=18))
+    token =  phrase = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(18))
     logging.info(f"Adding peer token {token}")
     tokens['peer'].append(token)
 try:
