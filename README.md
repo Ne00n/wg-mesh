@@ -21,6 +21,7 @@
 
 **Features**<br>
 - [x] automatic mesh buildup when node has joined
+- [x] full mesh, partial mesh or autoMesh
 - [x] join nodes via cli
 - [x] disconnect nodes via cli
 - [x] VXLAN
