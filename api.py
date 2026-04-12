@@ -98,6 +98,7 @@ def index():
     isInternal = getInternal(requestIP)
     status, body = check(requestIP,request)
     if status: return HTTPResponse(status=status, body=body)
+    payload = json.load(request.body)
     #validate token
     if not isInternal and not validate.token(payload,tokens): 
         logging.info(f"Invalid Token from {requestIP}")
