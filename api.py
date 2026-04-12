@@ -82,19 +82,21 @@ def getInternal(requestIP):
     except:
         return False
 
+def check(requestIP,payload):
+    if block(requestIP,check=True): 
+        logging.info(f"{requestIP} in blocklist")
+        return 403,"IP blocked"
+    if len(payload) > 1000: 
+        logging.info(f"{requestIP} payload is to large")
+        return 413,"Payload to large"
+    return None,None
+
 @route('/connectivity',method='POST')
 def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
-    #check payload size
-    if len(request.data) > 1000:
-        logging.info(f"{requestIP} payload to huge")
-        return HTTPResponse(status=413, body="Payload to fat")
-    payload = json.load(request.body)
-    #check blocklist
-    if block(requestIP,check=True):
-        logging.info(f"{requestIP} in blocklist")
-        return HTTPResponse(status=403, body="IP Blocked")
+    status, body = check(requestIP,request.data)
+    if status: return HTTPResponse(status=status, body=body)
     #validate token
     if not isInternal and not validate.token(payload,tokens): 
         logging.info(f"Invalid Token from {requestIP}")
