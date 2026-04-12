@@ -205,8 +205,8 @@ def index():
     freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,payload['basePort'],isPeer)
     if not freeSubnet or not freeSubnetv6:
         connectMutex.release()
-        logging.info(f"Unable to allocate subnet for wireguard link, {requestIP}")
-        return HTTPResponse(status=500, body="Unable to allocate subnet for wireguard link.")
+        logging.info(f"Unable to allocate subnet for {requestIP}")
+        return HTTPResponse(status=500, body="Unable to allocate subnet.")
     #amneziawg
     amneziaConfig = wg.genAmneziaConfig()
     #check if amnezia is requested but also if we are using vanilla amnezia or with modded config
