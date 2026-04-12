@@ -261,6 +261,7 @@ def index():
     #check if interface exists
     if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
         logging.info(f"Invalid link from {requestIP}")
+        block(requestIP)
         return HTTPResponse(status=400, body="invalid link")
     #read private key
     with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
@@ -299,6 +300,7 @@ def index():
     #check if interface exists
     if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
         logging.info(f"Invalid link from {requestIP}")
+        block(requestIP)
         connectMutex.release()
         return HTTPResponse(status=400, body="invalid link")
     #read private key
