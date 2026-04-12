@@ -26,22 +26,15 @@ def gracefulExit(signal_number,stack_frame):
 signal.signal(signal.SIGINT, gracefulExit)
 signal.signal(signal.SIGTERM, gracefulExit)
 systemd.daemon.notify('READY=1')
-logger.info(f"Ready")
 
 diag = Diag(path,logger)
 waitUntil = 0
+logger.info(f"Ready")
 while not shutdown:
     currentTime = int(time.time())
     if currentTime > waitUntil:
-        #check for lock file
-        if os.path.isfile(f"{path}/cron/lock"): 
-            time.sleep(10)
-            continue
-        #we need a lock file, since rotate and diag could conflict with each other
-        open(f"{path}/cron/lock",'w').close()
+        logger.info(f"Running")
         diag.run()
-        #clear lock file
-        os.unlink(f"{path}/cron/lock")
-        waitUntil = currentTime + random.randint(3600,7200)
+        waitUntil = currentTime + random.randint(1800,3600)
     else:
-        time.sleep(10)
+        time.sleep(2)

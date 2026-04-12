@@ -1,8 +1,9 @@
-import ipaddress, threading, socket, random, logging, string, secrets, json, time, os, re
+import ipaddress, threading, socket, logging, string, secrets, json, time, os, re
 from bottle import HTTPResponse, route, run, request, template
 from logging.handlers import RotatingFileHandler
 from Class.wireguard import Wireguard
 from Class.templator import Templator
+from Class.validate import Validate
 from threading import Thread
 from random import randint
 from pathlib import Path
@@ -13,12 +14,14 @@ folder = os.path.dirname(os.path.realpath(__file__))
 #wireguard
 wg = Wireguard(folder)
 config = wg.getConfig()
+#validation
+validate = Validate()
 #pull subnetPrefix
 subnetPrefix = ".".join(config['subnet'].split(".")[:2])
 #templator
 templator = Templator()
 #logging
-level = "info"
+level = config['loglevel']
 levels = {'critical': logging.CRITICAL,'error': logging.ERROR,'warning': logging.WARNING,'info': logging.INFO,'debug': logging.DEBUG}
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(levels[level])
@@ -27,27 +30,17 @@ blocklist = {}
 #token
 tokens = {"connect":[],"peer":[]}
 for i in range(3):
-    token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=18))
+    token =  phrase = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(18))
     logging.info(f"Adding connect token {token}")
     tokens['connect'].append(token)
 for i in range(3):
-    token =  phrase = ''.join(random.choices(string.ascii_uppercase + string.digits, k=18))
+    token =  phrase = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(18))
     logging.info(f"Adding peer token {token}")
     tokens['peer'].append(token)
 try:
-    wg.saveJson(tokens,f"{folder}/tokens.json")
+    wg.saveFile(tokens,f"{folder}/tokens.json")
 except:
     logging.warning("Failed to write token file")
-
-def validateToken(payload):
-    if not "token" in payload: return False
-    token = re.findall(r"^([A-Za-z0-9/.=+]{18,60})$",payload['token'],re.MULTILINE | re.DOTALL)
-    if not token: return False
-    if "network" in payload and payload["network"] == "Peer":
-        if payload['token'] not in tokens['peer']: return False
-    else:
-        if payload['token'] not in tokens['connect']: return False
-    return True
 
 def block(requestIP,check=False):
     if check and requestIP not in blocklist:
@@ -58,31 +51,6 @@ def block(requestIP,check=False):
         del blocklist[requestIP]
     else:
         return True
-
-def validateID(id):
-    result = re.findall(r"^[0-9]{1,4}$",str(id),re.MULTILINE | re.DOTALL)
-    if not result: return False
-    return True
-
-def validatePort(port):
-    result = re.findall(r"^[0-9]{4,5}$",str(port),re.MULTILINE | re.DOTALL)
-    if not result: return False
-    return True
-
-def validateNetwork(network):
-    result = re.findall(r"^[A-Za-z]{3,6}$",network,re.MULTILINE | re.DOTALL)
-    if not result: return False
-    return True
-
-def validateLinkType(linkType):
-    linkTypes = ["default","wgobfs","ipt_xor","amneziawg"]
-    if linkType in linkTypes: return True
-    return False
-
-def validatePrefix(prefix):
-    result = re.findall(r"^[0-9.]{4,6}$",prefix,re.MULTILINE | re.DOTALL)
-    if not result: return False
-    return True
 
 def validateConnectivity(connectivity):
     if "ipv4" not in connectivity or "ipv6" not in connectivity: return False
@@ -103,7 +71,8 @@ def terminateLink(folder,interface,wait=True):
     return
 
 def getReqIP():
-    reqIP = request.environ.get('HTTP_X_REAL_IP') or request.environ.get('REMOTE_ADDR')
+    reqIP = request.environ.get('REMOTE_ADDR')
+    if request.environ.get('HTTP_X_REAL_IP') and request.environ.get('REMOTE_ADDR') == "127.0.0.1": reqIP = request.environ.get('HTTP_X_REAL_IP')
     logging.debug(f"{reqIP} connecting")
     if ipaddress.ip_address(reqIP).version == 6 and ipaddress.IPv6Address(reqIP).ipv4_mapped: return ipaddress.IPv6Address(reqIP).ipv4_mapped
     return reqIP
@@ -114,78 +83,100 @@ def getInternal(requestIP):
     except:
         return False
 
+def check(requestIP,request):
+    if block(requestIP,check=True): 
+        logging.info(f"{requestIP} in blocklist")
+        return 403,"IP blocked"
+    if request.content_length > 1000: 
+        logging.info(f"{requestIP} payload is to large")
+        return 413,"Payload to large"
+    return None,None
+
 @route('/connectivity',method='POST')
 def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
+    status, body = check(requestIP,request)
+    if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
-    #check blocklist
-    if block(requestIP,check=True):
-        logging.info(f"{requestIP} in blocklist")
-        return HTTPResponse(status=403, body="IP Blocked")
     #validate token
-    if not isInternal and not validateToken(payload): 
+    if not isInternal and not validate.token(payload,tokens): 
         logging.info(f"Invalid Token from {requestIP}")
         block(requestIP)
         return HTTPResponse(status=401, body="Invalid Token")
     geo = config['geo'] if "geo" in config else {}
     return HTTPResponse(status=200, body={'connectivity':config['connectivity'],'geo':geo,'linkTypes':config['linkTypes'],'subnetPrefix':subnetPrefix})
 
+@route('/neighbour',method='POST')
+def index():
+    #is available
+    if not config['modules']['neighbour']:
+        return HTTPResponse(status=400, body="Bad Request")
+    #grab IP
+    requestIP = getReqIP()
+    isInternal = getInternal(requestIP)
+    status, body = check(requestIP,request)
+    if status: return HTTPResponse(status=status, body=body)
+    payload = json.load(request.body)
+    #validate token
+    if not isInternal and not validate.token(payload,tokens): 
+        logging.info(f"Invalid Token from {requestIP}")
+        block(requestIP)
+        return HTTPResponse(status=401, body="Invalid Token")
+    neighbours = wg.getNeighbours()
+    return HTTPResponse(status=200, body=neighbours)
+
 @route('/connect', method='POST')
 def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
+    status, body = check(requestIP,request)
+    if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
-    #check blocklist
-    if block(requestIP,check=True):
-        logging.info(f"{requestIP} in blocklist")
-        return HTTPResponse(status=403, body="IP Blocked")
     #validate token
-    if not isInternal and not validateToken(payload): 
+    if not isInternal and not validate.token(payload,tokens): 
         logging.info(f"Invalid Token from {requestIP}")
         block(requestIP)
         return HTTPResponse(status=401, body="Invalid Token")
     #validate id
-    if not 'id' in payload or not validateID(payload['id']): 
+    if not 'id' in payload or not validate.id(payload['id']): 
         logging.info(f"Invalid ID from {requestIP}")
         return HTTPResponse(status=400, body="Invalid ID")
     #validate port
-    if "port" in payload and not validatePort(payload['port']): 
+    if "port" in payload and not validate.port(payload['port']): 
         logging.info(f"Invalid Port from {requestIP}")
         return HTTPResponse(status=400, body="Invalid Port")
     #validate prefix
-    if "prefix" in payload and not validatePrefix(payload['prefix']):
+    if "prefix" in payload and not validate.prefix(payload['prefix']):
         logging.info(f"Invalid Prefix from {requestIP}")
         return HTTPResponse(status=400, body="Invalid Prefix")
     #validate network
-    if "network" in payload and payload['network'] != "" and not validateNetwork(payload['network']):
+    if "network" in payload and payload['network'] != "" and not validate.network(payload['network']):
         logging.info(f"Invalid Network from {requestIP}")
         return HTTPResponse(status=400, body="Invalid Network")
     #validate linkType
-    if "linkType" in payload and not validateLinkType(payload['linkType']):
+    if "linkType" in payload and not validate.linkType(payload['linkType'],config):
         logging.info(f"Invalid linkType from {requestIP}")
         return HTTPResponse(status=400, body="Invalid linkType")
-    #validate area
-    if "area" in payload and not validateID(payload['area']):
-        logging.info(f"Invalid Area from {requestIP}")
-        return HTTPResponse(status=400, body="Invalid Area")
     #validate connectivity
     if "connectivity" in payload and not validateConnectivity(payload['connectivity']):
         logging.info(f"Invalid connectivity data from {requestIP}")
         return HTTPResponse(status=400, body="Invalid connectivity data")
+    #validate protocol
+    if not "protocol" in payload and not validate.protocol(payload['protocol']):
+        logging.info(f"Invalid protocol from {requestIP}")
+        return HTTPResponse(status=400, body="Invalid protocol")
     #prevent local connects
     if payload['id'] == config['id']:
         logging.info(f"Invalid connection from {requestIP}")
-        return HTTPResponse(status=400,body="Are you trying to connect to yourself?!")
+        return HTTPResponse(status=400,body="Invalid Origin")
     #defaults
     if not "connectivity" in payload: payload['connectivity'] = {"ipv4":"","ipv6":""}
     if not "linkType" in payload: payload['linkType'] = "default"
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
     if not "prefix" in payload: payload['prefix'] = f"{subnetPrefix}"
-    if not "area" in payload: payload['area'] = 0
     payload['basePort'] = config['basePort'] if not "port" in payload else payload['port']
-    if not "ipv6" in payload: payload['ipv6'] = False
     #initial
     if payload['initial']:
         routes = wg.cmd("birdc show route")[0]
@@ -195,25 +186,38 @@ def index():
             logging.info(f"ID Collision from {requestIP}")
             return HTTPResponse(status=416, body="Collision")
     #generate interface name
-    interfaceType = "v6" if payload['ipv6'] else ""
+    interfaceType = "v6" if payload['protocol'] == "ipv6" else ""
     interface = wg.getInterface(payload['id'],interfaceType,payload['network'])
     #check if interface exists
-    if os.path.isfile(f"{folder}/links/{interface}.sh") or os.path.isfile(f"{folder}/links/{interface}Serv.sh"):
+    if os.path.isfile(f"{folder}/links/{interface}.sh"):
         logging.info(f"Link already exists, {requestIP}")
         return HTTPResponse(status=412, body="Link already exists")
+    #connectivity blacklist check
+    if "connectivity" in payload and "blacklist" in payload['connectivity'] and "geo" in config and "countryCode" in config['geo']:
+        if config['geo']['countryCode'] in payload['connectivity']['blacklist']:
+            return HTTPResponse(status=451,body="Country blacklisted")
     #block any other requests to prevent issues regarding port and ip assignment
     connectMutex.acquire()
     #generate new key pair
     privateKeyServer, publicKeyServer = wg.genKeys()
     preSharedKey = wg.genPreShared()
     wgobfsSharedKey = secrets.token_urlsafe(24)
+    #switch to peer subnet if required
+    isPeer = True if payload['network'] == "peer" else False
     #load configs
     configs = wg.getConfigs(False)
-    freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,payload['basePort'])
+    freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,payload['basePort'],isPeer)
     if not freeSubnet or not freeSubnetv6:
         connectMutex.release()
-        logging.info(f"Unable to allocate subnet for wireguard link, {requestIP}")
-        return HTTPResponse(status=500, body="Unable to allocate subnet for wireguard link.")
+        logging.info(f"Unable to allocate subnet for {requestIP}")
+        return HTTPResponse(status=500, body="Unable to allocate subnet.")
+    #amneziawg
+    amneziaConfig = wg.genAmneziaConfig()
+    #check if amnezia is requested but also if we are using vanilla amnezia or with modded config
+    if payload['linkType'] == "amneziawg" and config['linkSettings']['awgGen'] and amneziaConfig:
+        payload["amneziawg"] = amneziaConfig
+        configAsString = ''.join(f"{k}:{v}," for k, v in amneziaConfig.items())
+        logging.info(f"Used config for amneziawg: {configAsString}")
     #generate wireguard config
     serverConfig = templator.genServer(interface,config,payload,freeSubnet,freeSubnetv6,freePort,wgobfsSharedKey)
     #save
@@ -222,8 +226,8 @@ def index():
     wg.saveFile(preSharedKey,f"{folder}/links/{interface}.pre")
     wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
     remotePublic = payload['connectivity']['ipv6'] if "v6" in interface else payload['connectivity']['ipv4']
-    linkConfig = {'remote':f"{payload['prefix']}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType']}
-    wg.saveJson(linkConfig,f"{folder}/links/{interface}.json")
+    linkConfig = {'remote':f"{payload['prefix']}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType'],"mtu":1412}
+    wg.saveFile(linkConfig,f"{folder}/links/{interface}.json")
     logging.debug(f"{interface} up")
     wg.setInterface(interface,"up")
     #check for dummy
@@ -235,17 +239,22 @@ def index():
         wg.setInterface("dummy","up")
     connectMutex.release()
     logging.info(f"{interface} created for {requestIP}")
-    return HTTPResponse(status=200, body={"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id']
-    ,'freeSubnet':wg.Network.getHost(freeSubnet),"freeSubnetv6":wg.Network.getHost(freeSubnetv6,"127"),'freePort':freePort,'connectivity':config['connectivity']})
+    response = {"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id'],'networkID':config['networkID']
+    ,'freeSubnet':wg.Network.getHost(freeSubnet),"freeSubnetv6":wg.Network.getHost(freeSubnetv6,"127"),'freePort':freePort,'connectivity':config['connectivity']}
+    #append config if amneziawg
+    if payload['linkType'] == "amneziawg" and config['linkSettings']['awgGen']: response["amneziawg"] = payload['amneziawg']
+    return HTTPResponse(status=200, body=response)
 
 @route('/update', method='PATCH')
 def index():
+    #is available
+    if not config['modules']['update']:
+        return HTTPResponse(status=400, body="Bad Request")
+    #grab IP
     requestIP = getReqIP()
+    status, body = check(requestIP,request)
+    if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
-    #check blocklist
-    if block(requestIP,check=True):
-        logging.info(f"{requestIP} in blocklist")
-        return HTTPResponse(status=403, body="IP Blocked")
     #validate interface name
     interface = re.findall(r"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
     if not interface: 
@@ -254,6 +263,7 @@ def index():
     #check if interface exists
     if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
         logging.info(f"Invalid link from {requestIP}")
+        block(requestIP)
         return HTTPResponse(status=400, body="invalid link")
     #read private key
     with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
@@ -264,37 +274,36 @@ def index():
         logging.info(f"Invalid public key from {requestIP}")
         block(requestIP)
         return HTTPResponse(status=400, body="invalid public key")
+    #always apply the mutex
+    updateMutex.acquire()
     #update
     wg.setInterface(payload['interface'],"down")
-    #since cost adjustments go through a pipe, there needs to be a mutex
-    if "cost" in payload: updateMutex.acquire()
     logging.info(f"{payload['interface']} updating link")
     wg.updateLink(payload['interface'],payload)
     wg.setInterface(payload['interface'],"up")
     #the pipe is fetched every 100ms, make sure we wait until the data is fetched
-    if "cost" in payload:
-        time.sleep(0.1)
-        updateMutex.release()
+    if "cost" in payload: time.sleep(0.1)
+    updateMutex.release()
     return HTTPResponse(status=200, body="link updated")
 
 @route('/disconnect', method='POST')
 def index():
     requestIP = getReqIP()
+    status, body = check(requestIP,request)
+    if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
-    #check blocklist
-    if block(requestIP,check=True):
-        logging.info(f"{requestIP} in blocklist")
-        return HTTPResponse(status=403, body="IP Blocked")
     #validate interface name
     interface = re.findall(r"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
     if not interface:
         logging.info(f"Invalid interface name from {requestIP}")
         return HTTPResponse(status=400, body="Invalid link name")
-    #support older versions that are using Serv
-    if os.path.isfile(f"{folder}/links/{payload['interface']}Serv.sh"): payload['interface'] = f"{payload['interface']}Serv"
+    #block any other requests to prevent issues regarding port and ip assignment
+    connectMutex.acquire()
     #check if interface exists
     if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
         logging.info(f"Invalid link from {requestIP}")
+        block(requestIP)
+        connectMutex.release()
         return HTTPResponse(status=400, body="invalid link")
     #read private key
     with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
@@ -304,6 +313,7 @@ def index():
     if payload['publicKeyServer'] != publicKeyServer:
         logging.info(f"Invalid public key from {requestIP}")
         block(requestIP)
+        connectMutex.release()
         return HTTPResponse(status=400, body="invalid public key")
     #terminate the link
     if "wait" in payload and payload['wait'] == False:
@@ -313,6 +323,7 @@ def index():
         termination = Thread(target=terminateLink, args=([folder,payload['interface']]))
         termination.start()
         logging.info(f"{payload['interface']} started termination thread")
+    connectMutex.release()
     return HTTPResponse(status=200, body="link terminated")
 
 listen = '::' if config['listen'] == "public" else f"{subnetPrefix}.{config['id']}.1"

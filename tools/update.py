@@ -21,9 +21,8 @@ python3 cli.py migrate
 exit
 systemctl restart wgmesh
 systemctl restart wgmesh-bird
-systemctl restart wgmesh-rotate
 systemctl restart wgmesh-diag
-EOF""",60)
+EOF""",120)
     print(resp)
 
 print("END")

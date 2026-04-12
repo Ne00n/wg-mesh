@@ -1,9 +1,14 @@
 #!/bin/bash
 set -e
+apt-get update
 apt install -y software-properties-common python3-launchpadlib gnupg2 linux-headers-$(uname -r)
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 57290828
-echo "deb https://ppa.launchpadcontent.net/amnezia/ppa/ubuntu focal main" | sudo tee -a /etc/apt/sources.list
-echo "deb-src https://ppa.launchpadcontent.net/amnezia/ppa/ubuntu focal main" | sudo tee -a /etc/apt/sources.list
+#apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 57290828
+sudo mkdir -p /etc/apt/keyrings
+sudo chmod 755 /etc/apt/keyrings
+gpg --keyserver keyserver.ubuntu.com --recv-keys 57290828
+gpg --export 57290828 | sudo tee /etc/apt/keyrings/amnezia.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/amnezia.gpg] https://ppa.launchpadcontent.net/amnezia/ppa/ubuntu focal main" | sudo tee -a /etc/apt/sources.list
+echo "deb-src [signed-by=/usr/share/keyrings/amnezia.gpg] https://ppa.launchpadcontent.net/amnezia/ppa/ubuntu focal main" | sudo tee -a /etc/apt/sources.list
 apt-get update
 apt-get install -y amneziawg
 echo "wg-mesh ALL=(ALL) NOPASSWD: /usr/bin/awg set*" >> /etc/sudoers.d/wg-mesh

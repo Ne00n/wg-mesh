@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
 if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
-apt-get install wireguard iptables bird2 sudo python3 python3-netaddr python3-paste python3-systemd python3-bottle python3-requests python3-pip fping mtr-tiny vnstat git -y
+apt-get install wireguard iptables bird2 sudo python3-netaddr python3-paste python3-systemd python3-bottle python3-requests fping mtr-tiny vnstat git -y
 cd /opt/
 #git
 git clone https://github.com/Ne00n/wg-mesh.git
 cd wg-mesh
-git checkout master
+git checkout experimental
 useradd wg-mesh -r -d /opt/wg-mesh -s /bin/bash
 #run init
 ./cli.py $@
@@ -46,6 +46,10 @@ echo "net.ipv4.conf.default.rp_filter=0" >> /etc/sysctl.d/wg-mesh.conf
 echo "net.core.default_qdisc=fq " >> /etc/sysctl.d/wg-mesh.conf
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.d/wg-mesh.conf
 echo "net.ipv6.conf.all.forwarding=1" >> /etc/sysctl.d/wg-mesh.conf
+echo "net.ipv4.tcp_low_latency=0" >> /etc/sysctl.d/wg-mesh.conf
+echo "net.ipv4.tcp_delayed_ack=0" >> /etc/sysctl.d/wg-mesh.conf
+echo "net.core.netdev_max_backlog = 1000" >> /etc/sysctl.d/wg-mesh.conf
+echo "kernel.sched_latency_ns = 20000000" >> /etc/sysctl.d/wg-mesh.conf
 sysctl --system
 #systemd wg-mesh service
 cp /opt/wg-mesh/configs/wgmesh.service /etc/systemd/system/wgmesh.service
@@ -56,6 +60,6 @@ systemctl enable wgmesh-bird && systemctl start wgmesh-bird
 #systemd pipe service
 cp /opt/wg-mesh/configs/wgmesh-pipe.service /etc/systemd/system/wgmesh-pipe.service
 systemctl enable wgmesh-pipe
-#systemd roate service
-cp /opt/wg-mesh/configs/wgmesh-rotate.service /etc/systemd/system/wgmesh-rotate.service
-systemctl enable wgmesh-rotate && systemctl start wgmesh-rotate
+#systemd diag service
+cp /opt/wg-mesh/configs/wgmesh-diag.service /etc/systemd/system/wgmesh-diag.service
+systemctl enable wgmesh-diag && systemctl start wgmesh-diag

@@ -1,15 +1,17 @@
 import random, time, json, re, os
 from Class.templator import Templator
 from Class.wireguard import Wireguard
+from Class.network import Network
 from Class.base import Base
 
 class Bird(Base):
     Templator = Templator()
 
     def __init__(self,path,logger):
-        self.config = self.readJson(f'{path}/configs/config.json')
-        self.subnetPrefixSplitted = self.config['subnet'].split(".")
+        super().__init__() 
+        self.config = self.readFile(f'{path}/configs/config.json')
         self.prefix = self.config['prefix']
+        self.Network = Network(self.config)
         self.wg = Wireguard(path)
         self.logger = logger
         self.path = path
@@ -21,20 +23,17 @@ class Bird(Base):
         if not latency:
             self.logger.warning("No pingable links found.")
             return False
-        for entry,row in latency.items():
-            row = row[2:] #drop the first 2 pings
-            row.sort()
+        for ip,pings in latency.items():
+            pings = pings[2:] #drop the first 2 pings
+            pings.sort()
         for data in list(targets):
-            for entry,row in latency.items():
-                if entry == data['target']:
-                    if len(row) < 5: self.logger.warning(f"Expected 5 pings, got {len(row)} from {data['target']}, possible Packetloss")
-                    data['cost'] = self.getAvrg(row,False)
-                    if data['cost'] == 65535: self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
-                    break
-                #apparently fping 4.2 and 5.0 result in different outputs, neat, so we keep this
-                elif data['target'] not in latency and not "latency" in data:
-                    self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
-                    data['cost'] = 65535
+            for ip,pings in latency.items():
+                if ip == data['target']:
+                    if len(pings) < 5: self.logger.warning(f"Expected 5 pings, got {len(pings)} from {data['target']}, possible Packetloss")
+                    current = int(self.getAvrg(pings) * 10)
+                    if current > 65534: current = 65534
+                    data['base'] = data['cost'] = current
+                    if data['cost'] == 65534: self.logger.warning(f"Cannot reach {data['nic']} {data['target']}")
                     break
         if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
         return targets
@@ -70,12 +69,12 @@ class Bird(Base):
             origin = ip+lastByte
             #Client or Server roll the dice or rather not, so we ping the correct ip
             target = self.resolve(f"{ip}{int(lastByte)+1}",origin,31)
-            if target == True:
-                targetIP = f"{ip}{int(lastByte)+1}"
+            subnet = f"{ip}0/30"
+            targetIP = f"{ip}{int(lastByte)+1}" if target else f"{ip}{int(lastByte)-1}"
+            if "peer" in nic: 
+                peers.append({'nic':nic,'target':targetIP,'origin':origin,"subnet":subnet})
             else:
-                targetIP = f"{ip}{int(lastByte)-1}"
-            if "Peer" in nic: peers.append({'nic':nic,'target':targetIP,'origin':origin})
-            result.append({'nic':nic,'target':targetIP,'origin':origin})
+                result.append({'nic':nic,'target':targetIP,'origin':origin,"subnet":subnet})
         return result,peers
 
     def bird(self,override=False,skipIperf=False):
@@ -102,12 +101,10 @@ class Bird(Base):
             #if client adjust base latency to avoid transit
             for data in latencyData:
                 linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",data['nic'], re.MULTILINE)[0]
-                if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 10000) < 65535: data['cost'] += 10000
+                if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 1000) < 65534: data['cost'] += 1000
         elif self.config['operationMode'] == 2:
             self.logger.info("IPerf messurement")
             latencyData = self.getIPerf(nodes)
-        latencyDataNoGroup = latencyData
-        latencyData = self.wg.groupByArea(latencyData)
         self.logger.info("Generating config")
         bird = self.Templator.genBird(latencyData,peers,self.config)
         if bird == "": 
@@ -117,7 +114,7 @@ class Bird(Base):
         self.saveFile(bird,'/etc/bird/bird.conf')
         self.logger.info("Reloading bird")
         self.cmd("sudo systemctl reload bird")
-        return latencyDataNoGroup,peers
+        return latencyData,peers
 
     def mesh(self):
         #check if bird is running
@@ -129,7 +126,7 @@ class Bird(Base):
         oldTargets,counter = [],0
         self.logger.info("Waiting for bird routes")
         for run in range(30):
-            targets = self.getRoutes(self.subnetPrefixSplitted)
+            targets = self.Network.getRoutes()
             self.logger.debug(f"Run {run}/30, Counter {counter}, Got {targets} as targets")
             if oldTargets != targets:
                 oldTargets = targets
@@ -149,48 +146,32 @@ class Bird(Base):
             splitted = ip.split(".")
             if not ip in vxlan: 
                 self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1 dst {ip}")
-                self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1v6 dst fd10:0:{splitted[2]}::1")
+                self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1v6 dst fd10:0:{splitted[2]}::1 permanent")
         #To prevent creating connections to new nodes joined afterwards, save state
         if os.path.isfile(f"{self.path}/configs/state.json"):
             self.logger.debug("state.json already exist, skipping")
         else:
-            #fetch network interfaces and parse
-            configs = self.cmd('ip addr show')[0]
-            links = self.getBirdLinks(configs,self.prefix,self.subnetPrefixSplitted)
+            #remove local machine from list
             localIP = f"{'.'.join(self.config['subnet'].split('.')[:2])}.{self.config['id']}.1"
+            targets = self.Network.filterLocalIP(targets,localIP)
+            #fetch network interfaces and parse
+            links = self.Network.getBirdLinks()
             if not links: 
                 self.logger.warning("No wireguard interfaces found") 
                 return False
-            #remove local machine from list
-            for ip in list(targets):
-                if self.resolve(localIP,ip.replace("/30",""),30):
-                    targets.remove(ip)
-            #run against existing links
-            for ip in list(targets):
-                for link in links:
-                    if self.resolve(link[1],ip.replace("/30",""),24):
-                        #multiple links in the same subnet
-                        if ip in targets: targets.remove(ip)
-            #run against local link names
-            for ip in list(targets):
-                for link in links:
-                    splitted = ip.split(".")
-                    if f"pipe{splitted[2]}" in link[0]:
-                        #multiple links in the same subnet
-                        if ip in targets: targets.remove(ip)
+            targets = self.Network.filterExisting(targets,links)
+            targets = self.Network.filterLocalLinks(targets,links)
+            targets = self.Network.filterIDs(targets)
             self.logger.info(f"Possible targets {targets}")
             #wireguard
             self.logger.info("meshing")
             results = {}
             for target in targets:
-                targetSplit = target.split(".")
-                #reserve 10.0.200+ for clients, don't mesh
-                if int(targetSplit[2]) >= 200: continue
                 dest = target.replace(".0/30",".1")
                 #no token needed but external IP for the client
                 self.logger.info(f"Setting up link to {dest}")
                 status = self.wg.connect(f"http://{dest}:{self.config['listenPort']}")
-                if status['v4'] or status['v6']:
+                if status['ipv4']['status'] or status['ipv6']['status']:
                     results[target] = True
                     self.logger.info(f"Link established to http://{dest}:{self.config['listenPort']}")
                 else:

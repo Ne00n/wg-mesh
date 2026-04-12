@@ -21,6 +21,7 @@
 
 **Features**<br>
 - [x] automatic mesh buildup when node has joined
+- [x] full mesh, partial mesh or autoMesh
 - [x] join nodes via cli
 - [x] disconnect nodes via cli
 - [x] VXLAN
@@ -29,7 +30,6 @@
 - [x] Autostart Wireguard links on boot
 - [x] Active Latency optimisation
 - [x] Packet loss detection & rerouting
-- [x] High Jitter detection & rerouting
 - [x] Support for wgobfs, ipt_xor and AmneziaWG
 - [x] Push notifications via gotify
 
@@ -51,9 +51,9 @@ Depending on what Subnet you are using, you either have to increment the ID's by
 If 10.0.x.x/16 is used (default), a /23 is reserved per node, hence you have to increment it by 2.<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 0 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 0 public
 #Install wg-mesh and initialize the second node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 2
 ```
 Grab the Token from Node 0<br>
 ```
@@ -70,11 +70,11 @@ Regarding NAT or in general behind Firewalls, the "connector" is always a Client
 **Example 2+ nodes**<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 0 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 0 public
 #Install wg-mesh and initialize the second node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 2
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 2
 #Install wg-mesh and initialize the third node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/master/install.sh | bash -s -- init 4
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 4
 ```
 Grab the Token from Node 0 with 
 ```
