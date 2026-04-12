@@ -30,11 +30,11 @@ blocklist = {}
 #token
 tokens = {"connect":[],"peer":[]}
 for i in range(3):
-    token =  phrase = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(18))
+    token =  phrase = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(32))
     logging.debug(f"Adding connect token {token}")
     tokens['connect'].append(token)
 for i in range(3):
-    token =  phrase = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(18))
+    token =  phrase = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(32))
     logging.debug(f"Adding peer token {token}")
     tokens['peer'].append(token)
 try:
