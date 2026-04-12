@@ -86,7 +86,7 @@ def check(requestIP,request):
     if block(requestIP,check=True): 
         logging.info(f"{requestIP} in blocklist")
         return 403,"IP blocked"
-    if len(request.content_length) > 1000: 
+    if request.content_length > 1000: 
         logging.info(f"{requestIP} payload is to large")
         return 413,"Payload to large"
     return None,None
