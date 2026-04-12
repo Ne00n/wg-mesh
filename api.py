@@ -71,7 +71,8 @@ def terminateLink(folder,interface,wait=True):
     return
 
 def getReqIP():
-    reqIP = request.environ.get('HTTP_X_REAL_IP') or request.environ.get('REMOTE_ADDR')
+    reqIP = request.environ.get('REMOTE_ADDR')
+    if request.environ.get('HTTP_X_REAL_IP') and request.environ.get('REMOTE_ADDR') == "127.0.0.1": reqIP = request.environ.get('HTTP_X_REAL_IP')
     logging.debug(f"{reqIP} connecting")
     if ipaddress.ip_address(reqIP).version == 6 and ipaddress.IPv6Address(reqIP).ipv4_mapped: return ipaddress.IPv6Address(reqIP).ipv4_mapped
     return reqIP
