@@ -272,10 +272,10 @@ def index():
         logging.info(f"Invalid public key from {requestIP}")
         block(requestIP)
         return HTTPResponse(status=400, body="invalid public key")
-    #update
-    wg.setInterface(payload['interface'],"down")
     #always apply the mutex
     updateMutex.acquire()
+    #update
+    wg.setInterface(payload['interface'],"down")
     logging.info(f"{payload['interface']} updating link")
     wg.updateLink(payload['interface'],payload)
     wg.setInterface(payload['interface'],"up")
