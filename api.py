@@ -86,6 +86,10 @@ def getInternal(requestIP):
 def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
+    #check payload size
+    if len(request.data) > 1000:
+        logging.info(f"{requestIP} payload to huge")
+        return HTTPResponse(status=413, body="Payload to fat")
     payload = json.load(request.body)
     #check blocklist
     if block(requestIP,check=True):
@@ -107,6 +111,10 @@ def index():
     #grab IP
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
+    #check payload size
+    if len(request.data) > 1000:
+        logging.info(f"{requestIP} payload to huge")
+        return HTTPResponse(status=413, body="Payload to fat")
     payload = json.load(request.body)
     #check blocklist
     if block(requestIP,check=True):
@@ -124,6 +132,10 @@ def index():
 def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
+    #check payload size
+    if len(request.data) > 1000:
+        logging.info(f"{requestIP} payload to huge")
+        return HTTPResponse(status=413, body="Payload to fat")
     payload = json.load(request.body)
     #check blocklist
     if block(requestIP,check=True):
@@ -248,6 +260,10 @@ def index():
         return HTTPResponse(status=400, body="Bad Request")
     #grab IP
     requestIP = getReqIP()
+    #check payload size
+    if len(request.data) > 1000:
+        logging.info(f"{requestIP} payload to huge")
+        return HTTPResponse(status=413, body="Payload to fat")
     payload = json.load(request.body)
     #check blocklist
     if block(requestIP,check=True):
@@ -286,6 +302,10 @@ def index():
 @route('/disconnect', method='POST')
 def index():
     requestIP = getReqIP()
+    #check payload size
+    if len(request.data) > 1000:
+        logging.info(f"{requestIP} payload to huge")
+        return HTTPResponse(status=413, body="Payload to fat")
     payload = json.load(request.body)
     #check blocklist
     if block(requestIP,check=True):
