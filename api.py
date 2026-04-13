@@ -86,7 +86,9 @@ def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
     status, body = check(requestIP,request)
-    if status: return HTTPResponse(status=status, body=body)
+    if status: 
+        logging.info(f"{body} from {requestIP}")
+        return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate token
     if not isInternal and not validate.token(payload,tokens): 
@@ -105,7 +107,9 @@ def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
     status, body = check(requestIP,request)
-    if status: return HTTPResponse(status=status, body=body)
+    if status: 
+        logging.info(f"{body} from {requestIP}")
+        return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate token
     if not isInternal and not validate.token(payload,tokens): 
@@ -121,7 +125,9 @@ def index():
     isInternal = getInternal(requestIP)
     #check blacklist + payload size
     status, body = check(requestIP,request)
-    if status: return HTTPResponse(status=status, body=body)
+    if status: 
+        logging.info(f"{body} from {requestIP}")
+        return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate token
     if not isInternal and not validate.token(payload,tokens): 
@@ -130,7 +136,9 @@ def index():
         return HTTPResponse(status=401, body="Invalid Token")
     #validate payload
     status, body = validate.connect(payload,config)
-    if status: return HTTPResponse(status=status, body=body)
+    if status: 
+        logging.info(f"{body} from {requestIP}")
+        return HTTPResponse(status=status, body=body)
     #defaults
     if not "connectivity" in payload: payload['connectivity'] = {"ipv4":"","ipv6":""}
     if not "network" in payload: payload['network'] = ""
@@ -206,7 +214,9 @@ def index():
     #grab IP
     requestIP = getReqIP()
     status, body = check(requestIP,request)
-    if status: return HTTPResponse(status=status, body=body)
+    if status: 
+        logging.info(f"{body} from {requestIP}")
+        return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate interface name
     interface = re.findall(r"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
@@ -243,7 +253,9 @@ def index():
 def index():
     requestIP = getReqIP()
     status, body = check(requestIP,request)
-    if status: return HTTPResponse(status=status, body=body)
+    if status: 
+        logging.info(f"{body} from {requestIP}")
+        return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate interface name
     interface = re.findall(r"^[A-Za-z0-9]{3,50}$",payload['interface'], re.MULTILINE)
