@@ -3,8 +3,9 @@ import ipaddress, re
 class Validate():
 
     def id(self,id):
-        result = re.findall(r"^[0-9]{1,4}$",str(id),re.MULTILINE | re.DOTALL)
+        result = re.findall(r"^[0-9]{1,3}$",str(id),re.MULTILINE | re.DOTALL)
         if not result: return False
+        if int(id) < 0 or int(id) > 250: return False
         return True
 
     def port(self,port):
