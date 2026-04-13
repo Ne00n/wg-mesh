@@ -52,17 +52,6 @@ def block(requestIP,check=False):
     else:
         return True
 
-def validateConnectivity(connectivity):
-    if "ipv4" not in connectivity or "ipv6" not in connectivity: return False
-    try:
-        if connectivity['ipv4']:
-            ip_obj = ipaddress.ip_address(connectivity['ipv4'])
-        if connectivity['ipv6']:
-            ip_obj = ipaddress.ip_address(connectivity['ipv6'])
-    except ValueError:
-        return False
-    return True
-
 def terminateLink(folder,interface,wait=True):
     wg = Wireguard(folder)
     if wait: time.sleep(2)
@@ -82,15 +71,6 @@ def getInternal(requestIP):
         return ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnet'])
     except:
         return False
-
-def check(requestIP,request):
-    if block(requestIP,check=True): 
-        logging.info(f"{requestIP} in blocklist")
-        return 403,"IP blocked"
-    if request.content_length > 1000: 
-        logging.info(f"{requestIP} payload is to large")
-        return 413,"Payload to large"
-    return None,None
 
 @route('/connectivity',method='POST')
 def index():
@@ -130,7 +110,8 @@ def index():
 def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
-    status, body = check(requestIP,request)
+    #check blacklist + payload size
+    status, body = validate.check(requestIP,request)
     if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate token
@@ -138,38 +119,9 @@ def index():
         logging.info(f"Invalid Token from {requestIP}")
         block(requestIP)
         return HTTPResponse(status=401, body="Invalid Token")
-    #validate id
-    if not 'id' in payload or not validate.id(payload['id']): 
-        logging.info(f"Invalid ID from {requestIP}")
-        return HTTPResponse(status=400, body="Invalid ID")
-    #validate port
-    if "port" in payload and not validate.port(payload['port']): 
-        logging.info(f"Invalid Port from {requestIP}")
-        return HTTPResponse(status=400, body="Invalid Port")
-    #validate prefix
-    if "prefix" in payload and not validate.prefix(payload['prefix']):
-        logging.info(f"Invalid Prefix from {requestIP}")
-        return HTTPResponse(status=400, body="Invalid Prefix")
-    #validate network
-    if "network" in payload and payload['network'] != "" and not validate.network(payload['network']):
-        logging.info(f"Invalid Network from {requestIP}")
-        return HTTPResponse(status=400, body="Invalid Network")
-    #validate linkType
-    if "linkType" in payload and not validate.linkType(payload['linkType'],config):
-        logging.info(f"Invalid linkType from {requestIP}")
-        return HTTPResponse(status=400, body="Invalid linkType")
-    #validate connectivity
-    if "connectivity" in payload and not validateConnectivity(payload['connectivity']):
-        logging.info(f"Invalid connectivity data from {requestIP}")
-        return HTTPResponse(status=400, body="Invalid connectivity data")
-    #validate protocol
-    if not "protocol" in payload and not validate.protocol(payload['protocol']):
-        logging.info(f"Invalid protocol from {requestIP}")
-        return HTTPResponse(status=400, body="Invalid protocol")
-    #prevent local connects
-    if payload['id'] == config['id']:
-        logging.info(f"Invalid connection from {requestIP}")
-        return HTTPResponse(status=400,body="Invalid Origin")
+    #validate payload
+    status, body = validate.connect(payload,config)
+    if status: return HTTPResponse(status=status, body=body)
     #defaults
     if not "connectivity" in payload: payload['connectivity'] = {"ipv4":"","ipv6":""}
     if not "linkType" in payload: payload['linkType'] = "default"

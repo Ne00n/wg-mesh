@@ -1,4 +1,4 @@
-import re
+import ipaddress, re
 
 class Validate():
 
@@ -42,3 +42,50 @@ class Validate():
         allowedProtocols = ["ipv4","ipv6"]
         if not protocol in allowedProtocols: return False
         return True
+
+    def validateConnectivity(connectivity):
+        if "ipv4" not in connectivity or "ipv6" not in connectivity: return False
+        try:
+            if connectivity['ipv4']:
+                ip_obj = ipaddress.ip_address(connectivity['ipv4'])
+            if connectivity['ipv6']:
+                ip_obj = ipaddress.ip_address(connectivity['ipv6'])
+        except ValueError:
+            return False
+        return True
+
+    def check(self,requestIP,request):
+        if block(requestIP,check=True): 
+            logging.info(f"{requestIP} in blocklist")
+            return 403,"IP blocked"
+        if request.content_length > 1000: 
+            logging.info(f"{requestIP} payload is to large")
+            return 413,"Payload to large"
+        return None,None
+
+    def connect(self,payload,config):
+        #validate id
+        if not 'id' in payload or not self.id(payload['id']): 
+            return 400,"Invalid ID"
+        #validate port
+        if "port" in payload and not self.port(payload['port']): 
+            return 400,"Invalid Port"
+        #validate prefix
+        if "prefix" in payload and not self.prefix(payload['prefix']): 
+            return 400,"Invalid Prefix"
+        #validate network
+        if "network" in payload and payload['network'] != "" and not self.network(payload['network']):
+            return 400,"Invalid Network"
+        #validate linkType
+        if "linkType" in payload and not self.linkType(payload['linkType'],config):
+            return 400,"Invalid linkType"
+        #validate connectivity
+        if "connectivity" in payload and not self.validateConnectivity(payload['connectivity']):
+            return 400,"Invalid connectivity data"
+        #validate protocol
+        if not "protocol" in payload and not self.protocol(payload['protocol']):
+            return 400,"Invalid protocol"
+        #prevent local connects
+        if payload['id'] == config['id']:
+            return 400,"Invalid Origin"
+        return None,None
