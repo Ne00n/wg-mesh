@@ -72,7 +72,7 @@ class Validate():
         if "network" in payload and payload['network'] != "" and not self.network(payload['network']):
             return 400,"Invalid Network"
         #validate linkType
-        if "linkType" in payload and not self.linkType(payload['linkType'],config):
+        if not "linkType" in payload or not self.linkType(payload['linkType'],config):
             return 400,"Invalid linkType"
         #validate connectivity
         if "connectivity" in payload and not self.validateConnectivity(payload['connectivity']):

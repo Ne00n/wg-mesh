@@ -133,7 +133,6 @@ def index():
     if status: return HTTPResponse(status=status, body=body)
     #defaults
     if not "connectivity" in payload: payload['connectivity'] = {"ipv4":"","ipv6":""}
-    if not "linkType" in payload: payload['linkType'] = "default"
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
     if not "prefix" in payload: payload['prefix'] = f"{subnetPrefix}"
