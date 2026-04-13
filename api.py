@@ -230,13 +230,6 @@ def index():
     wg.saveFile(linkConfig,f"{folder}/links/{interface}.json")
     logging.debug(f"{interface} up")
     wg.setInterface(interface,"up")
-    #check for dummy
-    if not "dummy" in configs:
-        logging.debug(f"Creating dummy")
-        dummyConfig = templator.genDummy(config,config['connectivity'])
-        wg.saveFile(dummyConfig,f"{folder}/links/dummy.sh")
-        logging.debug(f"dummy up")
-        wg.setInterface("dummy","up")
     connectMutex.release()
     logging.info(f"{interface} created for {requestIP}")
     response = {"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id'],'networkID':config['networkID']
