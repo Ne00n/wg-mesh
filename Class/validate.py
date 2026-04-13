@@ -42,6 +42,12 @@ class Validate():
             if payload['token'] not in tokens['connect']: return False
         return True
 
+    def interface(self,interface):
+        result = re.findall(r"^[A-Za-z0-9]{3,50}$",interface, re.MULTILINE)
+        if not result: 
+            return 400,"Invalid Interface"
+        return None,None
+
     def protocol(self,protocol):
         allowedProtocols = ["ipv4","ipv6"]
         if not protocol in allowedProtocols: return False
@@ -79,7 +85,7 @@ class Validate():
             return 400,"Invalid connectivity data"
         #validate protocol
         if not "protocol" in payload and not self.protocol(payload['protocol']):
-            return 400,"Invalid protocol"
+            return 400,"Invalid Protocol"
         #prevent local connects
         if payload['id'] == config['id']:
             return 400,"Invalid Origin"
