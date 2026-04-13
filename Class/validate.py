@@ -84,7 +84,7 @@ class Validate():
         if "connectivity" in payload and not self.validateConnectivity(payload['connectivity']):
             return 400,"Invalid connectivity data"
         #validate protocol
-        if not "protocol" in payload and not self.protocol(payload['protocol']):
+        if not "protocol" in payload or not self.protocol(payload['protocol']):
             return 400,"Invalid Protocol"
         #prevent local connects
         if payload['id'] == config['id']:
