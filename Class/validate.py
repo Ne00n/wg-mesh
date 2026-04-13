@@ -11,6 +11,7 @@ class Validate():
     def port(self,port):
         result = re.findall(r"^[0-9]{4,5}$",str(port),re.MULTILINE | re.DOTALL)
         if not result: return False
+        if int(port) < 1024 or int(port) > 65535: return False
         return True
 
     def network(self,network):
