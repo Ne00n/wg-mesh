@@ -54,15 +54,6 @@ class Validate():
             return False
         return True
 
-    def check(self,requestIP,request):
-        if block(requestIP,check=True): 
-            logging.info(f"{requestIP} in blocklist")
-            return 403,"IP blocked"
-        if request.content_length > 1000: 
-            logging.info(f"{requestIP} payload is to large")
-            return 413,"Payload to large"
-        return None,None
-
     def connect(self,payload,config):
         #validate id
         if not 'id' in payload or not self.id(payload['id']): 

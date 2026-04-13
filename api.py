@@ -66,6 +66,15 @@ def getReqIP():
     if ipaddress.ip_address(reqIP).version == 6 and ipaddress.IPv6Address(reqIP).ipv4_mapped: return ipaddress.IPv6Address(reqIP).ipv4_mapped
     return reqIP
 
+def check(requestIP,request):
+    if block(requestIP,check=True): 
+        logging.info(f"{requestIP} in blocklist")
+        return 403,"IP blocked"
+    if request.content_length > 1000: 
+        logging.info(f"{requestIP} payload is to large")
+        return 413,"Payload to large"
+    return None,None
+
 def getInternal(requestIP):
     try:
         return ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnet'])
@@ -76,7 +85,7 @@ def getInternal(requestIP):
 def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
-    status, body = validate.check(requestIP,request)
+    status, body = check(requestIP,request)
     if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate token
@@ -95,7 +104,7 @@ def index():
     #grab IP
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
-    status, body = validate.check(requestIP,request)
+    status, body = check(requestIP,request)
     if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate token
@@ -111,7 +120,7 @@ def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
     #check blacklist + payload size
-    status, body = validate.check(requestIP,request)
+    status, body = check(requestIP,request)
     if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate token
@@ -197,7 +206,7 @@ def index():
         return HTTPResponse(status=400, body="Bad Request")
     #grab IP
     requestIP = getReqIP()
-    status, body = validate.check(requestIP,request)
+    status, body = check(requestIP,request)
     if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate interface name
@@ -234,7 +243,7 @@ def index():
 @route('/disconnect', method='POST')
 def index():
     requestIP = getReqIP()
-    status, body = validate.check(requestIP,request)
+    status, body = check(requestIP,request)
     if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate interface name
