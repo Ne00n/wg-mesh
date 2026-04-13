@@ -43,7 +43,7 @@ class Validate():
         if not protocol in allowedProtocols: return False
         return True
 
-    def validateConnectivity(connectivity):
+    def validateConnectivity(self,connectivity):
         if "ipv4" not in connectivity or "ipv6" not in connectivity: return False
         try:
             if connectivity['ipv4']:
