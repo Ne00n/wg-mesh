@@ -76,7 +76,7 @@ def getInternal(requestIP):
 def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
-    status, body = check(requestIP,request)
+    status, body = validate.check(requestIP,request)
     if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate token
@@ -95,7 +95,7 @@ def index():
     #grab IP
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
-    status, body = check(requestIP,request)
+    status, body = validate.check(requestIP,request)
     if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate token
@@ -197,7 +197,7 @@ def index():
         return HTTPResponse(status=400, body="Bad Request")
     #grab IP
     requestIP = getReqIP()
-    status, body = check(requestIP,request)
+    status, body = validate.check(requestIP,request)
     if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate interface name
@@ -234,7 +234,7 @@ def index():
 @route('/disconnect', method='POST')
 def index():
     requestIP = getReqIP()
-    status, body = check(requestIP,request)
+    status, body = validate.check(requestIP,request)
     if status: return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate interface name
