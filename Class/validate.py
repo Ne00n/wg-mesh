@@ -20,6 +20,8 @@ class Validate():
         return True
 
     def linkType(self,linkType,config):
+        result = re.findall(r"^[A-Za-z]{5,15}$",linkType,re.MULTILINE | re.DOTALL)
+        if not result: return False
         linkTypes = ["default","wgobfs","ipt_xor","amneziawg"]
         if not linkType in linkTypes: return False
         if not linkType in config['linkTypes']: return False
