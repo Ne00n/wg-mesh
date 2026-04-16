@@ -47,7 +47,7 @@ while True:
 
     currentTime = int(time.time())
     if currentTime < waitUntil: 
-        time.sleep(10)
+        time.sleep(2)
         continue
     waitUntil = currentTime + random.randint(1800,3600)
 
