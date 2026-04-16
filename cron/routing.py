@@ -39,10 +39,15 @@ signal.signal(signal.SIGTERM, gracefulExit)
 systemd.daemon.notify('READY=1')
 files = os.listdir(f"{path}/data/")
 
+waitUntil = 0
 while True:
     if shutdown:
         print("Shutting down gracefully...")
         exit(0)
+
+    currentTime = int(time.time())
+    if currentTime < waitUntil: continue
+    waitUntil = currentTime + random.randint(1800,3600)
 
     print("Updating local asn's")
     for asn, settings in config['asnList'].items():
@@ -147,6 +152,7 @@ while True:
                 if latency and latency[0][1] < config['cutOff']:
                     rules += f'route {subnet} via "{config['nic']}";\n\r'
     tools.saveFile(rules,"/etc/bird/static.conf")
+    
     toWrite = {}
     print(f"Loop done")
     time.sleep(2)
