@@ -27,7 +27,7 @@ def sliceWorker(index):
 path = os.path.dirname(os.path.realpath(__file__))
 path = path.replace("/cron","")
 
-config = {"dataSrc": "https://routing.serv.app","nic":"eth0","asnList": {"32590":{}}}
+config = {"dataSrc": "https://routing.serv.app","cutOff":10,"nic":"eth0","asnList": {"32590":{}}}
 if not os.path.isfile(f"{path}/configs/asn.json"):
     with open(f"{path}/configs/asn.json", 'w') as f: json.dump(config, f)
 else:
@@ -137,14 +137,14 @@ while True:
         with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
     
     print("Generating static routes")
-    rules, cutoff = "", 10
+    rules = ""
     for file in files:
         if not file.endswith(".json"): continue
         print(f"Loading {file}")
         with open(f"{path}/data/{file}") as handle: pingable =  json.loads(handle.read())
         for prefix, rows in pingable.items():
             for subnet, latency in rows['data'].items():
-                if latency and latency[0][1] < cutoff:
+                if latency and latency[0][1] < config['cutOff']:
                     rules += f'route {subnet} via "{config['nic']}";\n\r'
     tools.saveFile(rules,"/etc/bird/static.conf")
     toWrite = {}
