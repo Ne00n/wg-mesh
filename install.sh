@@ -63,3 +63,6 @@ systemctl enable wgmesh-pipe
 #systemd diag service
 cp /opt/wg-mesh/configs/wgmesh-diag.service /etc/systemd/system/wgmesh-diag.service
 systemctl enable wgmesh-diag && systemctl start wgmesh-diag
+#systemd routing service
+#cp /opt/wg-mesh/configs/wgmesh-routing.service /etc/systemd/system/wgmesh-routing.service
+#systemctl enable wgmesh-routing && systemctl start wgmesh-routing
