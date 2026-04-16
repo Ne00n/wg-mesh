@@ -150,9 +150,10 @@ while True:
         for prefix, rows in pingable.items():
             for subnet, latency in rows['data'].items():
                 if latency and latency[0][1] < config['cutOff']:
-                    rules += f'route {subnet} via "{config['nic']}";\n\r'
+                    nic = config['nic']
+                    rules += f'route {subnet} via "{nic}";\n\r'
     tools.saveFile(rules,"/etc/bird/static.conf")
-    
+
     toWrite = {}
     print(f"Loop done")
     time.sleep(2)
