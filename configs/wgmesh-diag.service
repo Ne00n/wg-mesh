@@ -8,7 +8,6 @@ Group=wg-mesh
 Type=simple
 Restart=on-failure
 StandardOutput=null
-WorkingDirectory=/opt/wg-mesh
 WorkingDirectory=/opt/wg-mesh/cron
 ExecStart=/usr/bin/python3 diag.py
 [Install]
