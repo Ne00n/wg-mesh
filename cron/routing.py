@@ -144,7 +144,7 @@ while True:
         with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
     
     print("Generating static routes")
-    gateway = tools.cmd("ip route show default | awk '/default via / {print $3; exit}'")[0]
+    gateway = tools.cmd("ip route show default | awk '/default via / {print $3; exit}' | tr -d '\n'")[0]
     rules = ""
     for file in files:
         if not file.endswith(".json"): continue
@@ -153,7 +153,7 @@ while True:
         for prefix, rows in pingable.items():
             for subnet, latency in rows['data'].items():
                 if latency and latency[0][1] < config['cutOff']:
-                    rules += f'route {subnet} via "{gateway}";\n'
+                    rules += f'route {subnet} via {gateway}\n'
     tools.saveFile(rules,"/etc/bird/static.conf")
 
     toWrite = {}
