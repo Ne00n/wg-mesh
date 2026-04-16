@@ -131,6 +131,17 @@ while True:
                 asnData[prefix]['data'][row[0]] += row[1]
         with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
     
+    print("Generating static routes")
+    rules, cutoff = "", 10
+    for file in files:
+        if not file.endswith(".json"): continue
+        print(f"Loading {file}")
+        with open(f"{path}/data/{file}") as handle: pingable =  json.loads(handle.read())
+        for prefix, rows in pingable.items():
+            for subnet, latency in rows['data'].items():
+                if latency and latency[0[1]] < cutoff:
+                    rules += f'route {subnet} via "eth0";\n\r'
+    tools.saveFile(rules,"/etc/bird/static.conf")
     toWrite = {}
     print(f"Loop done")
     time.sleep(2)
