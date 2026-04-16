@@ -1,14 +1,15 @@
 [Unit]
-Description=asnlal service
+Description=wgmesh-routing service
 Wants=network-online.target
 After=network-online.target
 [Service]
 User=wg-mesh
 Group=wg-mesh
-Type=notify
+Type=simple
 CPUQuota=10%
 TimeoutSec=300
 Restart=on-failure
+StandardOutput=null
 WorkingDirectory=/opt/wg-mesh/cron
 ExecStart=/usr/bin/python3 routing.py
 [Install]
