@@ -168,7 +168,7 @@ protocol bgp '''+peer["nic"]+''' {
         template += "\n\nprotocol kernel {\n\tipv6 { export all; };\n}"
 
         if config['bird']['ospfv2']:
-            template += "\n\nfilter export_OSPF {\n\tif source ~ [ RTS_DEVICE ] then accept;"
+            template += "\n\nfilter export_OSPF {\n\tif source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;"
             for peerSubnet in config['AllowedPeers']:
                 template += f"\n\tif net ~ [ {peerSubnet} ] then accept;" 
             template += "\n\treject;\n}"
