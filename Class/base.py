@@ -1,4 +1,4 @@
-import subprocess, requests, netaddr, shutil, time, json, re, os
+import subprocess, ipaddress, requests, netaddr, shutil, time, json, re, os
 from ipaddress import ip_network
 from decimal import Decimal
 
@@ -142,3 +142,7 @@ class Base:
                 response += f"{entry}" if response.endswith("\n") or response == "" else f" {entry}"
             if i < len(list) -1: response += "\n"
         return response
+
+    def splitTo24(self,subnet):
+        network = ipaddress.ip_network(subnet)
+        return [str(subnet) for subnet in network.subnets(new_prefix=24)]
