@@ -139,7 +139,7 @@ while True:
         with open(f"{path}/data/{file}") as handle: pingable =  json.loads(handle.read())
         for prefix, rows in pingable.items():
             for subnet, latency in rows['data'].items():
-                if latency and latency[0[1]] < cutoff:
+                if latency and latency[0][1] < cutoff:
                     rules += f'route {subnet} via "eth0";\n\r'
     tools.saveFile(rules,"/etc/bird/static.conf")
     toWrite = {}
