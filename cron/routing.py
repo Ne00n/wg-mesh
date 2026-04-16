@@ -46,7 +46,9 @@ while True:
         exit(0)
 
     currentTime = int(time.time())
-    if currentTime < waitUntil: continue
+    if currentTime < waitUntil: 
+        time.sleep(10)
+        continue
     waitUntil = currentTime + random.randint(1800,3600)
 
     print("Updating local asn's")
