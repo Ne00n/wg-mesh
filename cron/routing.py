@@ -26,7 +26,12 @@ def sliceWorker(index):
 
 path = os.path.dirname(os.path.realpath(__file__))
 path = path.replace("/cron","")
-with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
+
+config = {"dataSrc": "https://routing.serv.app","nic":"eth0","asnList": {"32590":{}}}
+if not os.path.isfile(f"{path}/configs/asn.json"):
+    with open(f"{path}/configs/asn.json", 'w') as f: json.dump(config, f)
+else:
+    with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
 tools = Base()
 
 signal.signal(signal.SIGINT, gracefulExit)
@@ -140,7 +145,7 @@ while True:
         for prefix, rows in pingable.items():
             for subnet, latency in rows['data'].items():
                 if latency and latency[0][1] < cutoff:
-                    rules += f'route {subnet} via "eth0";\n\r'
+                    rules += f'route {subnet} via "{config['nic']}";\n\r'
     tools.saveFile(rules,"/etc/bird/static.conf")
     toWrite = {}
     print(f"Loop done")
