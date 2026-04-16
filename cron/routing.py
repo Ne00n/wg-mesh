@@ -153,7 +153,7 @@ while True:
             for subnet, latency in rows['data'].items():
                 if latency and latency[0][1] < config['cutOff']:
                     nic = config['nic']
-                    rules += f'route {subnet} via "{nic}";\n\r'
+                    rules += f'route {subnet} via "{nic}";\n'
     tools.saveFile(rules,"/etc/bird/static.conf")
 
     toWrite = {}
