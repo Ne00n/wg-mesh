@@ -1,4 +1,5 @@
-import multiprocessing as mp, systemd.daemon, hashlib, random, signal, json, time, os, sys
+import multiprocessing as mp, systemd.daemon, hashlib, logging, random, signal, json, time, os, sys
+from logging.handlers import RotatingFileHandler
 sys.path.append("..") # Adds higher directory to python modules path.
 from Class.base import Base
 
