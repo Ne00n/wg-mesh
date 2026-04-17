@@ -37,7 +37,6 @@ tools = Base()
 signal.signal(signal.SIGINT, gracefulExit)
 signal.signal(signal.SIGTERM, gracefulExit)
 systemd.daemon.notify('READY=1')
-files = os.listdir(f"{path}/data/")
 
 waitUntil = 0
 while True:
