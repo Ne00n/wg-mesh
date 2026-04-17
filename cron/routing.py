@@ -3,8 +3,7 @@ from logging.handlers import RotatingFileHandler
 sys.path.append("..") # Adds higher directory to python modules path.
 from Class.base import Base
 
-refresh, shutdown, = 0, False
-
+shutdown = False
 def gracefulExit(signal_number,stack_frame):
     global shutdown
     systemd.daemon.notify('STOPPING=1')
