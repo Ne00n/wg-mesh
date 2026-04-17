@@ -27,6 +27,14 @@ def sliceWorker(index):
 path = os.path.dirname(os.path.realpath(__file__))
 path = path.replace("/cron","")
 
+#logging
+level = "info"
+levels = {'critical': logging.CRITICAL,'error': logging.ERROR,'warning': logging.WARNING,'info': logging.INFO,'debug': logging.DEBUG}
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(levels[level])
+logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%d.%m.%Y %H:%M:%S',level=levels[level],handlers=[RotatingFileHandler(maxBytes=10000000,backupCount=5,filename=f"{path}/logs/routing.log"),stream_handler])
+logger = logging.getLogger()
+
 config = {"dataSrc": "https://routing.serv.app","cutOff":10,"asnList": {"32590":{}}}
 if not os.path.isfile(f"{path}/configs/asn.json"):
     with open(f"{path}/configs/asn.json", 'w') as f: json.dump(config, f)
@@ -41,7 +49,7 @@ systemd.daemon.notify('READY=1')
 waitUntil = 0
 while True:
     if shutdown:
-        print("Shutting down gracefully...")
+        logger.info("Stopping")
         exit(0)
 
     currentTime = int(time.time())
@@ -50,9 +58,9 @@ while True:
         continue
     waitUntil = currentTime + random.randint(1800,3600)
 
-    print("Updating local asn's")
+    logger.info("Updating local asn's")
     for asn, settings in config['asnList'].items():
-        print(f"Loading {asn}.json")
+        logger.info(f"Loading {asn}.json")
         success, req = tools.call(url=f"{config['dataSrc']}/seeds/{asn}.json",method="GET")
         if not success: continue
         pingable = req.json()
@@ -65,25 +73,25 @@ while True:
             try:
                 with open(f"{path}/data/{asn}.json") as handle: asnFile =  json.loads(handle.read())
             except Exception as e:
-                print(f"Error, failed to load {asn}: {e}")
+                logger.info(f"Error, failed to load {asn}: {e}")
                 if os.path.isfile(f"{path}/data/{asn}.json"): os.remove(f"{path}/data/{asn}.json")
                 continue
             for subnet in pingable:
                 if not subnet in asnFile:
-                    print(f"Adding {subnet} to {asn}")
+                    logger.info(f"Adding {subnet} to {asn}")
                     asnFile[subnet] = {"created":int(time.time()),"updated":0,"settings":"","data":{}}
             for subnet in list(asnFile):
                 if not subnet in list(pingable):
-                    print(f"Deleting {subnet} from {asn}")
+                    logger.info(f"Deleting {subnet} from {asn}")
                     del asnFile[subnet]
             with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnFile, f)
 
     subnets, mapping = [], {}
-    print("Processing local asn's")
+    logger.info("Processing local asn's")
     files = os.listdir(f"{path}/data/")
     for file in files:
         if not file.endswith(".json"): continue
-        print(f"Loading {file}")
+        logger.info(f"Loading {file}")
         with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
         success, req = tools.call(url=f"{config['dataSrc']}/seeds/{file}",method="GET")
         if not success: continue
@@ -101,11 +109,11 @@ while True:
             #print(f"{prefix} splitted into {len(tmpSubnets)} subnet(s)")
             for subnet in tmpSubnets: 
                 mapping[subnet] = {"file":file,"prefix":prefix}
-        print(f"Loaded {file}")
+        logger.info(f"Loaded {file}")
         #do one file at a time
         if subnets: break
 
-    print(f"Running {file} with {len(subnets)} subnets")
+    logger.info(f"Running {file} with {len(subnets)} subnets")
     if os.path.exists(f"{path}/results.jsonl"): os.remove(f"{path}/results.jsonl")
     pool = mp.Pool(processes=4, initializer=initWorker, initargs=(subnets,), maxtasksperchild=1000)
     try:
@@ -131,7 +139,7 @@ while True:
     if os.path.exists(f"{path}/results.jsonl"): os.remove(f"{path}/results.jsonl")
 
     for file, data in toWrite.items():
-        print(f"Writing file {file}")
+        logger.info(f"Writing file {file}")
         with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
         for prefix, subnets in data.items():
             days, hours = random.randint(6, 7), random.randint(22,24)
@@ -142,12 +150,12 @@ while True:
                 asnData[prefix]['data'][row[0]] += row[1]
         with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
     
-    print("Generating static routes")
+    logger.info("Generating static routes")
     gateway = tools.cmd("ip route show default | awk '/default via / {print $3; exit}' | tr -d '\n'")[0]
     rules = ""
     for file in files:
         if not file.endswith(".json"): continue
-        print(f"Loading {file}")
+        logger.info(f"Loading {file}")
         with open(f"{path}/data/{file}") as handle: pingable =  json.loads(handle.read())
         for prefix, rows in pingable.items():
             for subnet, latency in rows['data'].items():
@@ -156,5 +164,5 @@ while True:
     tools.saveFile(rules,"/etc/bird/static.conf")
 
     toWrite = {}
-    print(f"Loop done")
+    logger.info(f"Loop done")
     time.sleep(2)
