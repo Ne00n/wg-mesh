@@ -39,7 +39,7 @@ logger = logging.getLogger()
 gateway = tools.cmd("ip route show default | awk '/default via / {print $3; exit}' | tr -d '\n'")[0]
 config = {"dataSrc": "https://routing.serv.app","cutOff":10,"asnList": {"32590":{}}}
 if not os.path.isfile(f"{path}/configs/asn.json"):
-    with open(f"{path}/configs/asn.json", 'w') as f: json.dump(config, f)
+    with open(f"{path}/configs/asn.json", 'w') as f: json.dump(config, f, indent=4)
 else:
     with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
 
