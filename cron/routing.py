@@ -24,6 +24,7 @@ def sliceWorker(index):
         print(f"Error processing subnet {data['subnet']} on index {index}: {e}")
         return {}
 
+tools = Base()
 path = os.path.dirname(os.path.realpath(__file__))
 path = path.replace("/cron","")
 
@@ -41,7 +42,6 @@ if not os.path.isfile(f"{path}/configs/asn.json"):
     with open(f"{path}/configs/asn.json", 'w') as f: json.dump(config, f)
 else:
     with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
-tools = Base()
 
 signal.signal(signal.SIGINT, gracefulExit)
 signal.signal(signal.SIGTERM, gracefulExit)
