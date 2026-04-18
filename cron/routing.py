@@ -1,4 +1,4 @@
-import multiprocessing as mp, systemd.daemon, hashlib, logging, random, signal, json, time, os, sys
+import multiprocessing as mp, systemd.daemon, ipaddress, hashlib, logging, random, signal, json, time, os, sys
 from logging.handlers import RotatingFileHandler
 sys.path.append("..") # Adds higher directory to python modules path.
 from Class.base import Base
@@ -160,7 +160,7 @@ while True:
         toAggregate = []
         for prefix, rows in pingable.items():
             for subnet, latency in rows['data'].items():
-                if latency and latency[0][1] < config['cutOff']: toAggregate.append(subnet)
+                if latency and latency[0][1] < config['cutOff']: toAggregate.append(ipaddress.ip_network(subnet))
         aggregated = tools.aggregate(toAggregate)
         for subnet in aggregated:
             rules += f'route {subnet} via {gateway};\n'
