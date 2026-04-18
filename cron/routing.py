@@ -157,10 +157,13 @@ while True:
         if not file.endswith(".json"): continue
         logger.info(f"Loading {file}")
         with open(f"{path}/data/{file}") as handle: pingable =  json.loads(handle.read())
+        toAggregate = []
         for prefix, rows in pingable.items():
             for subnet, latency in rows['data'].items():
-                if latency and latency[0][1] < config['cutOff']:
-                    rules += f'route {subnet} via {gateway};\n'
+                if latency and latency[0][1] < config['cutOff']: toAggregate.append(subnet)
+        aggregated = tools.aggregate(toAggregate)
+        for subnet in aggregated:
+            rules += f'route {subnet} via {gateway};\n'
     tools.saveFile(rules,"/etc/bird/static.conf")
 
     toWrite = {}
