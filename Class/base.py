@@ -151,6 +151,9 @@ class Base:
         network = ipaddress.ip_network(subnet)
         return [str(ip) for ip in network]
 
+    def aggregate(self,subnets):
+        return [str(net) for net in ipaddress.collapse_addresses(subnets)]
+
     def processSubnet(self,data):
         results = []
         ips = self.getIPs(data['subnet'])
