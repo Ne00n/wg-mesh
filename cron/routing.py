@@ -35,6 +35,7 @@ stream_handler.setLevel(levels[level])
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%d.%m.%Y %H:%M:%S',level=levels[level],handlers=[RotatingFileHandler(maxBytes=10000000,backupCount=5,filename=f"{path}/logs/routing.log"),stream_handler])
 logger = logging.getLogger()
 
+gateway = tools.cmd("ip route show default | awk '/default via / {print $3; exit}' | tr -d '\n'")[0]
 config = {"dataSrc": "https://routing.serv.app","cutOff":10,"asnList": {"32590":{}}}
 if not os.path.isfile(f"{path}/configs/asn.json"):
     with open(f"{path}/configs/asn.json", 'w') as f: json.dump(config, f)
@@ -151,7 +152,6 @@ while True:
         with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
     
     logger.info("Generating static routes")
-    gateway = tools.cmd("ip route show default | awk '/default via / {print $3; exit}' | tr -d '\n'")[0]
     rules = ""
     for file in files:
         if not file.endswith(".json"): continue
