@@ -153,7 +153,7 @@ while True:
         with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
     
     logger.info("Generating static routes")
-    rules = ""
+    rules, toWrite = "", {}
     for file in files:
         if not file.endswith(".json"): continue
         logger.info(f"Loading {file}")
@@ -165,8 +165,9 @@ while True:
         aggregated = tools.aggregate(toAggregate)
         for subnet in aggregated:
             rules += f'route {subnet} via {gateway};\n'
+
+    pingable = {}
     tools.saveFile(rules,"/etc/bird/static.conf")
 
-    toWrite = {}
     logger.info(f"Loop done")
     time.sleep(2)
