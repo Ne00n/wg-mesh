@@ -87,7 +87,7 @@ while True:
                     del asnFile[subnet]
             with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnFile, f)
 
-    subnets, mapping = [], {}
+    subnets, mapping, asnFile = [], {}, {}
     logger.info("Processing local asn's")
     files = os.listdir(f"{path}/data/")
     for file in files:
