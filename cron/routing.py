@@ -110,7 +110,7 @@ while True:
             #print(f"{prefix} splitted into {len(tmpSubnets)} subnet(s)")
             for subnet in tmpSubnets: 
                 mapping[subnet] = {"file":file,"prefix":prefix}
-                #to reduce memory usage, we break after 10k
+            #to reduce memory usage, we break after 10k
             if len(subnets) > 10000: break
         #do one file at a time
         if subnets: break
