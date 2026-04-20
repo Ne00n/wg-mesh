@@ -77,14 +77,20 @@ while True:
                 logger.info(f"Error, failed to load {asn}: {e}")
                 if os.path.isfile(f"{path}/data/{asn}.json"): os.remove(f"{path}/data/{asn}.json")
                 continue
+            added = 0
             for subnet in pingable:
                 if not subnet in asnFile:
-                    logger.info(f"Adding {subnet} to {asn}")
+                    logger.debug(f"Adding {subnet} to {asn}")
+                    added += 1
                     asnFile[subnet] = {"created":int(time.time()),"updated":0,"settings":"","data":{}}
+            if added: logger.info(f"Added {added} subnets to AS{asn}")
+            deleted = 0
             for subnet in list(asnFile):
                 if not subnet in list(pingable):
-                    logger.info(f"Deleting {subnet} from {asn}")
+                    deleted += 1
+                    logger.debug(f"Deleting {subnet} from {asn}")
                     del asnFile[subnet]
+            if deleted: logger.info(f"Deleted {deleted} subnets from AS{asn}")
             with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnFile, f)
 
     subnets, mapping, asnFile = [], {}, {}
@@ -147,7 +153,7 @@ while True:
             days, hours = random.randint(6, 7), random.randint(22,24)
             asnData[prefix]['updated'] = int(time.time()) + (60*60*hours*days)
             if not "subnets" in asnData[prefix]: asnData[prefix]['data'] = {}
-            for row in subnets:
+            for row in subnets:  
                 if not subnet in asnData[prefix]['data']: asnData[prefix]['data'][row[0]] = []
                 asnData[prefix]['data'][row[0]] += row[1]
         with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
