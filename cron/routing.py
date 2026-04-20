@@ -65,6 +65,7 @@ while True:
         success, req = tools.call(url=f"{config['dataSrc']}/seeds/{asn}.json",method="GET")
         if not success: continue
         pingable = req.json()
+        if not pingable: continue
         asnFile = {}
         if not os.path.isfile(f"{path}/data/{asn}.json"):
             for subnet in pingable:
