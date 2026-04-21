@@ -161,10 +161,10 @@ while True:
     
     logger.info("Generating static routes")
     rules, toWrite = "", {}
-    for file in files:
-        if not file.endswith(".json"): continue
-        logger.info(f"Loading {file}")
-        with open(f"{path}/data/{file}") as handle: pingable =  json.loads(handle.read())
+    for asn in config['asnList']:
+        if not os.path.isfile(f"{path}/data/{asn}.json"): continue
+        logger.info(f"Loading {asn}")
+        with open(f"{path}/data/{asn}") as handle: pingable =  json.loads(handle.read())
         toAggregate = []
         for prefix, rows in pingable.items():
             for subnet, latency in rows['data'].items():
