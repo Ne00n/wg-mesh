@@ -165,7 +165,7 @@ while True:
     for asn in config['asnList']:
         if not os.path.isfile(f"{path}/data/{asn}.json"): continue
         logger.info(f"Loading {asn}")
-        with open(f"{path}/data/{asn}") as handle: pingable =  json.loads(handle.read())
+        with open(f"{path}/data/{asn}.json") as handle: pingable =  json.loads(handle.read())
         toAggregate = []
         for prefix, rows in pingable.items():
             for subnet, latency in rows['data'].items():
