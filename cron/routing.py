@@ -179,6 +179,11 @@ while True:
 
     pingable = {}
     tools.saveFile(rules,"/etc/bird/static.conf")
+    logger.debug("Reloading asn.json")
+    try:
+        with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
+    except:
+        logger.warning(f"Failed to reload asn.json")
 
     logger.info(f"Loop done")
     time.sleep(2)
