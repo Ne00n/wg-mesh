@@ -97,6 +97,7 @@ while True:
     subnets, mapping, asnFile = [], {}, {}
     logger.info("Processing local asn's")
     files = os.listdir(f"{path}/data/")
+    random.shuffle(files)
     for file in files:
         if not file.endswith(".json"): continue
         logger.info(f"Loading {file}")
