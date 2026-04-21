@@ -121,7 +121,10 @@ while True:
             #to reduce memory usage, we break after 10k
             if len(subnets) > config['batchSize']: break
         #do one file at a time
-        if subnets: break
+        if subnets: 
+            #skip wait until subnets is empty
+            waitUntil = 0
+            break
 
     logger.info(f"Running {file} with {len(subnets)} subnets")
     if os.path.exists(f"{path}/results.jsonl"): os.remove(f"{path}/results.jsonl")
