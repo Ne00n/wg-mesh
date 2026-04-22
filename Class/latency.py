@@ -80,7 +80,9 @@ class Latency(Base):
                     #get old latencyData before reload, so we have a better reference
                     oldLatencyData = self.getOldLatencyData(node['target'])
                     old = oldLatencyData['cost']
-                    #get average
+                    #get linkID
+                    linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",node['nic'], re.MULTILINE)[0]
+                    #get average latency
                     current = int(self.getAvrg(row) * 10)
                     if current > 65534: current = 65534
                     node['base'] = node['cost'] = current
@@ -113,8 +115,6 @@ class Latency(Base):
                         ongoingLoss += 1
 
                     total += 1
-                    #Grab linkID
-                    linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",node['nic'], re.MULTILINE)[0]
                     #if within 200-255 range (client) adjust base cost/weight to avoid transit
                     if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (node['cost'] + 1000) < 65534: node['cost'] += 1000
                     #make sure its always int
