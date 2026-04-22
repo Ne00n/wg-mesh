@@ -65,11 +65,14 @@ class Base:
         if any(network in entry for network in ignoreNetworks): return False
         return True
 
-    def getAvrg(self,row):
+    def getAvrg(self,row,isList=True):
         result,actual = 0,0
         if not row: return 65534
         for entry in row:
-            result += Decimal(entry[0])
+            if isList:
+                result += Decimal(entry[0])
+            else:
+                result += Decimal(entry)
             actual += 1
         #do not return 0, never, ever
         if result == 0: return 65534
