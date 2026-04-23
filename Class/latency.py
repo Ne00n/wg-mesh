@@ -85,12 +85,11 @@ class Latency(Base):
                     #get average latency
                     current = int(self.getAvrg(row) * 10)
                     if current > 65534: current = 65534
-                    if entry not in self.network: self.network[entry] = {"packetloss":{},"latency":[],"outages":0,"state":1}
-                    #if the destination ia a client, take the average from the last 100 pings
-                    if ( int(linkID) >= 200 or int(self.config['id']) >= 200 ) and self.network[entry]['latency']:
-                        current = int(self.getAvrg(self.network[entry]['latency'],False))
                     node['base'] = node['cost'] = current
                     if node['nic'] in self.linkState: node['cost'] += self.linkState[node['nic']]['cost']
+                    if entry not in self.network: self.network[entry] = {"packetloss":{},"latency":[],"outages":0,"state":1}
+                    #if latency doesn't exist in network.json create it
+                    if not "latency" in self.network[entry]: self.network[entry]['latency'] = []
                     #Save raw latency values per interface
                     for ping in row: self.network[entry]['latency'].append(float(ping[0]))
                     #Keep only the last 100 records
