@@ -66,7 +66,6 @@ title = {continent}
     menu = {node[1]}{id} | {city}
     title = {node[1]}{id} | {city}
     host = {node[0]}
-    alerts = startloss,someloss,bigloss,rttdetect,hostdown,lossdetect
     """
 
 base.saveFile(smokeping,"/etc/smokeping/config.d/wgmesh")
