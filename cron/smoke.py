@@ -46,13 +46,13 @@ menu = Top
 title = Network Latency Grapher
 remark = Welcome to the SmokePing website of xxx Company. Here you will learn all about the latency of our network.
 
++ Indirect
+
 """
 
 for continent,details in build.items():
     continent = continent.replace(" ","")
     smokeping += f"""
-
-+ Indirect
 
 ++ {continent}
 menu = {continent}
