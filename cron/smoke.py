@@ -63,7 +63,7 @@ title = {continent}
         for node in nodes:
             id = str(node[0].split(".")[2:3][0]).zfill(3)
             smokeping += f"""
-    ++ {node[1]}{id}
+    ++ {node[1]['geo']['countryCode']}{id}
 
     menu = {node[1]['geo']['countryCode']}{id} | {city}
     title = {node[1]['geo']['countryCode']}{id} | {city}
