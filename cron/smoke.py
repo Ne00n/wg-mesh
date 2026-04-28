@@ -34,7 +34,7 @@ build = {}
 for target,data in sortedData.items():
     if not data['geo']['continent'] in build: build[data['geo']['continent']] = {}
     if not data['geo']['city'] in build[data['geo']['continent']]: build[data['geo']['continent']][data['geo']['city']] = []
-    build[data['geo']['continent']][data['geo']['city']].append([target,data['geo']['countryCode']])
+    build[data['geo']['continent']][data['geo']['city']].append([target,data])
 
 smokeping = """
 
@@ -63,8 +63,8 @@ title = {continent}
             smokeping += f"""
     ++ {node[1]}{id}
 
-    menu = {node[1]}{id} | {city}
-    title = {node[1]}{id} | {city}
+    menu = {node[1]['geo']['countryCode']}{id} | {city}
+    title = {node[1]['geo']['countryCode']}{id} | {city}
     host = {node[0]}
     """
 
