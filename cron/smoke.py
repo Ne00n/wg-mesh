@@ -69,4 +69,4 @@ title = {continent}
     alerts = startloss,someloss,bigloss,rttdetect,hostdown,lossdetect
     """
 
-base.saveFile(smokeping,"/etc/smokeping/config.d/Targets")
+base.saveFile(smokeping,"/etc/smokeping/config.d/wgmesh")
