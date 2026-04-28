@@ -52,7 +52,9 @@ for continent,details in build.items():
     continent = continent.replace(" ","")
     smokeping += f"""
 
-+ {continent}
++ Indirect
+
+++ {continent}
 menu = {continent}
 title = {continent}
 
