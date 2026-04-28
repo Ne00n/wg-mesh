@@ -92,7 +92,7 @@ title = {continent}
     for city, nodes in details.items():
         for node in nodes:
             id = str(node[0].split(".")[2:3][0]).zfill(3)
-            host = {node[1]['connectivity']['ipv4']} if node[1]['connectivity']['ipv4'] else {node[1]['connectivity']['ipv6']}
+            host = node[1]['connectivity']['ipv4'] if node[1]['connectivity']['ipv4'] else node[1]['connectivity']['ipv6']
             smokeping += f"""
     +++ {node[1]['geo']['countryCode']}{id}
 
