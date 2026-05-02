@@ -165,6 +165,7 @@ class Base:
             if not result: continue
             for subnet, details in result.items():
                 avg = self.getAvrg(details)
-                results.append([subnet.split(".")[-1],int(avg)])
+                #results.append([subnet.split(".")[-1],int(avg)])
+                results.append(int(avg))
             if not "any" in data['details']['settings']: break
         return {data['subnet']:results}

@@ -69,7 +69,7 @@ while True:
         asnFile = {}
         if not os.path.isfile(f"{path}/data/{asn}.json"):
             for subnet in pingable:
-                if not subnet in asnFile: asnFile[subnet] = {"created":int(time.time()),"updated":0,"settings":"","data":{}}
+                if not subnet in asnFile: asnFile[subnet] = {"created":int(time.time()),"updated":0,"settings":"","subnets":{}}
             with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnFile, f)
         else:
             try:
@@ -83,7 +83,7 @@ while True:
                 if not subnet in asnFile:
                     logger.debug(f"Adding {subnet} to {asn}")
                     added += 1
-                    asnFile[subnet] = {"created":int(time.time()),"updated":0,"settings":"","data":{}}
+                    asnFile[subnet] = {"created":int(time.time()),"updated":0,"settings":"","subnets":{}}
             if added: logger.info(f"Added {added} subnets to AS{asn}")
             deleted = 0
             for subnet in list(asnFile):
@@ -157,10 +157,12 @@ while True:
         for prefix, subnets in data.items():
             days, hours = random.randint(6, 7), random.randint(22,24)
             asnData[prefix]['updated'] = int(time.time()) + (60*60*hours*days)
-            if not "subnets" in asnData[prefix]: asnData[prefix]['data'] = {}
-            for row in subnets:  
-                if not subnet in asnData[prefix]['data']: asnData[prefix]['data'][row[0]] = []
-                asnData[prefix]['data'][row[0]] += row[1]
+            if not "subnets" in asnData[prefix]: asnData[prefix]['subnets'] = {}
+            for row in subnets:
+                if not row[0] in asnData[prefix]['subnets']: asnData[prefix]['subnets'][row[0]] = []
+                avrg = tools.getAvrg(row[1])
+                asnData[prefix]['subnets'][row[0]].append(int(avrg))
+                asnData[prefix]['subnets'][row[0]][-20:]
         with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
     
     logger.info("Generating static routes")
@@ -171,8 +173,12 @@ while True:
         with open(f"{path}/data/{asn}.json") as handle: pingable =  json.loads(handle.read())
         toAggregate = []
         for prefix, rows in pingable.items():
-            for subnet, latency in rows['data'].items():
-                if latency and latency[0][1] < config['cutOff']: toAggregate.append(ipaddress.ip_network(subnet))
+            for subnet, latency in rows['subnets'].items():
+                if not latency:
+                    logger.warning(f"Missing latency for {subnet}")
+                    continue
+                avrg = tools.getAvrg(latency)
+                if avrg < config['cutOff']: toAggregate.append(ipaddress.ip_network(subnet))
         aggregated = tools.aggregate(toAggregate)
         for subnet in aggregated:
             rules += f'route {subnet} via {gateway};\n'
