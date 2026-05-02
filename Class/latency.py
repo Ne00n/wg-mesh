@@ -91,7 +91,7 @@ class Latency(Base):
                     #if latency doesn't exist in network.json create it
                     if not "latency" in self.network[entry]: self.network[entry]['latency'] = []
                     #Save raw latency values per interface
-                    for ping in row: self.network[entry]['latency'].append(float(ping[0]))
+                    for ping in row: self.network[entry]['latency'].append(float(ping))
                     #Keep only the last 100 records
                     self.network[entry]['latency'] = self.network[entry]['latency'][-100:]
                     #Packetloss
