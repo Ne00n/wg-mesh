@@ -155,7 +155,7 @@ while True:
         logger.info(f"Writing file {file}")
         with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
         for prefix, subnets in data.items():
-            days, hours = random.randint(6, 7), random.randint(22,24)
+            days, hours = random.randint(2, 4), random.randint(22,24)
             asnData[prefix]['updated'] = int(time.time()) + (60*60*hours*days)
             if not "subnets" in asnData[prefix]: asnData[prefix]['subnets'] = {}
             for row in subnets:
