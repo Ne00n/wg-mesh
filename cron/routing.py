@@ -162,7 +162,7 @@ while True:
                 if not row[0] in asnData[prefix]['subnets']: asnData[prefix]['subnets'][row[0]] = []
                 avrg = tools.getAvrg(row[1])
                 asnData[prefix]['subnets'][row[0]].append(int(avrg))
-                asnData[prefix]['subnets'][row[0]][-20:]
+                asnData[prefix]['subnets'][row[0]][-5:]
         with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
     
     logger.info("Generating static routes")
