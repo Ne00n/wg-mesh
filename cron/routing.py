@@ -173,6 +173,9 @@ while True:
         with open(f"{path}/data/{asn}.json") as handle: pingable =  json.loads(handle.read())
         toAggregate = []
         for prefix, rows in pingable.items():
+            if not "subnets" in rows:
+                logger.warning(f"Missing subnets for {prefix}")
+                continue
             for subnet, latency in rows['subnets'].items():
                 if not latency:
                     logger.warning(f"Missing latency for {subnet}")
