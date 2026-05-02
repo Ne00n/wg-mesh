@@ -174,11 +174,11 @@ while True:
         toAggregate = []
         for prefix, rows in pingable.items():
             if not "subnets" in rows:
-                logger.warning(f"Missing subnets for {prefix}")
+                logger.warning(f"Missing subnets for {prefix} in {asn}.json")
                 continue
             for subnet, latency in rows['subnets'].items():
                 if not latency:
-                    logger.warning(f"Missing latency for {subnet}")
+                    logger.warning(f"Missing latency for {subnet} in {asn}.json")
                     continue
                 avrg = tools.getAvrg(latency)
                 if avrg < config['cutOff']: toAggregate.append(ipaddress.ip_network(subnet))
