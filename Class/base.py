@@ -65,11 +65,11 @@ class Base:
         if any(network in entry for network in ignoreNetworks): return False
         return True
 
-    def getAvrg(self,row):
+    def getAvrg(self,pings):
         result,actual = 0,0
-        if not row: return 65534
-        for entry in row:
-            result += Decimal(entry[0])
+        if not pings: return 65534
+        for ping in pings:
+            result += Decimal(ping)
             actual += 1
         #do not return 0, never, ever
         if result == 0: return 65534
@@ -89,7 +89,7 @@ class Base:
         for row in parsed:
             for ip,ms,loss in row:
                 if ms == "timed out": continue
-                latency[ip].append([ms,loss])
+                latency[ip].append(ms)
         return latency
 
     def iperf(self,target):
