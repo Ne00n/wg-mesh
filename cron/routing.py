@@ -61,7 +61,7 @@ while True:
 
     logger.info("Updating local asn's")
     for asn, settings in config['asnList'].items():
-        logger.info(f"Loading {asn}.json")
+        logger.debug(f"Loading {asn}.json")
         success, req = tools.call(url=f"{config['dataSrc']}/seeds/{asn}.json",method="GET")
         if not success: continue
         pingable = req.json()
@@ -100,7 +100,7 @@ while True:
     random.shuffle(files)
     for file in files:
         if not file.endswith(".json"): continue
-        logger.info(f"Loading {file}")
+        logger.debug(f"Loading {file}")
         with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
         success, req = tools.call(url=f"{config['dataSrc']}/seeds/{file}",method="GET")
         if not success: continue
@@ -169,7 +169,7 @@ while True:
     rules, toWrite = "", {}
     for asn in config['asnList']:
         if not os.path.isfile(f"{path}/data/{asn}.json"): continue
-        logger.info(f"Loading {asn}")
+        logger.debug(f"Loading {asn}")
         with open(f"{path}/data/{asn}.json") as handle: pingable =  json.loads(handle.read())
         toAggregate = []
         for prefix, rows in pingable.items():
