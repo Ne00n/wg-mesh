@@ -182,7 +182,12 @@ while True:
                     logger.warning(f"Missing latency for {subnet} in {asn}.json")
                     continue
                 avrg = tools.getAvrg(latency)
-                cutoff = details['location'][str(config['id'])]['cutoff'] if "location" in details and str(config['id']) in details['location'] else asnConfig['cutOff']
+                if "location" in details and str(config['id']) in details['location']:
+                    minimum = details['location'][str(config['id'])]['minimum']
+                    cutoff = details['location'][str(config['id'])]['cutoff']
+                else:
+                    cutoff, minimum = 5, 0
+                if avrg <= minimum: continue
                 if avrg < cutoff: toAggregate.append(ipaddress.ip_network(subnet))
         aggregated = tools.aggregate(toAggregate)
         for subnet in aggregated:
