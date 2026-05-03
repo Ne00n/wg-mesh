@@ -187,7 +187,7 @@ while True:
                     cutoff = details['location'][str(config['id'])]['cutoff']
                 else:
                     cutoff, minimum = 5, 0
-                if avrg <= minimum: continue
+                if avrg < minimum: continue
                 if avrg < cutoff: toAggregate.append(ipaddress.ip_network(subnet))
         aggregated = tools.aggregate(toAggregate)
         for subnet in aggregated:
