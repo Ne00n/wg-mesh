@@ -37,11 +37,11 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%d.%
 logger = logging.getLogger()
 
 gateway = tools.cmd("ip route show default | awk '/default via / {print $3; exit}' | tr -d '\n'")[0]
-config = {"dataSrc": "https://routing.serv.app","batchSize":5000,"cutOff":5,"asnList": {"32590":{}}}
+asnConfig = {"dataSrc": "https://routing.serv.app","batchSize":5000,"cutOff":5,"asnList": {"32590":{}}}
 if not os.path.isfile(f"{path}/configs/asn.json"):
-    with open(f"{path}/configs/asn.json", 'w') as f: json.dump(config, f, indent=4)
+    with open(f"{path}/configs/asn.json", 'w') as f: json.dump(asnConfig, f, indent=4)
 else:
-    with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
+    with open(f"{path}/configs/asn.json") as handle: asnConfig =  json.loads(handle.read())
 
 signal.signal(signal.SIGINT, gracefulExit)
 signal.signal(signal.SIGTERM, gracefulExit)
@@ -60,9 +60,9 @@ while True:
     waitUntil = currentTime + random.randint(1800,3600)
 
     logger.info("Updating local asn's")
-    for asn, settings in config['asnList'].items():
+    for asn, settings in asnConfig['asnList'].items():
         logger.debug(f"Loading {asn}.json")
-        success, req = tools.call(url=f"{config['dataSrc']}/seeds/{asn}.json",method="GET")
+        success, req = tools.call(url=f"{asnConfig['dataSrc']}/seeds/{asn}.json",method="GET")
         if not success: continue
         pingable = req.json()
         if not pingable: continue
@@ -102,7 +102,7 @@ while True:
         if not file.endswith(".json"): continue
         logger.debug(f"Loading {file}")
         with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
-        success, req = tools.call(url=f"{config['dataSrc']}/seeds/{file}",method="GET")
+        success, req = tools.call(url=f"{asnConfig['dataSrc']}/seeds/{file}",method="GET")
         if not success: continue
         pingable = req.json()
         for prefix, details in asnData.items():
@@ -119,7 +119,7 @@ while True:
             for subnet in tmpSubnets: 
                 mapping[subnet] = {"file":file,"prefix":prefix}
             #to reduce memory usage, we break after 10k
-            if len(subnets) > config['batchSize']: break
+            if len(subnets) > asnConfig['batchSize']: break
         #do one file at a time
         if subnets: 
             #skip wait until subnets is empty
@@ -167,7 +167,7 @@ while True:
     
     logger.info("Generating static routes")
     rules, toWrite = "", {}
-    for asn in config['asnList']:
+    for asn in asnConfig['asnList']:
         if not os.path.isfile(f"{path}/data/{asn}.json"): continue
         logger.debug(f"Loading {asn}")
         with open(f"{path}/data/{asn}.json") as handle: pingable =  json.loads(handle.read())
@@ -181,7 +181,7 @@ while True:
                     logger.warning(f"Missing latency for {subnet} in {asn}.json")
                     continue
                 avrg = tools.getAvrg(latency)
-                if avrg < config['cutOff']: toAggregate.append(ipaddress.ip_network(subnet))
+                if avrg < asnConfig['cutOff']: toAggregate.append(ipaddress.ip_network(subnet))
         aggregated = tools.aggregate(toAggregate)
         for subnet in aggregated:
             rules += f'route {subnet} via {gateway};\n'
@@ -190,7 +190,7 @@ while True:
     tools.saveFile(rules,"/etc/bird/static.conf")
     logger.debug("Reloading asn.json")
     try:
-        with open(f"{path}/configs/asn.json") as handle: config =  json.loads(handle.read())
+        with open(f"{path}/configs/asn.json") as handle: asnConfig =  json.loads(handle.read())
     except:
         logger.warning(f"Failed to reload asn.json")
 
