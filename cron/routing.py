@@ -89,9 +89,8 @@ while True:
                     asnFile[subnet] = {"created":int(time.time()),"updated":0,"settings":"","subnets":{}}
             if added: logger.info(f"Added {added} subnets to AS{asn}")
             deleted = 0
-            pingableSet = set(pingable)
             for subnet in list(asnFile):
-                if not subnet in list(pingableSet):
+                if not subnet in pingable:
                     deleted += 1
                     logger.debug(f"Deleting {subnet} from {asn}")
                     del asnFile[subnet]
