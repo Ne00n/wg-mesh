@@ -48,7 +48,7 @@ signal.signal(signal.SIGINT, gracefulExit)
 signal.signal(signal.SIGTERM, gracefulExit)
 systemd.daemon.notify('READY=1')
 
-waitUntil = 0
+waitUntil, updated = 0, {}
 while True:
     if shutdown:
         logger.info("Stopping")
@@ -62,6 +62,8 @@ while True:
 
     logger.info("Updating local asn's")
     for asn, settings in asnConfig['asnList'].items():
+        if not asn in updated: updated[asn] = 0
+        if updated[asn] > int(time.time()): continue
         logger.debug(f"Loading {asn}.json")
         success, req = tools.call(url=f"{asnConfig['dataSrc']}/seeds/{asn}.json",method="GET")
         if not success: continue
@@ -94,6 +96,8 @@ while True:
                     del asnFile[subnet]
             if deleted: logger.info(f"Deleted {deleted} subnets from AS{asn}")
             with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnFile, f)
+        #already processed asn files will be on cooldown for 24 hours
+        if not asn in updated: updated[asn] = int(time.time()) + (60*60*24)
 
     subnets, mapping, asnFile = [], {}, {}
     logger.info("Processing local asn's")
