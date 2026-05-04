@@ -89,8 +89,9 @@ while True:
                     asnFile[subnet] = {"created":int(time.time()),"updated":0,"settings":"","subnets":{}}
             if added: logger.info(f"Added {added} subnets to AS{asn}")
             deleted = 0
+            pingableSet = set(pingable)
             for subnet in list(asnFile):
-                if not subnet in list(pingable):
+                if not subnet in list(pingableSet):
                     deleted += 1
                     logger.debug(f"Deleting {subnet} from {asn}")
                     del asnFile[subnet]
@@ -99,7 +100,7 @@ while True:
         #already processed asn files will be on cooldown for 24 hours
         if not asn in updated: updated[asn] = int(time.time()) + (60*60*24)
 
-    subnets, mapping, asnFile = [], {}, {}
+    subnets, mapping, asnFile, pingable = [], {}, {}, {}
     logger.info("Processing local asn's")
     files = os.listdir(f"{path}/data/")
     random.shuffle(files)
