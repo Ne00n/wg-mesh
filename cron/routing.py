@@ -97,7 +97,7 @@ while True:
             if deleted: logger.info(f"Deleted {deleted} subnets from AS{asn}")
             with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnFile, f)
         #already processed asn files will be on cooldown for 24 hours
-        if not asn in updated: updated[asn] = int(time.time()) + (60*60*24*2)
+        updated[asn] = int(time.time()) + (60*60*24*2)
 
     subnets, mapping, asnFile, pingable = [], {}, {}, {}
     logger.info("Processing local asn's")
