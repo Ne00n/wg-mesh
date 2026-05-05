@@ -114,14 +114,10 @@ while True:
             #ignore ipv6 for now
             if "::" in prefix: continue
             if details['updated'] > int(time.time()): continue
-            tmpSubnets = tools.splitTo24(prefix)
-            for subnet in tmpSubnets: 
-                if not subnet in pingable: 
-                    #print(f"Skipping {subnet}, not pingable")
-                    continue
-                subnets.append({"subnet":subnet,"details":details,"pingable":pingable[subnet]})
+            for subnet, octects in pingable[prefix].items():
+                subnets.append({"subnet":subnet,"details":details,"pingable":octects})
             #print(f"{prefix} splitted into {len(tmpSubnets)} subnet(s)")
-            for subnet in tmpSubnets: 
+            for subnet in list(pingable[prefix]): 
                 mapping[subnet] = {"file":file,"prefix":prefix}
             #to reduce memory usage, we break after 10k
             if len(subnets) > asnConfig['batchSize']: break
