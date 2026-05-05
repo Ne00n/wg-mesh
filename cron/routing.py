@@ -71,8 +71,8 @@ while True:
         if not pingable: continue
         asnFile = {}
         if not os.path.isfile(f"{path}/data/{asn}.json"):
-            for subnet in pingable:
-                if not subnet in asnFile: asnFile[subnet] = {"created":int(time.time()),"updated":0,"settings":"","subnets":{}}
+            for prefix in pingable:
+                if not prefix in asnFile: asnFile[prefix] = {"created":int(time.time()),"updated":0,"settings":"","subnets":{}}
             with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnFile, f)
         else:
             try:
@@ -82,18 +82,18 @@ while True:
                 if os.path.isfile(f"{path}/data/{asn}.json"): os.remove(f"{path}/data/{asn}.json")
                 continue
             added = 0
-            for subnet in pingable:
-                if not subnet in asnFile:
-                    logger.debug(f"Adding {subnet} to {asn}")
+            for prefix in pingable:
+                if not prefix in asnFile:
+                    logger.debug(f"Adding {prefix} to {asn}")
                     added += 1
-                    asnFile[subnet] = {"created":int(time.time()),"updated":0,"settings":"","subnets":{}}
+                    asnFile[prefix] = {"created":int(time.time()),"updated":0,"settings":"","subnets":{}}
             if added: logger.info(f"Added {added} subnets to AS{asn}")
             deleted = 0
-            for subnet in list(asnFile):
-                if not subnet in pingable:
+            for prefix in list(asnFile):
+                if not prefix in pingable:
                     deleted += 1
-                    logger.debug(f"Deleting {subnet} from {asn}")
-                    del asnFile[subnet]
+                    logger.debug(f"Deleting {prefix} from {asn}")
+                    del asnFile[prefix]
             if deleted: logger.info(f"Deleted {deleted} subnets from AS{asn}")
             with open(f"{path}/data/{asn}.json", 'w') as f: json.dump(asnFile, f)
         #already processed asn files will be on cooldown for 24 hours
