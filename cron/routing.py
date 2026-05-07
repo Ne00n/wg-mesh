@@ -116,6 +116,8 @@ while True:
             if details['updated'] > int(time.time()): continue
             for subnet, octects in pingable[prefix].items():
                 subnets.append({"subnet":subnet,"details":details,"pingable":octects})
+                #to reduce memory usage, we break after 10k
+                if len(subnets) > asnConfig['batchSize']: break
             #print(f"{prefix} splitted into {len(tmpSubnets)} subnet(s)")
             for subnet in list(pingable[prefix]): 
                 mapping[subnet] = {"file":file,"prefix":prefix}
