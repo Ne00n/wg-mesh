@@ -38,7 +38,6 @@ class Base:
         else:
             return {} if isJson else ""
 
-
     def saveFile(self,data,path,isJson=False):
         #Prevent file corruption
         total, used, free = shutil.disk_usage("/")
