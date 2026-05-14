@@ -29,7 +29,7 @@ class Base:
         if file.endswith(".json"): isJson = True
         if os.path.isfile(file):
             try:
-                if isJson:
+                if isJson or path.endswith(".json"):
                     with open(file) as handle: return json.loads(handle.read())
                 else:
                     with open(file, 'r') as file: return file.read()
