@@ -230,7 +230,7 @@ class CLI(Base):
         elif "reMesh" in option:
             config['linkSettings']['reMesh'] = False
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update, leakPrevention")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update, leakPrevention, importAll")
             return
         response = self.saveFile(config,f"{self.path}/configs/config.json")
         if not response:
@@ -273,7 +273,7 @@ class CLI(Base):
         elif "reMesh" in option:
             config['linkSettings']['reMesh'] = True
         else:
-            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update, leakPrevention")
+            print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg / awg, client, notifications, neighbour, update, leakPrevention, importAll")
             return
         response = self.saveFile(config,f"{self.path}/configs/config.json")
         if not response:
