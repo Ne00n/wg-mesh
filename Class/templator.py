@@ -173,8 +173,8 @@ protocol bgp '''+peer["nic"]+''' {
             for peerSubnet in config['AllowedPeers']:
                 template += f"\n\tif net ~ [ {peerSubnet} ] then accept;" 
             template += "\n\treject;\n}"
-            template += "\n\nfilter import_OSPF \{\n\t "
-            if importFilter: template += f"{importFilter}\n"
+            template += "\n\nfilter import_OSPF {\n\t "
+            if importFilter: template += f"{importFilter}"
             template += "\n\naccept;\n}"
             template += f"\n\nprotocol ospf {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
             template += f"\n\tipv4 {{\n\t\timport filter import_OSPF;\n\t\texport filter export_OSPF;\n\t}};"
