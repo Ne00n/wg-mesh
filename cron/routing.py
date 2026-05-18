@@ -178,6 +178,7 @@ while True:
             if not "subnets" in rows:
                 logger.warning(f"Missing subnets for {prefix} in {asn}.json")
                 continue
+            routed, toBeAggregated = 0, []
             for subnet, latency in rows['subnets'].items():
                 if not latency:
                     logger.warning(f"Missing latency for {subnet} in {asn}.json")
@@ -189,7 +190,13 @@ while True:
                 else:
                     cutoff, minimum = 5, 0
                 if avrg < minimum: continue
-                if avrg < cutoff: toAggregate.append(ipaddress.ip_network(subnet))
+                if avrg < cutoff:
+                    toBeAggregated.append(ipaddress.ip_network(subnet))
+                    routed += 1
+            if routed == len(rows['subnets']):
+                toAggregate.append(ipaddress.ip_network(prefix))
+            else:
+                toAggregate.extend(toBeAggregated)
         aggregated = tools.aggregate(toAggregate)
         for subnet in aggregated:
             rules += f'route {subnet} via {gateway};\n'
