@@ -192,7 +192,7 @@ while True:
                 if avrg < minimum: continue
                 if avrg < cutoff:
                     toBeAggregated.append(ipaddress.ip_network(subnet))
-                    routed += 1
+                    #routed += 1
             if routed == len(rows['subnets']):
                 toAggregate.append(ipaddress.ip_network(prefix))
             else:
