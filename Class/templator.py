@@ -144,7 +144,7 @@ protocol bgp '''+peer["nic"]+''' {
 
     def genBird(self,latency,peers,config):
         isRouter = "yes" if config['bird']['client'] else "no"
-        importFilter = "" if config['bird']['importAll'] else "if net = 10.0.0.0/16 then reject;"
+        importFilter = "accept;" if config['bird']['importAll'] else "reject;"
         subnetPrefix = ".".join(config['subnet'].split(".")[:2])
         routerID = f"{subnetPrefix}.{config['id']}.1"
         logLevels = f"{config['bird']['loglevel']}"
@@ -173,9 +173,8 @@ protocol bgp '''+peer["nic"]+''' {
             for peerSubnet in config['AllowedPeers']:
                 template += f"\n\tif net ~ [ {peerSubnet} ] then accept;" 
             template += "\n\treject;\n}"
-            template += "\n\nfilter import_OSPF {\n\t "
-            if importFilter: template += f"{importFilter}"
-            template += "\n\naccept;\n}"
+            template += "\n\nfilter import_OSPF {\n\t if net ~ [ 10.0.0.0/8+, 172.16.0.0/12+, 192.168.0.0/16+ ] then accept;\n"
+            template += "\n\n"+importFilter+";\n\}"
             template += f"\n\nprotocol ospf {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
             template += f"\n\tipv4 {{\n\t\timport filter import_OSPF;\n\t\texport filter export_OSPF;\n\t}};"
             template += f"\n\tarea 0 {{"
