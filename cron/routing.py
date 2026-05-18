@@ -188,7 +188,7 @@ while True:
                     minimum = details['location'][str(config['id'])]['minimum']
                     cutoff = details['location'][str(config['id'])]['cutoff']
                 else:
-                    cutoff, minimum = 5, 0
+                    cutoff, minimum = asnConfig['cutOff'], 0
                 if avrg < minimum: continue
                 if avrg < cutoff:
                     toBeAggregated.append(ipaddress.ip_network(subnet))
