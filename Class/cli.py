@@ -209,6 +209,8 @@ class CLI(Base):
             config['bird']['ospfv2'] = False
         elif "ospfv3" in option:
             config['bird']['ospfv3'] = False
+        elif "importAll" in option:
+            config['bird']['importAll'] = False
         elif "client" in option:
             config['bird']['client'] = False
         elif "notifications" in option:
@@ -247,6 +249,8 @@ class CLI(Base):
             config['bird']['ospfv2'] = True
         elif "ospfv3" in option:
             config['bird']['ospfv3'] = True
+        elif "importAll" in option:
+            config['bird']['importAll'] = True
         elif "client" in option:
             config['bird']['client'] = True
         elif "notifications" in option:
