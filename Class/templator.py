@@ -144,7 +144,7 @@ protocol bgp '''+peer["nic"]+''' {
 
     def genBird(self,latency,peers,config):
         isRouter = "yes" if config['bird']['client'] else "no"
-        importFilter = "" if config['bird']['importAll'] else "if net ~ 10.0.0.0/16 then reject;"
+        importFilter = "" if config['bird']['importAll'] else "if net = 10.0.0.0/16 then reject;"
         subnetPrefix = ".".join(config['subnet'].split(".")[:2])
         routerID = f"{subnetPrefix}.{config['id']}.1"
         logLevels = f"{config['bird']['loglevel']}"
