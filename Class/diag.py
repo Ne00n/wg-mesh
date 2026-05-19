@@ -156,7 +156,8 @@ class Diag(Base):
         self.logger.info(f"Possible targets {targets}")
         for target in targets:
             dest = target.replace(".0/30",".1")
-            if not dest in self.diagnostic: self.diagnostic[dest] = {"cooldown":self.randDelay(3600,7200),"retries":0}
+            if not dest in self.diagnostic: self.diagnostic[dest] = {"cooldown":self.randDelay(3600,7200),"retries":0,"pings":{'direct4':[],'direct6':[],'indirect':[]}}
+            if not "pings" in self.diagnostic[dest]: self.diagnostic[dest]['pings'] = {'direct4':[],'direct6':[],'indirect':[]}
             if self.diagnostic[dest]['cooldown'] > int(time.time()): 
                 self.logger.debug(f"Skipping {dest}, due to cooldown")
                 continue
@@ -192,9 +193,21 @@ class Diag(Base):
         pings = self.fping(toPing,10)
         for ip, results in pings.items():
             current = int(self.getAvrg(results))
-            if ip == mapping['dest']: response['indirect'] = current
-            if ip == mapping['ipv4']: response['direct4'] = current
-            if ip == mapping['ipv6']: response['direct6'] = current
-        if response['direct4'] < response['indirect']: response['connect'].append("ipv4")
-        if response['direct6'] < response['indirect']: response['connect'].append("ipv6")
+            if ip == mapping['dest']: 
+                response['indirect'] = current
+                self.diagnostic[dest]['indirect'].append(current)
+                self.diagnostic[dest]['indirect'][-10:]
+            if ip == mapping['ipv4']: 
+                response['direct4'] = current
+                self.diagnostic[dest]['direct4'].append(current)
+                self.diagnostic[dest]['direct4'][-10:]
+            if ip == mapping['ipv6']: 
+                response['direct6'] = current
+                self.diagnostic[dest]['direct6'].append(current)
+                self.diagnostic[dest]['direct6'][-10:]
+
+        if self.getAvrg(self.diagnostic[dest]['direct4']) < self.getAvrg(self.diagnostic[dest]['indirect']): 
+            response['connect'].append("ipv4")
+        if self.getAvrg(self.diagnostic[dest]['direct6']) < self.getAvrg(self.diagnostic[dest]['indirect']): 
+            response['connect'].append("ipv6")
         return response
