@@ -206,8 +206,9 @@ class Diag(Base):
                 self.diagnostic[dest]['direct6'].append(current)
                 self.diagnostic[dest]['direct6'][-10:]
 
-        if self.getAvrg(self.diagnostic[dest]['direct4']) < self.getAvrg(self.diagnostic[dest]['indirect']): 
+        diag = self.diagnostic[dest]
+        if self.getAvrg(diag['direct4']) < self.getAvrg(diag['indirect']) and len(diag['direct4']) > 2: 
             response['connect'].append("ipv4")
-        if self.getAvrg(self.diagnostic[dest]['direct6']) < self.getAvrg(self.diagnostic[dest]['indirect']): 
+        if self.getAvrg(diag['direct6']) < self.getAvrg(diag['indirect']) and len(diag['direct6']) > 2: 
             response['connect'].append("ipv6")
         return response
