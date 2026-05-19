@@ -434,18 +434,18 @@ class Wireguard(Base):
         print("Parsing Results")
         for ip in fping: latencyData[ip] = self.getAvrg(fping[ip])
         latencyData = {k: latencyData[k] for k in sorted(latencyData, key=latencyData.get)}
-        terminate, result = [], []
+        terminate, result, cutoff = [], [], float(cutoff)
         result.append("Target\tIP address\tCity\tConnected\tLatency")
         result.append("-------\t-------\t-------\t-------\t-------")
         for index, (ip,latency) in enumerate(latencyData.items()):
-            if (cutoff == 0 and index > 5) or (cutoff != 0 and latency > float(cutoff)): terminate.append(mapping[ip]['target'])
+            if (cutoff == 0 and index > 5) or (cutoff != 0 and latency > cutoff): terminate.append(mapping[ip]['target'])
             result.append(f"{mapping[ip]['target']}\t{ip}\t{mapping[ip]['location']}\t{bool(ip in existing)}\t{format(latency,'.2f')}ms")
         result = self.formatTable(result)
         if cutoff == 0: 
             print(result)
             return True
         for index, (ip,latency) in enumerate(latencyData.items()):
-            if (cutoff == 0 and index > 5) or (cutoff != 0 and latency > float(cutoff)): continue 
+            if (cutoff == 0 and index > 5) or (cutoff != 0 and latency > cutoff): continue 
             targetSplit = mapping[ip]['target'].split(".")
             #reserve 10.0.200+ for clients, don't mesh
             if int(targetSplit[2]) >= 200: continue
