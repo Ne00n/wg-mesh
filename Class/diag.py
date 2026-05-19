@@ -131,6 +131,7 @@ class Diag(Base):
         if self.config['linkSettings']['reMesh']: 
             self.runMesh()
             self.logger.info("Done re-meshing")
+            self.saveFile(self.diagnostic,f"{self.path}/configs/diagnostic.json")
         self.logger.info(f"Loop done")
         return True
 
