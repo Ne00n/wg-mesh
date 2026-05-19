@@ -154,7 +154,6 @@ router id {routerID}; #generated {int(time.time())}
 protocol device {{
     scan time 10;
 }}
-
 '''
         localPTP = []
         for row in latency: localPTP.append(row['target']+"/32-")
@@ -163,7 +162,6 @@ function avoid_local_ptp() {{
     ### Avoid fucking around with direct peers
     return net ~ [ {','.join(localPTP)} ];
 }}
-
 """
         template += f'''
 protocol direct {{
