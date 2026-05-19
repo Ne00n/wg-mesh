@@ -192,11 +192,11 @@ protocol kernel {{
             accept;
         }};
     }};
-}}"
+}}
 
 protocol kernel {{
     ipv6 {{ export all; }};
-}}"
+}}
 """
         if config['bird']['ospfv2']:
             template += "\n\nfilter export_OSPF {\n\tif source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;"
