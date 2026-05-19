@@ -187,7 +187,7 @@ include "bgp.conf";
 protocol kernel {{
     ipv4 {{
         export filter {{
-            krt_prefsrc = {routerID};"
+            krt_prefsrc = {routerID};
             if avoid_local_ptp() then reject;
             accept;
         }};
