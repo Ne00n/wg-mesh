@@ -437,14 +437,14 @@ class Wireguard(Base):
         terminate, result = [], []
         result.append("Target\tIP address\tCity\tConnected\tLatency")
         result.append("-------\t-------\t-------\t-------\t-------")
-        for index, ip,latency in enumerate(latencyData.items()):
+        for index, (ip,latency) in enumerate(latencyData.items()):
             if (cutoff == 0 and index > 5) or (cutoff != 0 and latency > float(cutoff)): terminate.append(mapping[ip]['target'])
             result.append(f"{mapping[ip]['target']}\t{ip}\t{mapping[ip]['location']}\t{bool(ip in existing)}\t{format(latency,'.2f')}ms")
         result = self.formatTable(result)
         if cutoff == 0: 
             print(result)
             return True
-        for index, ip,latency in enumerate(latencyData.items()):
+        for index, (ip,latency) in enumerate(latencyData.items()):
             if (cutoff == 0 and index > 5) or (cutoff != 0 and latency > float(cutOff)): continue 
             targetSplit = mapping[ip]['target'].split(".")
             #reserve 10.0.200+ for clients, don't mesh
