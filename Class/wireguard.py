@@ -445,7 +445,7 @@ class Wireguard(Base):
             print(result)
             return True
         for index, (ip,latency) in enumerate(latencyData.items()):
-            if (cutoff == 0 and index > 5) or (cutoff != 0 and latency > float(cutOff)): continue 
+            if (cutoff == 0 and index > 5) or (cutoff != 0 and latency > float(cutoff)): continue 
             targetSplit = mapping[ip]['target'].split(".")
             #reserve 10.0.200+ for clients, don't mesh
             if int(targetSplit[2]) >= 200: continue
