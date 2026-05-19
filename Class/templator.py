@@ -183,12 +183,21 @@ include "bgp.conf";
         #BGP Peers
         for peer in peers:
             template += self.genBGPPeer(subnetPrefix,peer)
+        template += f"""
+protocol kernel {{
+    ipv4 {{
+        export filter {{
+            krt_prefsrc = {routerID};"
+            if avoid_local_ptp() then reject;
+            accept;
+        }};
+    }};
+}}"
 
-        template += "\nprotocol kernel {\n\tipv4 {\n\t\texport filter { "
-        template += f"\n\t\t\tkrt_prefsrc = {routerID};"
-        template += "\n\t\t\tif avoid_local_ptp() then reject;\n\t\t\taccept;\n\t\t};\n\t};\n}"
-        template += "\n\nprotocol kernel {\n\tipv6 { export all; };\n}"
-
+protocol kernel {{
+    ipv6 {{ export all; }};
+}}"
+"""
         if config['bird']['ospfv2']:
             template += "\n\nfilter export_OSPF {\n\tif source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;"
             for peerSubnet in config['AllowedPeers']:
