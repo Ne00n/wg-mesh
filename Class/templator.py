@@ -148,16 +148,39 @@ protocol bgp '''+peer["nic"]+''' {
         subnetPrefix = ".".join(config['subnet'].split(".")[:2])
         routerID = f"{subnetPrefix}.{config['id']}.1"
         logLevels = f"{config['bird']['loglevel']}"
-        template = f'log "/etc/bird/bird.log" {logLevels};\nrouter id {routerID}; #generated {int(time.time())}'
-        template += "\n\nprotocol device {\n\tscan time 10;\n}\n"
+        template = f'''
+log "/etc/bird/bird.log" {logLevels};
+router id {routerID}; #generated {int(time.time())}
+protocol device {{
+    scan time 10;
+}}
 
+'''
         localPTP = []
         for row in latency: localPTP.append(row['target']+"/32-")
+        template += f"""
+function avoid_local_ptp() {{
+    ### Avoid fucking around with direct peers
+    return net ~ [ {','.join(localPTP)} ];
+}}
 
-        template += f"\nfunction avoid_local_ptp() {{\n\t### Avoid fucking around with direct peers\n\treturn net ~ [ {','.join(localPTP)} ];\n}}"
-        template += '\n\nprotocol direct {\n\tipv4;\n\tipv6;\n\tinterface "lo";\n\tinterface "tunnel*";\n}'
-        template += f'\n\nprotocol static {{\n\tipv4;\n\troute {subnetPrefix}.0.0/16 unreachable;\n\tinclude "static.conf";\n\n}}'
-        template += '\ninclude "bgp.conf";'
+"""
+        template += f'''
+protocol direct {{
+    ipv4;
+    ipv6;
+    interface "lo";
+    interface "tunnel*";
+}}
+
+protocol static {{
+    ipv4;
+    route {subnetPrefix}.0.0/16 unreachable;
+    include "static.conf";
+}}
+
+include "bgp.conf";
+'''
 
         #BGP Peers
         for peer in peers:
