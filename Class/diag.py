@@ -85,7 +85,8 @@ class Diag(Base):
             status = self.wg.disconnect([link])
             if not status[link]['status']:
                 self.logger.warning(f"Failed to disconnect {link} ({remote})")
-                if status[link]['message'] == "invalid link":
+                allowedCodes = ["invalid public key","invalid link"]
+                if status[link]['message'] in allowedCodes:
                     self.wg.removeInterface(link.replace(".sh",""))
                     self.logger.info(f"Removed link {link} ({remote})")
                 else:
