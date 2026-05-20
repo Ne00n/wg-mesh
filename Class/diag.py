@@ -40,6 +40,7 @@ class Diag(Base):
                 continue
             if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0,"retries":0,"events":{}}
             if not "events" in self.diagnostic[remote]: self.diagnostic[remote]['events'] = {}
+            if not "pings" in self.diagnostic[remote]: self.diagnostic[remote]['pings'] = {'direct4':[],'direct6':[],'indirect':[]}
             if self.diagnostic[remote]['cooldown'] > current: 
                 self.logger.debug(f"Skipping {link} due to cooldown")
                 continue
