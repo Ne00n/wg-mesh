@@ -417,9 +417,7 @@ class Wireguard(Base):
         local = f"{self.Network.getSubnetPrefix()}.{self.config['id']}.1"
         for target in targets:
             target = target.replace("0/30","1")
-            if target == local: 
-                print(f"Skipping {target} since local.")
-                continue
+            if target == local: continue
             resp = self.AskProtocol(f'http://{target}:{self.config["listenPort"]}','')
             if not resp: continue
             location = "n/a"
