@@ -48,7 +48,7 @@ signal.signal(signal.SIGINT, gracefulExit)
 signal.signal(signal.SIGTERM, gracefulExit)
 systemd.daemon.notify('READY=1')
 
-waitUntil, updated = 0, {}
+waitUntil, reloadUntil, updated = 0, 0, {}
 while True:
     if shutdown:
         logger.info("Stopping")
@@ -167,42 +167,46 @@ while True:
                 asnData[prefix]['subnets'][row[0]][-5:]
         with open(f"{path}/data/{file}", 'w') as f: json.dump(asnData, f)
     
-    logger.info("Generating static routes")
-    rules, toWrite = "", {}
-    for asn, details in asnConfig['asnList'].items():
-        if not os.path.isfile(f"{path}/data/{asn}.json"): continue
-        logger.debug(f"Loading {asn}")
-        with open(f"{path}/data/{asn}.json") as handle: pingable =  json.loads(handle.read())
-        toAggregate = []
-        for prefix, rows in pingable.items():
-            if not "subnets" in rows:
-                logger.warning(f"Missing subnets for {prefix} in {asn}.json")
-                continue
-            routed, toBeAggregated = 0, []
-            for subnet, latency in rows['subnets'].items():
-                if not latency:
-                    logger.warning(f"Missing latency for {subnet} in {asn}.json")
+    toWrite = {}
+    if currentTime > reloadUntil: 
+        logger.info("Generating static routes")
+        rules = ""
+        for asn, details in asnConfig['asnList'].items():
+            if not os.path.isfile(f"{path}/data/{asn}.json"): continue
+            logger.debug(f"Loading {asn}")
+            with open(f"{path}/data/{asn}.json") as handle: pingable =  json.loads(handle.read())
+            toAggregate = []
+            for prefix, rows in pingable.items():
+                if not "subnets" in rows:
+                    logger.warning(f"Missing subnets for {prefix} in {asn}.json")
                     continue
-                avrg = tools.getAvrg(latency)
-                if "location" in details and str(config['id']) in details['location']:
-                    minimum = details['location'][str(config['id'])]['minimum']
-                    cutoff = details['location'][str(config['id'])]['cutoff']
+                routed, toBeAggregated = 0, []
+                for subnet, latency in rows['subnets'].items():
+                    if not latency:
+                        logger.warning(f"Missing latency for {subnet} in {asn}.json")
+                        continue
+                    avrg = tools.getAvrg(latency)
+                    if "location" in details and str(config['id']) in details['location']:
+                        minimum = details['location'][str(config['id'])]['minimum']
+                        cutoff = details['location'][str(config['id'])]['cutoff']
+                    else:
+                        cutoff, minimum = asnConfig['cutOff'], 0
+                    if avrg < minimum: continue
+                    if avrg < cutoff:
+                        toBeAggregated.append(ipaddress.ip_network(subnet))
+                        #routed += 1
+                if routed == len(rows['subnets']):
+                    toAggregate.append(ipaddress.ip_network(prefix))
                 else:
-                    cutoff, minimum = asnConfig['cutOff'], 0
-                if avrg < minimum: continue
-                if avrg < cutoff:
-                    toBeAggregated.append(ipaddress.ip_network(subnet))
-                    #routed += 1
-            if routed == len(rows['subnets']):
-                toAggregate.append(ipaddress.ip_network(prefix))
-            else:
-                toAggregate.extend(toBeAggregated)
-        aggregated = tools.aggregate(toAggregate)
-        for subnet in aggregated:
-            rules += f'route {subnet} via {gateway};\n'
+                    toAggregate.extend(toBeAggregated)
+            aggregated = tools.aggregate(toAggregate)
+            for subnet in aggregated:
+                rules += f'route {subnet} via {gateway};\n'
+
+        tools.saveFile(rules,"/etc/bird/static.conf")
+        reloadUntil = reloadUntil + random.randint(7200,14400)
 
     pingable = {}
-    tools.saveFile(rules,"/etc/bird/static.conf")
     logger.debug("Reloading asn.json")
     try:
         asnConfig = tools.readFile(f'{path}/configs/asn.json')
