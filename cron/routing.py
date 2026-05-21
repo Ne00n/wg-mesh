@@ -123,7 +123,7 @@ while True:
             #to reduce memory usage, we break after batchSize
             if len(subnets) > asnConfig['batchSize']: break
         #do one file at a time
-        if len(subnets) > 50: 
+        if subnets: 
             #skip wait until subnets is empty
             waitUntil = 0
             break
