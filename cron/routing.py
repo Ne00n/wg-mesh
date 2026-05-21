@@ -204,7 +204,7 @@ while True:
                 rules += f'route {subnet} via {gateway};\n'
 
         tools.saveFile(rules,"/etc/bird/static.conf")
-        reloadUntil = reloadUntil + random.randint(7200,14400)
+        reloadUntil = reloadUntil + random.randint(21600,28800)
 
     pingable = {}
     logger.debug("Reloading asn.json")
