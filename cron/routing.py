@@ -210,6 +210,7 @@ while True:
     logger.debug("Reloading asn.json")
     try:
         asnConfig = tools.readFile(f'{path}/configs/asn.json')
+        reloadUntil = 0
     except:
         logger.warning(f"Failed to reload asn.json")
 
