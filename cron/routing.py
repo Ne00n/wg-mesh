@@ -104,16 +104,17 @@ while True:
     files = asnConfig['asnList']
     random.shuffle(files)
     for file in files:
-        if not os.path.isfile(f"{path}/data/{file}.json"): continue
+        file = f"{file}.json"
+        if not os.path.isfile(f"{path}/data/{file}"): continue
         logger.debug(f"Loading {file}")
-        asnData = tools.readFile(f"{path}/data/{file}.json")
-        if tools.isCached(f"{path}/data/cache/{file}.json"):
-            pingable = tools.readFile(f"{path}/data/cache/{file}.json")
+        asnData = tools.readFile(f"{path}/data/{file}")
+        if tools.isCached(f"{path}/data/cache/{file}"):
+            pingable = tools.readFile(f"{path}/data/cache/{file}")
         else:
             success, req = tools.call(url=f"{asnConfig['dataSrc']}/seeds/{file}",method="GET")
             if not success: continue
-            tools.saveFile(req.json(),f"{path}/data/cache/{file}.json")
             pingable = req.json()
+            tools.saveFile(pingable,f"{path}/data/cache/{file}")
         for prefix, details in asnData.items():
             #ignore ipv6 for now
             if "::" in prefix: continue
