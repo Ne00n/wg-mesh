@@ -112,7 +112,10 @@ while True:
             pingable = tools.readFile(f"{path}/data/cache/{file}")
         else:
             success, req = tools.call(url=f"{asnConfig['dataSrc']}/seeds/{file}",method="GET")
-            if not success: continue
+            if not success:
+                logger.warning(f"Failed to fetch file {file}")
+                if not os.path.isfile(f"{path}/data/cache/{file}"): continue
+                logger.info(f"Using old cached file for {file}")
             pingable = req.json()
             tools.saveFile(pingable,f"{path}/data/cache/{file}")
         for prefix, details in asnData.items():
