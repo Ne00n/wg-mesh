@@ -167,3 +167,9 @@ class Base:
                 results.append(int(avg))
             if not "any" in data['details']['settings']: break
         return {data['subnet']:results}
+
+    def isCached(self,path,hours=48):
+        if not os.path.isfile(path): return False
+        fileCreation = os.path.getmtime(path)
+        fileAge = time.time() - fileCreation
+        return fileAge > (3600 * hours)

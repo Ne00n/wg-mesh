@@ -106,10 +106,14 @@ while True:
     for file in files:
         if not os.path.isfile(f"{path}/data/{file}.json"): continue
         logger.debug(f"Loading {file}")
-        with open(f"{path}/data/{file}.json") as handle: asnData =  json.loads(handle.read())
-        success, req = tools.call(url=f"{asnConfig['dataSrc']}/seeds/{file}",method="GET")
-        if not success: continue
-        pingable = req.json()
+        asnData = tools.readFile(f"{path}/data/{file}.json")
+        if not tools.isCached(f"{path}/data/cache/{file}.json"):
+            success, req = tools.call(url=f"{asnConfig['dataSrc']}/seeds/{file}",method="GET")
+            if not success: continue
+            tools.saveFile(f"{path}/data/cache/{file}.json",req.json())
+            pingable = req.json()
+        else:
+            pingable = tools.readFile(f"{path}/data/cache/{file}.json")
         for prefix, details in asnData.items():
             #ignore ipv6 for now
             if "::" in prefix: continue
