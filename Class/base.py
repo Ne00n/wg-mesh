@@ -108,7 +108,10 @@ class Base:
                     req = requests.get(url, headers=headers, timeout=(5,5))
                 else:
                     req = requests.patch(url, json=payload, timeout=(5,5))
-                return True,req
+                if req.status_code == 200: 
+                    return True,req
+                else:
+                    return False,req
             except Exception as ex:
                 crashed = True
                 pass
