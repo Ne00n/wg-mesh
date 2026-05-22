@@ -101,12 +101,12 @@ while True:
 
     subnets, mapping, asnFile, pingable = [], {}, {}, {}
     logger.info("Processing local asn's")
-    files = os.listdir(f"{path}/data/")
+    files = asnConfig['asnList']
     random.shuffle(files)
     for file in files:
-        if not file.endswith(".json"): continue
+        if not os.path.isfile(f"{path}/data/{file}.json"): continue
         logger.debug(f"Loading {file}")
-        with open(f"{path}/data/{file}") as handle: asnData =  json.loads(handle.read())
+        with open(f"{path}/data/{file}.json") as handle: asnData =  json.loads(handle.read())
         success, req = tools.call(url=f"{asnConfig['dataSrc']}/seeds/{file}",method="GET")
         if not success: continue
         pingable = req.json()
