@@ -112,7 +112,7 @@ while True:
         else:
             success, req = tools.call(url=f"{asnConfig['dataSrc']}/seeds/{file}",method="GET")
             if not success: continue
-            tools.saveFile(f"{path}/data/cache/{file}.json",req.json())
+            tools.saveFile(req.json(),f"{path}/data/cache/{file}.json")
             pingable = req.json()
         for prefix, details in asnData.items():
             #ignore ipv6 for now
