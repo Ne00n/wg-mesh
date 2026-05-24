@@ -20,7 +20,7 @@ class Diag(Base):
     def updateDiagnostic(self,id,cooldown=0):
         if cooldown: cooldown = self.randDelay(3600,7200)
         pings = {'direct4':[],'direct6':[],'indirect':[]}
-        stats = {'retries':0}
+        stats = {'retries':0,'runMesh':0}
         if not id in self.diagnostic: self.diagnostic[id] = {"cooldown":cooldown,"stats":stats,"events":{},"pings":pings}
         if not "events" in self.diagnostic[id]: self.diagnostic[id]['events'] = {}
         if not "stats" in self.diagnostic[id]: self.diagnostic[id]['stats'] = stats
@@ -74,7 +74,7 @@ class Diag(Base):
                 self.logger.debug(f"Pinging public ip {remotePublic}")
                 pings = self.fping([remotePublic],3)
                 if not pings[remotePublic]:
-                    self.logger.info(f"Unable to reach public ip address {remotePublic}, likely routing problems {link}")
+                    self.logger.info(f"Unable to reach public ip address, likely routing problems {link}")
                     continue
                 if len(pings[remotePublic]) != 3:
                     self.logger.info(f"Link {link} has packet loss, skipping for now")
@@ -171,7 +171,7 @@ class Diag(Base):
                 self.logger.debug(f"Skipping {dest}, due to cooldown")
                 continue
             self.diagnostic[dest]['cooldown'] = self.randDelay()
-            self.diagnostic[dest]['stats']['retries'] += 1
+            self.diagnostic[dest]['stats']['runMesh'] += 1
             self.logger.info(f"Checking latency for {dest}")
             connect = self.shouldConnect(dest)
             if not connect['connect']:
