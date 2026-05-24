@@ -20,7 +20,7 @@ class Diag(Base):
     def updateDiagnostic(self,id,cooldown=0):
         if cooldown: cooldown = self.randDelay(3600,7200)
         pings = {'direct4':[],'direct6':[],'indirect':[]}
-        stats = {'retries':0,'runMesh':0}
+        stats = {'retries':0,'routing':0,'runMesh':0}
         if not id in self.diagnostic: self.diagnostic[id] = {"cooldown":cooldown,"stats":stats,"events":{},"pings":pings}
         if not "events" in self.diagnostic[id]: self.diagnostic[id]['events'] = {}
         if not "stats" in self.diagnostic[id]: self.diagnostic[id]['stats'] = stats
@@ -74,6 +74,7 @@ class Diag(Base):
                 self.logger.debug(f"Pinging public ip {remotePublic}")
                 pings = self.fping([remotePublic],3)
                 if not pings[remotePublic]:
+                    self.diagnostic[remote]['stats']['routing'] += 1
                     self.logger.info(f"Unable to reach public ip address, likely routing problems {link}")
                     continue
                 if len(pings[remotePublic]) != 3:
@@ -86,6 +87,7 @@ class Diag(Base):
                 mtrLines = mtr[0].splitlines()
                 mtrLastLine = mtrLines[len(mtrLines) -1]
                 if "???" in mtrLastLine:
+                    self.diagnostic[remote]['stats']['routing'] += 1
                     self.logger.warning(f"MTR shows routing issue, skipping {link}")
                     continue
             self.logger.info(f"Dead link confirmed {link} ({remote})")
