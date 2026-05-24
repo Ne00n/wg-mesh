@@ -21,7 +21,7 @@ class Diag(Base):
         if cooldown: cooldown = self.randDelay(3600,7200)
         pings = {'direct4':[],'direct6':[],'indirect':[]}
         stats = {'retries':0}
-        if not remote in self.diagnostic: self.diagnostic[id] = {"cooldown":cooldown,"stats":stats,"events":{},"pings":pings}
+        if not id in self.diagnostic: self.diagnostic[id] = {"cooldown":cooldown,"stats":stats,"events":{},"pings":pings}
         if not "events" in self.diagnostic[id]: self.diagnostic[id]['events'] = {}
         if not "stats" in self.diagnostic[id]: self.diagnostic[id]['stats'] = stats
         if not "pings" in self.diagnostic[id]: self.diagnostic[id]['pings'] = pings
