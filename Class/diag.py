@@ -25,6 +25,7 @@ class Diag(Base):
         if not "events" in self.diagnostic[id]: self.diagnostic[id]['events'] = {}
         if not "stats" in self.diagnostic[id]: self.diagnostic[id]['stats'] = stats
         if not "pings" in self.diagnostic[id]: self.diagnostic[id]['pings'] = pings
+        if "retries" in self.diagnostic[id]: del self.diagnostic[id]['retries']
 
     def runDiagnostic(self):
         #refresh network.json on each run
