@@ -17,6 +17,12 @@ class Diag(Base):
     def randDelay(self,start=21600,end=43200):
         return int(time.time()) + random.randint(start,end)
 
+    def updateDiagnostic(self,id):
+        if not remote in self.diagnostic: self.diagnostic[id] = {"cooldown":0,"stats":{},"events":{},"pings":{'direct4':[],'direct6':[],'indirect':[]}}
+        if not "events" in self.diagnostic[id]: self.diagnostic[id]['events'] = {}
+        if not "stats" in self.diagnostic[id]: self.diagnostic[id]['stats'] = {}
+        if not "pings" in self.diagnostic[id]: self.diagnostic[id]['pings'] = {'direct4':[],'direct6':[],'indirect':[]}
+
     def runDiagnostic(self):
         #refresh network.json on each run
         self.network = self.readFile(f"{self.path}/configs/network.json")
@@ -38,9 +44,7 @@ class Diag(Base):
             elif "endpoint" in data['config']: 
                 self.logger.debug(f"{link} is client, skipping")
                 continue
-            if not remote in self.diagnostic: self.diagnostic[remote] = {"cooldown":0,"retries":0,"events":{}}
-            if not "events" in self.diagnostic[remote]: self.diagnostic[remote]['events'] = {}
-            if not "pings" in self.diagnostic[remote]: self.diagnostic[remote]['pings'] = {'direct4':[],'direct6':[],'indirect':[]}
+            self.updateDiagnostic(remote)
             if self.diagnostic[remote]['cooldown'] > current: 
                 self.logger.debug(f"Skipping {link} due to cooldown")
                 continue
@@ -159,8 +163,8 @@ class Diag(Base):
         self.logger.info(f"Possible targets {targets}")
         for target in targets:
             dest = target.replace(".0/30",".1")
-            if not dest in self.diagnostic: self.diagnostic[dest] = {"cooldown":self.randDelay(3600,7200),"retries":0,"pings":{'direct4':[],'direct6':[],'indirect':[]}}
-            if not "pings" in self.diagnostic[dest]: self.diagnostic[dest]['pings'] = {'direct4':[],'direct6':[],'indirect':[]}
+            if not dest in self.diagnostic: self.diagnostic[dest] = {"cooldown":self.randDelay(3600,7200),"stats":{},"pings":{'direct4':[],'direct6':[],'indirect':[]}}
+            self.updateDiagnostic(dest)
             if self.diagnostic[dest]['cooldown'] > int(time.time()): 
                 self.logger.debug(f"Skipping {dest}, due to cooldown")
                 continue
