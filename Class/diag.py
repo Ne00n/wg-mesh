@@ -20,12 +20,13 @@ class Diag(Base):
     def updateDiagnostic(self,id,cooldown=0):
         if cooldown: cooldown = self.randDelay(3600,7200)
         pings = {'direct4':[],'direct6':[],'indirect':[]}
-        stats = {'retries':0,'routing':0,'runMesh':0}
+        stats = {'retries':0,'routing':0,'loss':0,'runMesh':0}
         if not id in self.diagnostic: self.diagnostic[id] = {"cooldown":cooldown,"stats":stats,"events":{},"pings":pings}
         if not "events" in self.diagnostic[id]: self.diagnostic[id]['events'] = {}
         if not "stats" in self.diagnostic[id]: self.diagnostic[id]['stats'] = stats
         if not "pings" in self.diagnostic[id]: self.diagnostic[id]['pings'] = pings
         if "retries" in self.diagnostic[id]: del self.diagnostic[id]['retries']
+        if not "loss" in self.diagnostic[id]['stats']: self.diagnostic[id]['stats']['loss'] = 0
 
     def runDiagnostic(self):
         #refresh network.json on each run
@@ -79,6 +80,7 @@ class Diag(Base):
                     self.logger.info(f"Unable to reach public ip address, likely routing problems {link}")
                     continue
                 if len(pings[remotePublic]) != 3:
+                    self.diagnostic[remote]['stats']['loss'] += 1
                     self.logger.info(f"Link {link} has packet loss, skipping for now")
                     continue
                 self.logger.debug(f"Running MTR")
