@@ -53,7 +53,7 @@ class Diag(Base):
                 continue
             self.logger.info(f"Found dead link {link} ({remote})")
             self.diagnostic[remote]['cooldown'] = self.randDelay()
-            self.diagnostic[remote]['retries'] += 1
+            self.diagnostic[remote]['stats']['retries'] += 1
             if not remote in self.network:
                 self.logger.warning(f"{link} no data in network.json, skipping")
                 continue
@@ -99,7 +99,7 @@ class Diag(Base):
                     self.logger.info(f"Removed link {link} ({remote})")
                 else:
                     if notifications['enabled'] and notifications['gotifyDiag']: 
-                        self.wg.notify(notifications['gotifyDiag'],f"{link} disconnect failure ({self.diagnostic[remote]['retries']})",f"Node {self.config['id']} failed to disconnect {link}")
+                        self.wg.notify(notifications['gotifyDiag'],f"{link} disconnect failure ({self.diagnostic[remote]['stats']['retries']})",f"Node {self.config['id']} failed to disconnect {link}")
                     continue
             time.sleep(3)
             linkConfig = self.readFile(f'{self.path}/links/{data["filename"]}.json')
@@ -123,7 +123,7 @@ class Diag(Base):
             if status['ipv4']['status'] or status['ipv6']['status']:
                 self.logger.info(f"Reconnected {link} ({remote}) with Port {port}")
                 if notifications['enabled'] and notifications['gotifyDiag']: 
-                    self.wg.notify(notifications['gotifyDiag'],f"{link} reconnected ({self.diagnostic[remote]['retries']})",f"Node {self.config['id']} reconnected {link}")
+                    self.wg.notify(notifications['gotifyDiag'],f"{link} reconnected ({self.diagnostic[remote]['stats']['retries']})",f"Node {self.config['id']} reconnected {link}")
                     self.diagnostic[remote]['events'][int(time.time())] = {"linkType":linkType,"port":port}
             else:
                 self.logger.info(f"Could not reconnect {link} ({remote})")
@@ -171,7 +171,7 @@ class Diag(Base):
                 self.logger.debug(f"Skipping {dest}, due to cooldown")
                 continue
             self.diagnostic[dest]['cooldown'] = self.randDelay()
-            self.diagnostic[dest]['retries'] += 1
+            self.diagnostic[dest]['stats']['retries'] += 1
             self.logger.info(f"Checking latency for {dest}")
             connect = self.shouldConnect(dest)
             if not connect['connect']:
