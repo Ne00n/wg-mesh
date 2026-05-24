@@ -17,11 +17,14 @@ class Diag(Base):
     def randDelay(self,start=21600,end=43200):
         return int(time.time()) + random.randint(start,end)
 
-    def updateDiagnostic(self,id):
-        if not remote in self.diagnostic: self.diagnostic[id] = {"cooldown":0,"stats":{},"events":{},"pings":{'direct4':[],'direct6':[],'indirect':[]}}
+    def updateDiagnostic(self,id,cooldown=0):
+        if cooldown: cooldown = self.randDelay(3600,7200)
+        pings = {'direct4':[],'direct6':[],'indirect':[]}
+        stats = {'retries':0}
+        if not remote in self.diagnostic: self.diagnostic[id] = {"cooldown":cooldown,"stats":stats,"events":{},"pings":pings}
         if not "events" in self.diagnostic[id]: self.diagnostic[id]['events'] = {}
-        if not "stats" in self.diagnostic[id]: self.diagnostic[id]['stats'] = {}
-        if not "pings" in self.diagnostic[id]: self.diagnostic[id]['pings'] = {'direct4':[],'direct6':[],'indirect':[]}
+        if not "stats" in self.diagnostic[id]: self.diagnostic[id]['stats'] = stats
+        if not "pings" in self.diagnostic[id]: self.diagnostic[id]['pings'] = pings
 
     def runDiagnostic(self):
         #refresh network.json on each run
@@ -163,8 +166,7 @@ class Diag(Base):
         self.logger.info(f"Possible targets {targets}")
         for target in targets:
             dest = target.replace(".0/30",".1")
-            if not dest in self.diagnostic: self.diagnostic[dest] = {"cooldown":self.randDelay(3600,7200),"stats":{},"pings":{'direct4':[],'direct6':[],'indirect':[]}}
-            self.updateDiagnostic(dest)
+            self.updateDiagnostic(dest,1)
             if self.diagnostic[dest]['cooldown'] > int(time.time()): 
                 self.logger.debug(f"Skipping {dest}, due to cooldown")
                 continue
