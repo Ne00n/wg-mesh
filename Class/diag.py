@@ -14,7 +14,7 @@ class Diag(Base):
         self.config = self.readFile(f'{self.path}/configs/config.json')
         self.Network = Network(self.config)
 
-    def randDelay(self,start=21600,end=43200):
+    def randDelay(self,start=14400,end=21600):
         return int(time.time()) + random.randint(start,end)
 
     def updateDiagnostic(self,id,cooldown=0):
