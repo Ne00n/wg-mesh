@@ -75,7 +75,7 @@ class Diag(Base):
             if remotePublic:
                 self.logger.debug(f"Pinging public ip {remotePublic}")
                 pings = self.fping([remotePublic],3)
-                if not pings[remotePublic] and self.diagnostic[remote]['stats']['routing'] < 5:
+                if not pings[remotePublic] and self.diagnostic[remote]['stats']['routing'] < 3:
                     self.diagnostic[remote]['stats']['routing'] += 1
                     self.logger.info(f"Unable to reach public ip address, likely routing problems {link}")
                     continue
@@ -89,7 +89,7 @@ class Diag(Base):
                 if not mtr[0] and mtr[1]: mtr[0] = mtr[1]
                 mtrLines = mtr[0].splitlines()
                 mtrLastLine = mtrLines[len(mtrLines) -1]
-                if "???" in mtrLastLine and self.diagnostic[remote]['stats']['routing'] < 5:
+                if "???" in mtrLastLine and self.diagnostic[remote]['stats']['routing'] < 3:
                     self.diagnostic[remote]['stats']['routing'] += 1
                     self.logger.warning(f"MTR shows routing issue, skipping {link}")
                     continue
