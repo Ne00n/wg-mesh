@@ -206,6 +206,9 @@ class Diag(Base):
             toPing.append(data['connectivity']['ipv6'])
             mapping['ipv6'] = data['connectivity']['ipv6']
         pings = self.fping(toPing,10)
+        if self.diagnostic[dest]['pings']['measured'] + (60*60*24) < int(time.time()):
+            del self.diagnostic[dest]['pings']
+            self.updateDiagnostic(dest)
         self.diagnostic[dest]['pings']['measured'] = int(time.time())
         for ip, results in pings.items():
             current = int(self.getAvrg(results))
