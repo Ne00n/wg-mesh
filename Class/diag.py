@@ -19,7 +19,7 @@ class Diag(Base):
 
     def updateDiagnostic(self,id,cooldown=0):
         if cooldown: cooldown = self.randDelay(3600,7200)
-        pings = {'direct4':[],'direct6':[],'indirect':[]}
+        pings = {'direct4':[],'direct6':[],'indirect':[],"measured":int(time.time())}
         stats = {'retries':0,'routing':0,'loss':0,'runMesh':0}
         if not id in self.diagnostic: self.diagnostic[id] = {"cooldown":cooldown,"stats":stats,"events":{},"pings":pings}
         if not "events" in self.diagnostic[id]: self.diagnostic[id]['events'] = {}
@@ -27,6 +27,7 @@ class Diag(Base):
         if not "pings" in self.diagnostic[id]: self.diagnostic[id]['pings'] = pings
         if "retries" in self.diagnostic[id]: del self.diagnostic[id]['retries']
         if not "loss" in self.diagnostic[id]['stats']: self.diagnostic[id]['stats']['loss'] = 0
+        if not "measured" in self.diagnostic[id]['pings']: self.diagnostic[id]['pings']['measured'] = int(time.time())
 
     def runDiagnostic(self):
         #refresh network.json on each run
