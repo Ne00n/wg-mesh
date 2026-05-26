@@ -196,7 +196,7 @@ class Diag(Base):
         data = self.wg.AskProtocol(f"http://{dest}:{self.config['listenPort']}")
         response = {"indirect":-1,"direct4":9999,"direct6":9999,"connect":[]}
         if not data:
-            self.logger.info(f"Unable to fetch connectivity info from {dest}")
+            self.logger.warning(f"Unable to fetch connectivity info from {dest}")
             return response
         mapping, toPing = {"dest":dest,"ipv4":"","ipv6":""}, [dest]
         if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4']: 
