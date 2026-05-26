@@ -182,7 +182,7 @@ class Diag(Base):
             if not connect['connect']:
                 self.logger.info(f"Skipping {dest}, direct latency to high, {connect['direct4']}/{connect['direct6']}ms vs {connect['indirect']}ms")
                 continue
-            self.logger.info(f"Setting up link to {dest}")
+            self.logger.info(f"Setting up link to {dest} ({connect['direct4']}/{connect['direct6']}ms vs {connect['indirect']}ms)")
             status = self.wg.connect(dest=f"http://{dest}:{self.config['listenPort']}",protocols=connect['connect'])
             if status['ipv4']['status'] or status['ipv6']['status']:
                 self.logger.info(f"Link established to http://{dest}:{self.config['listenPort']}")
