@@ -1,5 +1,6 @@
-import time, re
+from threading import Thread
 from Class.base import Base
+import time, re
 
 class Monitor(Base):
     def __init__(self, path, logger):
@@ -16,6 +17,7 @@ class Monitor(Base):
         self.ignorePrefixes = ('lo')
         self.mapping = {0:"bytes",1:"packets",2:"errs",3:"drop",4:"fifo",5:"frame",6:"compressed",7:"multicast",
                         8:"bytes",9:"packets",10:"errs",11:"drop",12:"fifo",13:"colls",14:"carrier",15:"compressed"}
+        self.config = self.readFile(f'{self.path}/configs/config.json')
         # State: history[iface][dir][key]
         self.history = {}
 
@@ -92,10 +94,13 @@ class Monitor(Base):
                         state["breachCount"] += 1
                         if state["breachCount"] >= self.consecutiveBreaches:
                             if current_time - state["lastAlert"] > self.cooldownSeconds:
-                                self.logger.warning(
-                                    f"[{iface} {direction}] Spike: {rate:.1f} {key}/s "
-                                    f"(EMA: {state['ema']:.1f}, Threshold: {threshold:.1f})"
-                                )
+                                # Log alarm
+                                message = f"[{iface} {direction}] Spike: {rate:.1f} {key}/s (EMA: {state['ema']:.1f}, Threshold: {threshold:.1f})"
+                                self.logger.warning(message)
+                                # Push Alarm
+                                if self.config['notifications']['gotifyMonitor']:
+                                    sendMessage = Thread(target=self.notify, args=(self.config['notifications']['gotifyMonitor'],f"Node {self.config['id']} {iface}",message))
+                                    sendMessage.start()
                                 state["lastAlert"] = current_time
                                 state["breachCount"] = 0
                     else:
