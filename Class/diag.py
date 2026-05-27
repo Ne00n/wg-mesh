@@ -207,6 +207,7 @@ class Diag(Base):
             mapping['ipv6'] = data['connectivity']['ipv6']
         pings = self.fping(toPing,10)
         if self.diagnostic[dest]['pings']['measured'] + (60*60*24) < int(time.time()):
+            self.logger.info(f"Resetting ping data for {dest}")
             del self.diagnostic[dest]['pings']
             self.updateDiagnostic(dest)
         self.diagnostic[dest]['pings']['measured'] = int(time.time())
