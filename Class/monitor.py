@@ -1,7 +1,4 @@
-import time
-import re
-from Class.wireguard import Wireguard
-from Class.network import Network
+import time, re
 from Class.base import Base
 
 class Monitor(Base):
