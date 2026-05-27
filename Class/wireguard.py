@@ -60,9 +60,10 @@ class Wireguard(Base):
         if not "client" in self.config['bird']: self.config['bird']['client'] = False
         if not "loglevel" in self.config['bird']: self.config['bird']['loglevel'] = "{ warning, fatal}"
         if not "reloadInterval" in self.config['bird']: self.config['bird']['reloadInterval'] = 600
-        if not "notifications" in self.config: self.config['notifications'] = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""}
+        if not "notifications" in self.config: self.config['notifications'] = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":"","gotifyMonitor":""}
         if not "gotifyChanges" in self.config['notifications']: self.config['notifications']['gotifyChanges'] = ""
         if not "gotifyDiag" in self.config['notifications']: self.config['notifications']['gotifyDiag'] = ""
+        if not "gotifyMonitor" in self.config['notifications']: self.config['notifications']['gotifyMonitor'] = ""
         self.saveFile(self.config,f"{self.path}/configs/config.json")
         if reconfigureDummy: self.reconfigureDummy()
 
@@ -120,7 +121,7 @@ class Wireguard(Base):
         iptables = {"leakPrevention":True,"clampMtu":True}
         bird = {"ospfv2":True,"ospfv3":True,"tick":1,"hello":15,"client":False,"importAll":False,"loglevel":"{ warning, fatal}","reloadInterval":600}
         modules = {"neighbour":False,"update":False}
-        notifications = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":""}
+        notifications = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":"","gotifyMonitor":""}
         config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16",
         "subnetv6":"fe82:","subnetPeer":"172.31.0.0/16","subnetPeerv6":"fe81:","subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],"prefix":"pipe",
         "id":int(id),"networkID":0,"linkTypes":["default"],"linkSettings":{"awgGen":False,"reMesh":False},"defaultLinkType":"default",
