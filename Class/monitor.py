@@ -12,8 +12,8 @@ class Monitor(Base):
         self.stddevMultiplier = 3.0  
         self.minAbsRate = 50.0            
         self.emaAlpha = 0.1                          
-        self.consecutiveBreaches = 1       
-        self.cooldownSeconds = 60          
+        self.consecutiveBreaches = 2       
+        self.cooldownSeconds = 30          
         self.ignorePrefixes = ('lo')
         self.mapping = {0:"bytes",1:"packets",2:"errs",3:"drop",4:"fifo",5:"frame",6:"compressed",7:"multicast",
                         8:"bytes",9:"packets",10:"errs",11:"drop",12:"fifo",13:"colls",14:"carrier",15:"compressed"}
