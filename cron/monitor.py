@@ -29,6 +29,8 @@ systemd.daemon.notify('READY=1')
 
 monitor = Monitor(path,logger)
 logger.info(f"Ready")
+
+interval = 5
 while not shutdown:
-    monitor.run()
-    time.sleep(2)
+    monitor.run(interval)
+    time.sleep(interval)
