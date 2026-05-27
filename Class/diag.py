@@ -215,15 +215,15 @@ class Diag(Base):
             current = int(self.getAvrg(results))
             if ip == mapping['dest']: 
                 self.diagnostic[dest]['pings']['indirect'].append(current)
-                self.diagnostic[dest]['pings']['indirect'][-6:]
+                self.diagnostic[dest]['pings']['indirect'] = self.diagnostic[dest]['pings']['indirect'][-6:]
                 response['indirect'] = round(self.getAvrg(self.diagnostic[dest]['pings']['indirect']),1)
             if ip == mapping['ipv4']: 
                 self.diagnostic[dest]['pings']['direct4'].append(current)
-                self.diagnostic[dest]['pings']['direct4'][-6:]
+                self.diagnostic[dest]['pings']['direct4'] = self.diagnostic[dest]['pings']['direct4'][-6:]
                 response['direct4'] = round(self.getAvrg(self.diagnostic[dest]['pings']['direct4']),1)
             if ip == mapping['ipv6']: 
                 self.diagnostic[dest]['pings']['direct6'].append(current)
-                self.diagnostic[dest]['pings']['direct6'][-6:]
+                self.diagnostic[dest]['pings']['direct6'] = self.diagnostic[dest]['pings']['direct6'][-6:]
                 response['direct6'] = round(self.getAvrg(self.diagnostic[dest]['pings']['direct6']),1)
 
         diag = self.diagnostic[dest]['pings']
