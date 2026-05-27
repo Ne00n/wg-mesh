@@ -11,7 +11,7 @@ class Monitor(Base):
         self.path = path
         self.history = {}
         self.toMonitor = ["packets"]
-        self.threshold = 0.3
+        self.thresholdPercentage = 200
 
     def getNetDev(self):
         response = []
@@ -31,7 +31,7 @@ class Monitor(Base):
             response.append(stats)
         return response
 
-    def run(self):
+    def run(self,interval):
         interfaces = self.getNetDev()
         for stats in interfaces:
             interface = stats['interface']
@@ -39,21 +39,23 @@ class Monitor(Base):
             if not interface in self.history: self.history[interface] = {"RX":{},"TX":{}}
             for key,value in stats['RX'].items():
                 if key in self.toMonitor:
-                    if not key in self.history[interface]['RX']: 
+                    if not key in self.history[interface]['RX']:
                         self.history[interface]['RX'][key] = {"stats":[]}
                         self.history[interface]['RX'][key]['stats'].append({"current":value,"timestamp":current})
                     else:
                         self.history[interface]['RX'][key]['stats'].append({"current":value,"timestamp":current})
                         #keep the last 30s
-                        self.history[interface]['RX'][key]['stats'] = self.history[interface]['RX'][key]['stats'][-15:]
-                        lowest, highest, last = None, None, 0
+                        self.history[interface]['RX'][key]['stats'] = self.history[interface]['RX'][key]['stats'][-12:]
+                        avrg, last = 0, 0
                         for entry in self.history[interface]['RX'][key]['stats']:
+                            if last == 0: 
+                                last = int(entry['current'])
+                                continue
                             diff = int(entry['current']) - last
-                            if lowest is None or diff < lowest:
-                                lowest = diff
-                            if highest is None or diff > highest:
-                                highest = diff
-                        precentage = round((highest - lowest) / lowest * 100,1)
-                        last = int(entry['current'])
-                        if precentage >= self.threshold:
-                            self.logger.warning(f"Interface {interface} reached {precentage * 100}% on RX {key} with diff {diff}")
+                            last = int(entry['current'])
+                            avrg += diff
+                        avrg = avrg / len(self.history[interface]['RX'][key]['stats'])
+                        if diff == 0 or avrg == 0: continue
+                        precentage = round((diff - avrg) / avrg * 100,1)
+                        if precentage >= self.thresholdPercentage and diff > 1000:
+                            self.logger.warning(f"Interface {interface} reached {precentage}% on RX {key} with diff {diff / interval}/s")
