@@ -1,0 +1,14 @@
+[Unit]
+Description=wgmesh-monitor service
+Wants=network-online.target wgmesh-pipe.service
+After=network-online.target wgmesh-pipe.service
+[Service]
+User=wg-mesh
+Group=wg-mesh
+Type=simple
+Restart=on-failure
+StandardOutput=null
+WorkingDirectory=/opt/wg-mesh/cron
+ExecStart=/usr/bin/python3 monitor.py
+[Install]
+WantedBy=multi-user.target
