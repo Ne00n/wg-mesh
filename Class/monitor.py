@@ -1,61 +1,105 @@
-import random, time, json, re, os
+import time
+import re
 from Class.wireguard import Wireguard
 from Class.network import Network
 from Class.base import Base
 
 class Monitor(Base):
-
-    def __init__(self,path,logger):
+    def __init__(self, path, logger):
         self.logger = logger
         super().__init__()
         self.path = path
-        self.history = {}
         self.toMonitor = ["packets"]
-        self.thresholdPercentage = 200
+        self.thresholdMultiplier = 0.5
+        self.stddevMultiplier = 3.0  
+        self.minAbsRate = 50.0            
+        self.emaAlpha = 0.1                          
+        self.consecutiveBreaches = 1       
+        self.cooldownSeconds = 60          
+        self.ignorePrefixes = ('lo')
+        self.mapping = {0:"bytes",1:"packets",2:"errs",3:"drop",4:"fifo",5:"frame",6:"compressed",7:"multicast",
+                        8:"bytes",9:"packets",10:"errs",11:"drop",12:"fifo",13:"colls",14:"carrier",15:"compressed"}
+        # State: history[iface][dir][key]
+        self.history = {}
 
     def getNetDev(self):
         response = []
-        mapping = {0:"interface",1:"bytes",2:"packets",3:"errs",4:"drop",5:"fifo",6:"frame",7:"compressed",8:"multicast",
-                   9:"bytes",10:"packets",11:"errs",12:"drop",13:"fifo",14:"colls",15:"carrier",16:"compressed"}
         for line in open("/proc/net/dev"):
-            if not ":" in line: continue
+            if ':' not in line: continue
             line = line.rstrip().split()
-            stats, interface = {}, ""
-            for index, element in enumerate(line):
-                if index == 0: 
-                    interface = element
-                    stats = {"interface":interface,"RX":{},"TX":{}}
-                else:
-                    category = "RX" if index < 8 else "TX"
-                    stats[category][mapping[index]] = element
+            iface = line[0].rstrip(':')
+            stats = {"interface": iface, "RX": {}, "TX": {}}
+            for i, val in enumerate(line[1:9]):
+                stats["RX"][self.mapping[i]] = int(val)
+            for i, val in enumerate(line[9:]):
+                stats["TX"][self.mapping[i]] = int(val)
             response.append(stats)
         return response
 
-    def run(self,interval):
+    def run(self, interval):
         interfaces = self.getNetDev()
+        current_time = int(time.time())
+
         for stats in interfaces:
-            interface = stats['interface']
-            current = int(time.time())
-            if not interface in self.history: self.history[interface] = {"RX":{},"TX":{}}
-            for key,value in stats['RX'].items():
-                if key in self.toMonitor:
-                    if not key in self.history[interface]['RX']:
-                        self.history[interface]['RX'][key] = {"stats":[]}
-                        self.history[interface]['RX'][key]['stats'].append({"current":value,"timestamp":current})
+            iface = stats['interface']
+            if any(iface.startswith(p) for p in self.ignorePrefixes): continue
+
+            for direction in ["RX", "TX"]:
+                for key in self.toMonitor:
+                    if key not in stats[direction]: continue
+                    current_val = int(stats[direction][key])
+
+                    # Initialize tracking state
+                    if iface not in self.history: self.history[iface] = {}
+                    if direction not in self.history[iface]: self.history[iface][direction] = {}
+                    if key not in self.history[iface][direction]:
+                        self.history[iface][direction][key] = {
+                            "prevVal": current_val,
+                            "rates": [],
+                            "ema": 0.0,
+                            "breachCount": 0,
+                            "lastAlert": 0
+                        }
+
+                    state = self.history[iface][direction][key]
+                    # Calculate rate (samples/sec)
+                    delta = current_val - state["prevVal"]
+                    if delta < 0: delta = current_val  # Counter reset safety
+                    rate = delta / interval if interval > 0 else 0
+                    state["prevVal"] = current_val
+
+                    # Update Exponential Moving Average (baseline)
+                    if state["ema"] == 0:
+                        state["ema"] = rate
                     else:
-                        self.history[interface]['RX'][key]['stats'].append({"current":value,"timestamp":current})
-                        #keep the last 30s
-                        self.history[interface]['RX'][key]['stats'] = self.history[interface]['RX'][key]['stats'][-12:]
-                        avrg, last = 0, 0
-                        for entry in self.history[interface]['RX'][key]['stats']:
-                            if last == 0: 
-                                last = int(entry['current'])
-                                continue
-                            diff = int(entry['current']) - last
-                            last = int(entry['current'])
-                            avrg += diff
-                        avrg = avrg / len(self.history[interface]['RX'][key]['stats'])
-                        if diff == 0 or avrg == 0: continue
-                        precentage = round((diff - avrg) / avrg * 100,1)
-                        if precentage >= self.thresholdPercentage and diff > 1000:
-                            self.logger.warning(f"Interface {interface} reached {precentage}% on RX {key} with diff {diff / interval}/s")
+                        state["ema"] = self.emaAlpha * rate + (1 - self.emaAlpha) * state["ema"]
+
+                    # Rolling window for volatility (last 60 samples = 5 min)
+                    state["rates"].append(rate)
+                    if len(state["rates"]) > 60: state["rates"].pop(0)
+
+                    # Need baseline stability before alerting
+                    if len(state["rates"]) < 10: continue
+
+                    # Calculate standard deviation
+                    avg = sum(state["rates"]) / len(state["rates"])
+                    variance = sum((x - avg) ** 2 for x in state["rates"]) / len(state["rates"])
+                    stddev = variance ** 0.5
+
+                    # Dynamic threshold: baseline spike + volatility buffer + absolute floor
+                    threshold = (state["ema"] * (1 + self.thresholdMultiplier)) + (self.stddevMultiplier * stddev)
+                    threshold = max(threshold, self.minAbsRate)
+
+                    # Breach detection with dampening & cooldown
+                    if rate > threshold:
+                        state["breachCount"] += 1
+                        if state["breachCount"] >= self.consecutiveBreaches:
+                            if current_time - state["lastAlert"] > self.cooldownSeconds:
+                                self.logger.warning(
+                                    f"[{iface} {direction}] Spike: {rate:.1f} {key}/s "
+                                    f"(EMA: {state['ema']:.1f}, Threshold: {threshold:.1f})"
+                                )
+                                state["lastAlert"] = current_time
+                                state["breachCount"] = 0
+                    else:
+                        state["breachCount"] = 0
