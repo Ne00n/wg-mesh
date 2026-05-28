@@ -11,7 +11,7 @@ class Monitor(Base):
         self.thresholdMultiplier = 0.5
         self.stddevMultiplier = 3.0  
         self.minAbsRatePackets = 1000.0
-        self.minAbsRateBytes = 100000.0
+        self.minAbsRateBytes = 1000000.0
         self.emaAlpha = 0.1                          
         self.consecutiveBreaches = 2       
         self.cooldownSeconds = 30          
