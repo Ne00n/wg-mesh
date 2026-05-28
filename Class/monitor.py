@@ -7,10 +7,11 @@ class Monitor(Base):
         self.logger = logger
         super().__init__()
         self.path = path
-        self.toMonitor = ["packets"]
+        self.toMonitor = ["packets", "bytes"]  
         self.thresholdMultiplier = 0.5
         self.stddevMultiplier = 3.0  
-        self.minAbsRate = 50.0            
+        self.minAbsRatePackets = 1000.0
+        self.minAbsRateBytes = 100000.0
         self.emaAlpha = 0.1                          
         self.consecutiveBreaches = 2       
         self.cooldownSeconds = 30          
@@ -18,7 +19,6 @@ class Monitor(Base):
         self.mapping = {0:"bytes",1:"packets",2:"errs",3:"drop",4:"fifo",5:"frame",6:"compressed",7:"multicast",
                         8:"bytes",9:"packets",10:"errs",11:"drop",12:"fifo",13:"colls",14:"carrier",15:"compressed"}
         self.config = self.readFile(f'{self.path}/configs/config.json')
-        # State: history[iface][dir][key]
         self.history = {}
 
     def getNetDev(self):
@@ -48,7 +48,6 @@ class Monitor(Base):
                     if key not in stats[direction]: continue
                     current_val = int(stats[direction][key])
 
-                    # Initialize tracking state
                     if iface not in self.history: self.history[iface] = {}
                     if direction not in self.history[iface]: self.history[iface][direction] = {}
                     if key not in self.history[iface][direction]:
@@ -77,7 +76,6 @@ class Monitor(Base):
                     state["rates"].append(rate)
                     if len(state["rates"]) > 60: state["rates"].pop(0)
 
-                    # Need baseline stability before alerting
                     if len(state["rates"]) < 10: continue
 
                     # Calculate standard deviation
@@ -85,17 +83,29 @@ class Monitor(Base):
                     variance = sum((x - avg) ** 2 for x in state["rates"]) / len(state["rates"])
                     stddev = variance ** 0.5
 
-                    # Dynamic threshold: baseline spike + volatility buffer + absolute floor
-                    threshold = (state["ema"] * (1 + self.thresholdMultiplier)) + (self.stddevMultiplier * stddev)
-                    threshold = max(threshold, self.minAbsRate)
+                    # Metric-specific absolute floor
+                    min_floor = self.minAbsRatePackets if key == "packets" else self.minAbsRateBytes
 
-                    # Breach detection with dampening & cooldown
+                    # Dynamic threshold
+                    threshold = (state["ema"] * (1 + self.thresholdMultiplier)) + (self.stddevMultiplier * stddev)
+                    threshold = max(threshold, min_floor)
+
                     if rate > threshold:
                         state["breachCount"] += 1
                         if state["breachCount"] >= self.consecutiveBreaches:
                             if current_time - state["lastAlert"] > self.cooldownSeconds:
-                                # Log alarm
-                                message = f"[{iface} {direction}] Spike: {rate:.1f} {key}/s (EMA: {state['ema']:.1f}, Threshold: {threshold:.1f})"
+                                if key == "packets":
+                                    displayRate = f"{rate:.0f}"
+                                    dispEMA = f"{state['ema']:.0f}"
+                                    dispThresh = f"{threshold:.0f}"
+                                    unit = "pps"
+                                else:
+                                    displayRate = f"{rate / 1024.0:.1f}"
+                                    dispEMA = f"{state['ema'] / 1024.0:.1f}"
+                                    dispThresh = f"{threshold / 1024.0:.1f}"
+                                    unit = "KB/s"
+
+                                message = f"[{iface} {direction}] {key.upper()} Spike: {displayRate} {unit} (EMA: {dispEMA}, Threshold: {dispThresh})"
                                 self.logger.warning(message)
                                 # Push Alarm
                                 if self.config['notifications']['gotifyMonitor']:
