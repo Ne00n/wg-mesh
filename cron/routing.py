@@ -203,10 +203,7 @@ while True:
                     if avrg < cutoff:
                         toBeAggregated.append(ipaddress.ip_network(subnet))
                         #routed += 1
-                if routed == len(rows['subnets']):
-                    toAggregate.append(ipaddress.ip_network(prefix))
-                else:
-                    toAggregate.extend(toBeAggregated)
+                toAggregate.extend(toBeAggregated)
             aggregated = tools.aggregate(toAggregate)
             for subnet in aggregated:
                 rules += f'route {subnet} via {gateway};\n'
