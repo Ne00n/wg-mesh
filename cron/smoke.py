@@ -19,10 +19,12 @@ data = {}
 for index, target in enumerate(targets):
     target = target.replace("0/30","1")
     print(f"Getting {index} of {len(targets) -1}")
-    resp = wireguard.AskProtocol(f'http://{target}:8080','')
-    if not resp: 
+    for run in range(1,3):
+        resp = wireguard.AskProtocol(f'http://{target}:8080','')
+        if resp: break
         print(f"No response from {target}")
-        continue
+        time.sleep(3)
+    if not resp: continue
     if not "geo" in resp or not resp['geo']: 
         print(f"No geo from {target}")
         continue
