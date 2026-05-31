@@ -194,11 +194,9 @@ while True:
                         logger.warning(f"Missing latency for {subnet} in {asn}.json")
                         continue
                     avrg = tools.getAvrg(latency)
-                    if "location" in details and str(config['id']) in details['location']:
-                        minimum = details['location'][str(config['id'])]['minimum']
-                        cutoff = details['location'][str(config['id'])]['cutoff']
-                    else:
-                        cutoff, minimum = asnConfig['cutOff'], 0
+                    cutoff, minimum = asnConfig['cutOff'], 0
+                    if 'min' in details: minimum = details['min']
+                    if 'max' in details: cutoff = details['max']
                     if avrg < minimum: continue
                     if avrg < cutoff:
                         if "exit" in details and not config['id'] in details['exit']: continue
