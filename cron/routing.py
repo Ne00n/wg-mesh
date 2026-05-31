@@ -201,6 +201,7 @@ while True:
                         cutoff, minimum = asnConfig['cutOff'], 0
                     if avrg < minimum: continue
                     if avrg < cutoff:
+                        if "exit" in details and not config['id'] in details['exit']: continue
                         toBeAggregated.append(ipaddress.ip_network(subnet))
                         #routed += 1
                 toAggregate.extend(toBeAggregated)
