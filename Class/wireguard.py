@@ -387,7 +387,7 @@ class Wireguard(Base):
             print("Unable to fetch public ip from dest")
             return False
         splitted = dest.split(".")
-        interface = self.getInterface(splitted[2],"v4","forward")
+        interface = self.getInterface(splitted[2],"v4","","forward")
         if os.path.isfile(f"{self.path}/links/{interface}.sh"):
             self.setInterface(interface,"down")
             self.cleanInterface(interface,False)
