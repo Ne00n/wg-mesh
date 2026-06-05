@@ -104,8 +104,10 @@ while True:
     files = list(asnConfig['asnList'])
     random.shuffle(files)
     for file in files:
+        details = asnConfig['asnList'][file]
         file = f"{file}.json"
         if not os.path.isfile(f"{path}/data/{file}"): continue
+        if "exit" in details and not config['id'] in details['exit']: continue
         logger.debug(f"Loading {file}")
         asnData = tools.readFile(f"{path}/data/{file}")
         if tools.isCached(f"{path}/data/cache/{file}"):
