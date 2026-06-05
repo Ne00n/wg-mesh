@@ -88,6 +88,19 @@ fi'''
             #if /23 is used, override 0 to 1 since the VXLAN can't use a zero, 1 can't be used anyway since blocked by collision detection
             if index == int(config['id']) or (int(config['id']) == 0 and index == 1): return f"{str(host)}/24"
 
+    def genForward(self,destination,local,port=51820):
+        template = f'''#!/bin/bash
+if [ "$1" == "up" ];  then
+    sudo iptables -t nat -A PREROUTING -p udp --dport {port} -j DNAT --to-destination {destination}:{port}
+    sudo iptables -t nat -A POSTROUTING -p udp -d {destination} --dport {port} -j SNAT --to-source {local}
+    sudo iptables -A FORWARD -p udp --dport {port} -d {destination} -j ACCEPT
+else
+    sudo iptables -t nat -D PREROUTING -p udp --dport {port} -j DNAT --to-destination {destination}:{port}
+    sudo iptables -t nat -D POSTROUTING -p udp -d {destination} --dport {port} -j SNAT --to-source {local}
+    sudo iptables -D FORWARD -p udp --dport {port} -d {destination} -j ACCEPT
+fi      '''
+        return template
+
     def genDummy(self,config,connectivity):
         serverID = int(config['id'])
         serverID += config['vxlanOffset']
