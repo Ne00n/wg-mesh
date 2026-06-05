@@ -26,9 +26,8 @@ class CLI(Base):
     def connect(self,dest,token,linkType="default",port=51820,network=""):
         self.wg = Wireguard(self.path)
         config = self.wg.getConfig()
-        if dest.startswith("pipe"):
-            pipeTarget = re.findall(f"^{config['prefix']}([0-9]+)",dest, re.MULTILINE)
-            if not pipeTarget: exit("Failed to parse pipe")
+        pipeTarget = re.findall(f"^{config['prefix']}([0-9]+)",dest, re.MULTILINE)
+        if pipeTarget:
             subnetPrefix = ".".join(config['subnet'].split(".")[:2])
             dest = f"http://{subnetPrefix}.{pipeTarget[0]}.1:{config['listenPort']}"
         if linkType == "awg": linkType = "amneziawg"
