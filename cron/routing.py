@@ -101,7 +101,7 @@ while True:
 
     subnets, mapping, asnFile, pingable = [], {}, {}, {}
     logger.info("Processing local asn's")
-    files = asnConfig['asnList']
+    files = list(asnConfig['asnList'])
     random.shuffle(files)
     for file in files:
         file = f"{file}.json"
