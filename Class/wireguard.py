@@ -381,7 +381,6 @@ class Wireguard(Base):
         return status
 
     def forward(self,dest):
-        print(f"Forwarding to {dest}")
         data = self.AskProtocol(dest)
         if not data: 
             print("Unable to fetch public ip from dest")
@@ -391,7 +390,9 @@ class Wireguard(Base):
         if os.path.isfile(f"{self.path}/links/{interface}.sh"):
             self.setInterface(interface,"down")
             self.cleanInterface(interface,False)
+            print(f"Deleted {interface}")
         else:
+            print(f"Forwarding to {dest}")
             configs = self.getConfigs(False)
             freeSubnet,freeSubnetv6,freePort = self.minimal(configs,self.config['basePort'],False)
             forward = self.Templator.genForward(data['connectivity']['ipv4'],self.config['connectivity']['ipv4'],freePort)
