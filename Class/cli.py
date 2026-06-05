@@ -45,6 +45,11 @@ class CLI(Base):
 
     def forward(self,dest):
         self.wg = Wireguard(self.path)
+        config = self.wg.getConfig()
+        pipeTarget = re.findall(f"^{config['prefix']}([0-9]+)",dest, re.MULTILINE)
+        if pipeTarget:
+            subnetPrefix = ".".join(config['subnet'].split(".")[:2])
+            dest = f"http://{subnetPrefix}.{pipeTarget[0]}.1:{config['listenPort']}"
         self.wg.forward(dest)
 
     def tunnel(self,params):

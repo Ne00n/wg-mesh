@@ -386,13 +386,14 @@ class Wireguard(Base):
         if not data: 
             print("Unable to fetch public ip from dest")
             return False
-        interface = self.getInterface(dest,"v4","forward")
+        splitted = dest.split(".")
+        interface = self.getInterface(splitted[2],"v4","forward")
         if os.path.isfile(f"{self.path}/links/{interface}.sh"):
             self.setInterface(interface,"down")
             self.cleanInterface(interface,False)
         else:
             configs = self.getConfigs(False)
-            freeSubnet,freeSubnetv6,freePort = self.minimal(configs,self.confg['basePort'],False)
+            freeSubnet,freeSubnetv6,freePort = self.minimal(configs,self.config['basePort'],False)
             forward = self.Templator.genForward(data['connectivity']['ipv4'],self.config['connectivity']['ipv4'],freePort)
             self.saveFile(forward,f"{self.path}/links/{interface}.sh")
             self.setInterface(interface,"up")
