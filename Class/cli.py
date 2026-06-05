@@ -23,9 +23,30 @@ class CLI(Base):
         self.wg = Wireguard(self.path)
         self.wg.bender()
 
-    def connect(self,dest,token,linkType="default",port=51820,network=""):
+    def connect(self,params):
+        dest, token, linkType, port, network = "","dummy","",51820,""
+        linkTypes = ["default","wgobfs","ipt_xor","amneziawg","awg"]
         self.wg = Wireguard(self.path)
         config = self.wg.getConfig()
+        for param in params:
+            if param.startswith("http://") or param.startswith(config['prefix']): 
+                dest = param
+                continue
+            if param.startswith("TOK") or param == "dummy": 
+                token = param
+                continue
+            if param in linkTypes:
+                linkType = param
+                if linkType == "awg": linkType = "amneziawg"
+                continue
+            if param == "peer": 
+                network = "peer"
+                continue
+            try:
+                port = int(param)
+            except:
+                pass
+        if not dest: exit(f"Missing destination e.g http://10.0.2.1:8080 or pipe2")
         pipeTarget = re.findall(f"^{config['prefix']}([0-9]+)",dest, re.MULTILINE)
         if pipeTarget:
             subnetPrefix = ".".join(config['subnet'].split(".")[:2])

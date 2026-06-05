@@ -21,11 +21,7 @@ elif sys.argv[1] == "bender":
     cli.bender()
 elif sys.argv[1] == "connect" or sys.argv[1] == "peer":
     if len(sys.argv) <= 2: exit("URL is missing.")
-    token = "dummy" if len(sys.argv) <= 3 else sys.argv[3]
-    linkType = "" if len(sys.argv) <= 4 else sys.argv[4]
-    port = 51820 if len(sys.argv) <= 5 else sys.argv[5]
-    network = "peer" if sys.argv[1] == "peer" else ""
-    cli.connect(sys.argv[2],token,linkType,port,network)
+    cli.connect(sys.argv[2:])
 elif sys.argv[1] == "forward":
     cli.forward(sys.argv[2])
 elif sys.argv[1] == "tunnel":
