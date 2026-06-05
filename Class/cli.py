@@ -43,6 +43,10 @@ class CLI(Base):
                 time.sleep(1)
             print("Meshing seems to have failed.")
 
+    def forward(self,dest):
+        self.wg = Wireguard(self.path)
+        self.wg.forward(dest)
+
     def tunnel(self,params):
         self.wg = Wireguard(self.path)
         config = self.wg.getConfig()

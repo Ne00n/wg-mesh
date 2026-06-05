@@ -380,22 +380,19 @@ class Wireguard(Base):
                 return status
         return status
 
-    def forward(self,jump,dest):
-        print(f"Forwarding to {dest} via {jump}")
-        #prepare payload
-        payload = {"id":self.config['id'],"destination":dest}
-        #call destination
-        success, req = self.call(f'{jump}/forward/create',payload)
-        if success == False: return False,None
-        if req.status_code == 412:
-            print(f"Forward rule already exists on {jump}")
-        elif req.status_code == 200:
-            resp = req.json()
-            return True,resp
-        else:
-            print(f"Failed to connect to {jump}")
-            print(f"Got {req.text} as response")
-            return False,None
+    def forward(self,dest):
+        print(f"Forwarding to {dest}")
+        data = self.AskProtocol(dest)
+        if not data: 
+            print("Unable to fetch public ip from dest")
+            return False
+        interface = self.getInterface(dest,"v4","forward")
+        configs = self.getConfigs(False)
+        freeSubnet,freeSubnetv6,freePort = self.minimal(configs,self.confg['basePort'],False)
+        forward = self.Templator.genForward(data['connectivity']['ipv4'],self.config['connectivity']['ipv4'],freePort)
+        self.saveFile(forward,f"{self.path}/links/{interface}.sh")
+        self.setInterface(interface,"up")
+        print(f"Created {interface} to {data['connectivity']['ipv4']} on {freePort}")
 
     def updateLink(self,link,data):
         config = self.readFile(f"{self.path}/links/{link}.sh")
