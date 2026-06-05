@@ -86,6 +86,9 @@ class Validate():
         #validate protocol
         if not "protocol" in payload or not self.protocol(payload['protocol']):
             return 400,"Invalid Protocol"
+        #check if forward is in payload
+        if not "forward" in payload and type(payload["forward"]) == bool:
+            return 400,"Missing Forward"
         #prevent local connects
         if payload['id'] == config['id']:
             return 400,"Invalid Origin"
