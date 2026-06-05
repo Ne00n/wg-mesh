@@ -314,7 +314,7 @@ class Wireguard(Base):
             if linkType in local['linkTypes']: available.append(linkType)
         return available
 
-    def connect(self,dest,token="",linkType="",port=51820,network="",protocols=["ipv4","ipv6"]):
+    def connect(self,dest,token="",linkType="",port=51820,network="",forward=False,protocols=["ipv4","ipv6"]):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
@@ -346,7 +346,7 @@ class Wireguard(Base):
         for protocol in availableProtocols:
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"protocol":protocol,
-            "initial":self.isInitial,"linkType":linkType,"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
+            "initial":self.isInitial,"linkType":linkType,"prefix":subnetPrefix,"network":network,"forward":forward,"connectivity":self.config['connectivity']}
             if port != 51820: payload["port"] = port
             success, req = self.call(f'{dest}/connect',payload)
             if success == False: return status
@@ -357,16 +357,17 @@ class Wireguard(Base):
                 resp = req.json()
                 #check if v6 or v4
                 interfaceType = "v6" if protocol == "ipv6" else ""
+                prefix = "fw" if forward else ""
                 connectivity =  f"[{resp['connectivity']['ipv6']}]"  if protocol == "ipv6" else resp['connectivity']['ipv4']
                 #interface
-                interface = self.getInterface(resp['id'],interfaceType,network)
+                interface = self.getInterface(resp['id'],interfaceType,network,prefix)
                 #generate config
                 clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,subnetPrefix,data['subnetPrefix'])
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
                 self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
-                linkConfig = {'remote':f"{data['subnetPrefix']}.{resp['id']}.1",'remotePublic':connectivity.replace("[","").replace("]",""),"linkType":linkType,"mtu":1412}
+                linkConfig = {'remote':f"{data['subnetPrefix']}.{resp['id']}.1",'remotePublic':connectivity.replace("[","").replace("]",""),"linkType":linkType,"forward":forward,"mtu":1412}
                 self.saveFile(linkConfig,f"{self.path}/links/{interface}.json")
                 self.setInterface(interface,"up")
                 status[protocol]['status'] = True
