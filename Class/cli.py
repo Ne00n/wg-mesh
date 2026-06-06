@@ -24,7 +24,7 @@ class CLI(Base):
         self.wg.bender()
 
     def connect(self,params):
-        dest, token, linkType, port, network, forward = "","dummy","",51820,"",False
+        dest, token, linkType, port, network, forward, forwardTo = "", "dummy", "", 51820, "", False, 0
         linkTypes = ["default","wgobfs","ipt_xor","amneziawg","awg"]
         self.wg = Wireguard(self.path)
         config = self.wg.getConfig()
@@ -42,7 +42,11 @@ class CLI(Base):
             if param == "peer": 
                 network = "peer"
                 continue
-            if param == "forward":
+            if param.startswith("forward"):
+                forwardTarget = re.findall(f"^forward([0-9]+)",param, re.MULTILINE)
+                if forwardTarget:
+                    subnetPrefix = ".".join(config['subnet'].split(".")[:2])
+                    forwardTo = f"http://{subnetPrefix}.{forwardTarget[0]}.1:{config['listenPort']}"
                 forward = True
                 continue
             try:
@@ -55,7 +59,7 @@ class CLI(Base):
             subnetPrefix = ".".join(config['subnet'].split(".")[:2])
             dest = f"http://{subnetPrefix}.{pipeTarget[0]}.1:{config['listenPort']}"
         if linkType == "awg": linkType = "amneziawg"
-        status = self.wg.connect(dest,token,linkType,port,network,forward)
+        status = self.wg.connect(dest,token,linkType,port,network,forward,forwardTo)
         if self.wg.getInitial():
             if not status['ipv4']['status'] and not status['ipv6']['status']:
                 print(f"Initial link wasn't setup.")

@@ -314,7 +314,7 @@ class Wireguard(Base):
             if linkType in local['linkTypes']: available.append(linkType)
         return available
 
-    def connect(self,dest,token="",linkType="",port=51820,network="",forward=False,protocols=["ipv4","ipv6"]):
+    def connect(self,dest,token="",linkType="",port=51820,network="",forward=False,forwardTo=None,protocols=["ipv4","ipv6"]):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
@@ -326,6 +326,10 @@ class Wireguard(Base):
         #ask remote about available protocols
         data = self.AskProtocol(dest,token,network)
         if not data: return status
+        #ask forwardTo node about public ip
+        if forward and forwardTo:
+            forwarded = self.AskProtocol(forwardTo)
+            if not forwarded: return status
         availableProtocols = []
         #start with the protocol which is available
         if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4'] and "ipv4" in protocols:
@@ -357,8 +361,12 @@ class Wireguard(Base):
                 resp = req.json()
                 #check if v6 or v4
                 interfaceType = "v6" if protocol == "ipv6" else ""
-                prefix = "fw" if forward else ""
-                connectivity =  f"[{resp['connectivity']['ipv6']}]"  if protocol == "ipv6" else resp['connectivity']['ipv4']
+                if forward and forwarded:
+                    connectivity = f"[{forwarded['connectivity']['ipv6']}]" if protocol == "ipv6" else forwarded['connectivity']['ipv4']
+                    prefix = "fw"
+                else:
+                    connectivity = f"[{resp['connectivity']['ipv6']}]" if protocol == "ipv6" else resp['connectivity']['ipv4']
+                    prefix = ""
                 #interface
                 interface = self.getInterface(resp['id'],interfaceType,network,prefix)
                 #generate config
