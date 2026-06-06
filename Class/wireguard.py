@@ -193,6 +193,7 @@ class Wireguard(Base):
         return interface.replace(".sh","")
 
     def getInterfaceRemote(self,interface,network=""):
+        if "fw" in interface: network = "fw"
         v6 = "v6" if "v6" in interface else ""
         return f"{self.prefix}{network}{self.config['id']}{v6}"
 
