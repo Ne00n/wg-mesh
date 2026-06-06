@@ -366,12 +366,11 @@ class Wireguard(Base):
                 interfaceType = "v6" if protocol == "ipv6" else ""
                 if forward and forwarded:
                     connectivity = f"[{forwarded['connectivity']['ipv6']}]" if protocol == "ipv6" else forwarded['connectivity']['ipv4']
-                    prefix = "fw"
+                    network = "fw"
                 else:
                     connectivity = f"[{resp['connectivity']['ipv6']}]" if protocol == "ipv6" else resp['connectivity']['ipv4']
-                    prefix = ""
                 #interface
-                interface = self.getInterface(resp['id'],interfaceType,network,prefix)
+                interface = self.getInterface(resp['id'],interfaceType,network)
                 #generate config
                 clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,subnetPrefix,data['subnetPrefix'])
                 print(f"Creating & Starting {interface}")

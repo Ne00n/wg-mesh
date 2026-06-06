@@ -154,9 +154,9 @@ def index():
             logging.info(f"ID Collision from {requestIP}")
             return HTTPResponse(status=416, body="Collision")
     #generate interface name
-    prefix = "fw" if payload['forward'] else ""
+    if payload['forward']: payload['network'] = "fw"
     interfaceType = "v6" if payload['protocol'] == "ipv6" else ""
-    interface = wg.getInterface(payload['id'],interfaceType,payload['network'],prefix)
+    interface = wg.getInterface(payload['id'],interfaceType,payload['network'])
     #check if interface exists
     if os.path.isfile(f"{folder}/links/{interface}.sh"):
         logging.info(f"Link already exists, {requestIP}")
