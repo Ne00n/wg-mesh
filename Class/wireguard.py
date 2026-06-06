@@ -405,7 +405,7 @@ class Wireguard(Base):
         else:
             print(f"Forwarding to {dest}")
             configs = self.getConfigs(False)
-            freeSubnet,freeSubnetv6,freePort = self.minimal(configs,self.config['basePort'],False)
+            freeSubnet,freeSubnetv6,freePort = self.minimal(configs,0,False)
             forward = self.Templator.genForward(data['connectivity']['ipv4'],self.config['connectivity']['ipv4'],freePort)
             self.saveFile(forward,f"{self.path}/links/{interface}.sh")
             self.setInterface(interface,"up")
