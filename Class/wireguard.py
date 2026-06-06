@@ -158,7 +158,7 @@ class Wireguard(Base):
             configIPv6 = re.findall(f"ip -6 address add dev.*?([a-zA-Z0-9:]+\/127)",config,re.MULTILINE)
             if "forward" in file:
                 forwardPort = re.findall(f"--dport ([0-9]+)",config,re.MULTILINE)
-                ports.append(forwardPort[0])
+                ports.append(forwardPort[0][0])
             #Clients are ignored since they use a different subnet
             if not configPort: continue
             ports.append(int(configPort[0]))
