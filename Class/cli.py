@@ -29,7 +29,7 @@ class CLI(Base):
         self.wg = Wireguard(self.path)
         config = self.wg.getConfig()
         for param in params:
-            if param.startswith("http://") or param.startswith(config['prefix']): 
+            if param.startswith("http://") or param.startswith("https://") or param.startswith(config['prefix']): 
                 dest = param
                 continue
             if param.startswith("TOK") or param == "dummy": 
