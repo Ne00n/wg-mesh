@@ -118,8 +118,10 @@ while True:
                 logger.warning(f"Failed to fetch file {file}")
                 if not os.path.isfile(f"{path}/data/cache/{file}"): continue
                 logger.info(f"Using old cached file for {file}")
-            pingable = req.json()
-            tools.saveFile(pingable,f"{path}/data/cache/{file}")
+                pingable = tools.readFile(f"{path}/data/cache/{file}")
+            else:
+                pingable = req.json()
+                tools.saveFile(pingable,f"{path}/data/cache/{file}")
         for prefix, details in asnData.items():
             #ignore ipv6 for now
             if "::" in prefix: continue
