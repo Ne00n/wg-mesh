@@ -367,19 +367,38 @@ class CLI(Base):
     def debug(self,targetLink):
         self.wg = Wireguard(self.path)
         links = self.wg.getLinks()
-        mapping = {}
-        for currentLink, details in links.items():
-            if f"{targetLink}.sh" == currentLink:
-                mapping = {details['remote']:"Remote",details['vxlan']:"VXLAN",details['remotePublic']:"Public"}
-                targets = [details['vxlan'],details['remote'],details['remotePublic']]
-                fping = self.wg.fping(targets,3)
-                break
-        if not mapping: return
-        print("Ping results")
-        for ip, pings in fping.items():
-            print(f"{mapping[ip]}: {len(pings)} of 3 ({ip})")
-        if details['remotePublic']:
-            print(f"Running MTR to {details['remotePublic']}")
-            mtr = self.cmd(f'mtr {details["remotePublic"]} --report --aslookup --report-cycles 5')
-            if not mtr[0] and mtr[1]: mtr[0] = mtr[1]
-            print(mtr[0])
+        if targetLink.startswith("AS"):
+            targetLink = targetLink.replace("AS","")
+            if not os.path.isfile(f"{self.path}/data/{targetLink}.json"): return False
+            asnData, results = self.readFile(f"{self.path}/data/{targetLink}.json"), []
+
+            for cidr, info in asnData.items():
+                subnets = info.get("subnets", {})
+                for subnet, pings in subnets.items():
+                    if not pings: continue
+                    ping = pings[0]
+                    results.append((ping, subnet))
+
+            results.sort()
+            print(f"{'PING':<8} | {'SUBNET'}")
+            print("-" * 30)
+            for ping, subnet in results:
+                print(f"{ping:<8} | {subnet}")
+
+        else:
+            mapping = {}
+            for currentLink, details in links.items():
+                if f"{targetLink}.sh" == currentLink:
+                    mapping = {details['remote']:"Remote",details['vxlan']:"VXLAN",details['remotePublic']:"Public"}
+                    targets = [details['vxlan'],details['remote'],details['remotePublic']]
+                    fping = self.wg.fping(targets,3)
+                    break
+            if not mapping: return
+            print("Ping results")
+            for ip, pings in fping.items():
+                print(f"{mapping[ip]}: {len(pings)} of 3 ({ip})")
+            if details['remotePublic']:
+                print(f"Running MTR to {details['remotePublic']}")
+                mtr = self.cmd(f'mtr {details["remotePublic"]} --report --aslookup --report-cycles 5')
+                if not mtr[0] and mtr[1]: mtr[0] = mtr[1]
+                print(mtr[0])
