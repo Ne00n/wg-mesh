@@ -167,6 +167,8 @@ class Base:
             for subnet, details in result.items():
                 avg = self.getAvrg(details)
                 #results.append([subnet.split(".")[-1],int(avg)])
+                #ignore high/dead ones
+                if int(avg) > 1000: continue
                 results.append(int(avg))
             if not "any" in data['details']['settings']: break
         return {data['subnet']:results}
