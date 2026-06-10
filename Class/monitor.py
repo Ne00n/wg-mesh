@@ -60,7 +60,7 @@ class Monitor(Base):
         steal = (delta / self.hz) / elapsed * 100 / self.cores
         if steal > 1:
             self.logger.warning(f"CPU STEAL: {steal:.2f}%")
-            self.monitor['events']['steal'][int(time.time())] = steal
+            self.monitor['events']['steal'][int(time.time())] = round(steal,2)
         self.steal['prevSteal'] = curr
         self.steal['prevTime'] = time.monotonic()
 
