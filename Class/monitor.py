@@ -30,7 +30,9 @@ class Monitor(Base):
         for event,details in list(self.monitor['events']['steal'].items()):
             if time.time() > int(event) + 7200:
                 del self.monitor['events']['steal'][event]
-        self.saveFile(self.monitor,f"{self.path}/configs/monitor.json")
+        self.saveFile(self.monitor,f"{self.path}/configs/tmpMonitor.json")
+        os.replace(f"{self.path}/configs/tmpMonitor.json", f"{self.path}/configs/monitor.json")
+        os.remove(f"{self.path}/configs/tmpMonitor.json")
 
     def initMonitor(self):
         if not "events" in self.monitor: self.monitor['events'] = {"steal":{}}
