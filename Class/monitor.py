@@ -41,7 +41,7 @@ class Monitor(Base):
         elapsed = time.time() - self.steal['prevTime']
         steal = (curr - self.steal['prevSteal']) / (elapsed * 100)
         if steal > 1:
-            self.logger.warning(f"{time.strftime('%H:%M:%S')} CPU STEAL: {steal:.2f}%")
+            self.logger.warning(f"CPU STEAL: {steal:.2f}%")
         self.steal['prevSteal'] = curr
         self.steal['prevTime'] = time.time()
 
