@@ -28,7 +28,7 @@ class Monitor(Base):
 
     def saveMonitor(self):
         for event,details in list(self.monitor['events']['steal'].items()):
-            if time.monotonic() > int(event) + 7200:
+            if time.time() > int(event) + 7200:
                 del self.monitor['events']['steal'][event]
         self.saveFile(self.monitor,f"{self.path}/configs/monitor.json")
 
@@ -60,7 +60,7 @@ class Monitor(Base):
         steal = (delta / self.hz) / elapsed * 100 / self.cores
         if steal > 1:
             self.logger.warning(f"CPU STEAL: {steal:.2f}%")
-            self.monitor['events']['steal'][int(time.monotonic())] = steal
+            self.monitor['events']['steal'][int(time.time())] = steal
         self.steal['prevSteal'] = curr
         self.steal['prevTime'] = time.monotonic()
 
