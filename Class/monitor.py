@@ -42,15 +42,15 @@ class Monitor(Base):
         with open('/proc/stat') as f: curr = int(f.readline().split()[8])
         if self.steal['prevSteal'] is None:
             self.steal['prevSteal'] = curr
-            self.steal['prevTime'] = time.time()
+            self.steal['prevTime'] = time.monotonic()
             return
-        elapsed = time.time() - self.steal['prevTime']
+        elapsed = time.monotonic() - self.steal['prevTime']
         delta = curr - self.steal['prevSteal']
         steal = (delta / self.hz) / elapsed * 100 / self.cores
         if steal > 1:
             self.logger.warning(f"CPU STEAL: {steal:.2f}%")
         self.steal['prevSteal'] = curr
-        self.steal['prevTime'] = time.time()
+        self.steal['prevTime'] = time.monotonic()
 
     def run(self, interval):
         interfaces = self.getNetDev()
