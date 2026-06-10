@@ -27,6 +27,9 @@ class Monitor(Base):
         self.history = {}
 
     def saveMonitor(self):
+        for event,details in list(self.monitor['events']['steal'].items()):
+            if time.time() > int(event) + 7200:
+                del self.monitor['events']['steal'][event]
         self.saveFile(self.monitor,f"{self.path}/configs/monitor.json")
 
     def initMonitor(self):
