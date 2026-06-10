@@ -18,6 +18,7 @@ class Monitor(Base):
         self.ignorePrefixes = ('lo')
         self.mapping = {0:"bytes",1:"packets",2:"errs",3:"drop",4:"fifo",5:"frame",6:"compressed",7:"multicast",
                         8:"bytes",9:"packets",10:"errs",11:"drop",12:"fifo",13:"colls",14:"carrier",15:"compressed"}
+        self.hz = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
         self.steal = {'prevTime':time.time(),'prevSteal':0}
         self.config = self.readFile(f'{self.path}/configs/config.json')
         self.history = {}
@@ -39,7 +40,8 @@ class Monitor(Base):
     def runSteal(self):
         with open('/proc/stat') as f: curr = int(f.readline().split()[8])
         elapsed = time.time() - self.steal['prevTime']
-        steal = (curr - self.steal['prevSteal']) / (elapsed * 100)
+        delta = curr - self.steal['prevSteal']
+        steal = (delta / self.hz) / elapsed * 100
         if steal > 1:
             self.logger.warning(f"CPU STEAL: {steal:.2f}%")
         self.steal['prevSteal'] = curr
