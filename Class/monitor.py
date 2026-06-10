@@ -21,6 +21,7 @@ class Monitor(Base):
         self.hz = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
         self.steal = {'prevTime':time.time(),'prevSteal':0}
         self.config = self.readFile(f'{self.path}/configs/config.json')
+        self.cores = os.cpu_count()
         self.history = {}
 
     def getNetDev(self):
@@ -41,7 +42,7 @@ class Monitor(Base):
         with open('/proc/stat') as f: curr = int(f.readline().split()[8])
         elapsed = time.time() - self.steal['prevTime']
         delta = curr - self.steal['prevSteal']
-        steal = (delta / self.hz) / elapsed * 100
+        steal = (delta / self.hz) / elapsed * 100 / self.cores
         if steal > 1:
             self.logger.warning(f"CPU STEAL: {steal:.2f}%")
         self.steal['prevSteal'] = curr
