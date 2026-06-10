@@ -46,15 +46,15 @@ class Latency(Base):
         else:
             return False
 
-    def countEvents(self,entry,eventType,doDelete=True):
+    def countEvents(self,data,entry,eventType,doDelete=True):
         eventCount,eventScore = 0,0
-        for event,details in list(self.network[entry][eventType].items()):
+        for event,details in list(data[entry][eventType].items()):
             if int(event) > int(time.time()): 
                 eventCount += 1
                 eventScore += details['peak']
             #delete events after 120 minutes
             elif doDelete and (int(time.time()) - 7200) > int(event):
-                del self.network[entry][eventType][event]
+                del data[entry][eventType][event]
         return eventCount,round(eventScore,1)
 
     def getOldLatencyData(self,target):
@@ -72,6 +72,8 @@ class Latency(Base):
         if not latency:
             self.logger.warning("No pingable links found.")
             return False
+        #grab monitor
+        monitor = self.readFile(f'{path}/configs/monitor.json')
         total,ongoingLoss,ongoingJitter,self.reload,self.noWait,peers = 0,0,0,[],0,[]
         for node in list(config):
             for entry,row in latency.items():
@@ -84,6 +86,10 @@ class Latency(Base):
                     linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",node['nic'], re.MULTILINE)[0]
                     #get average latency
                     current = int(self.getAvrg(row) * 10)
+                    #get monitor stats
+                    if monitor:
+                        eventCount,eventScore = self.countEvents(monitor,'events','steal',False)
+                        self.logger.info(f"Steal detected, got {eventScore} and {eventCount} events")
                     if current > 65534: current = 65534
                     node['base'] = node['cost'] = current
                     if node['nic'] in self.linkState: node['cost'] += self.linkState[node['nic']]['cost']
@@ -101,7 +107,7 @@ class Latency(Base):
                         self.network[entry]['packetloss'][int(time.time()) + (2100 * int(peakLoss))] = {"peak":peakLoss,"latency":current}
                         self.logger.info(f"{node['nic']} ({entry}) Packetloss detected got {len(row)} of {pings -1}")
 
-                    eventCount,eventScore = self.countEvents(entry,'packetloss')
+                    eventCount,eventScore = self.countEvents(self.network,entry,'packetloss')
                     #multiply by 10 otherwise small package loss may not result in routing changes
                     eventScore = (eventScore * eventCount) * 10
                     if eventCount > 0:
