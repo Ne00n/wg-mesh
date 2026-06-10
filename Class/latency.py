@@ -73,7 +73,7 @@ class Latency(Base):
             self.logger.warning("No pingable links found.")
             return False
         #grab monitor
-        monitor = self.readFile(f'{path}/configs/monitor.json')
+        monitor = self.readFile(f'{self.path}/configs/monitor.json')
         total,ongoingLoss,ongoingJitter,self.reload,self.noWait,peers = 0,0,0,[],0,[]
         for node in list(config):
             for entry,row in latency.items():
