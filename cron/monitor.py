@@ -34,5 +34,5 @@ while not shutdown:
     for run in range(1,6):
         monitor.runSteal()
         if run == 5: monitor.run(5)
-    time.sleep(1)
+        time.sleep(1)
     
