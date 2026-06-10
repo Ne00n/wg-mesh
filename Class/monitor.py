@@ -19,7 +19,7 @@ class Monitor(Base):
         self.mapping = {0:"bytes",1:"packets",2:"errs",3:"drop",4:"fifo",5:"frame",6:"compressed",7:"multicast",
                         8:"bytes",9:"packets",10:"errs",11:"drop",12:"fifo",13:"colls",14:"carrier",15:"compressed"}
         self.hz = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
-        self.steal = {'prevTime':time.time(),'prevSteal':0}
+        self.steal = {'prevTime':None,'prevSteal':None}
         self.config = self.readFile(f'{self.path}/configs/config.json')
         self.cores = os.cpu_count()
         self.history = {}
@@ -40,6 +40,10 @@ class Monitor(Base):
 
     def runSteal(self):
         with open('/proc/stat') as f: curr = int(f.readline().split()[8])
+        if self.steal['prevSteal'] is None:
+            self.steal['prevSteal'] = curr
+            self.steal['prevTime'] = time.time()
+            return
         elapsed = time.time() - self.steal['prevTime']
         delta = curr - self.steal['prevSteal']
         steal = (delta / self.hz) / elapsed * 100 / self.cores
