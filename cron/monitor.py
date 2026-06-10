@@ -35,4 +35,4 @@ while not shutdown:
         monitor.runSteal()
         if run == 5: monitor.run(5)
         time.sleep(1)
-    
+    monitor.saveMonitor()

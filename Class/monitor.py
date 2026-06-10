@@ -16,13 +16,21 @@ class Monitor(Base):
         self.consecutiveBreaches = 2       
         self.cooldownSeconds = 30          
         self.ignorePrefixes = ('lo')
+        self.steal = {'prevTime':None,'prevSteal':None}
         self.mapping = {0:"bytes",1:"packets",2:"errs",3:"drop",4:"fifo",5:"frame",6:"compressed",7:"multicast",
                         8:"bytes",9:"packets",10:"errs",11:"drop",12:"fifo",13:"colls",14:"carrier",15:"compressed"}
         self.hz = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
-        self.steal = {'prevTime':None,'prevSteal':None}
         self.config = self.readFile(f'{self.path}/configs/config.json')
+        self.monitor = self.readFile(f'{self.path}/configs/monitor.json')
+        self.initMonitor()
         self.cores = os.cpu_count()
         self.history = {}
+
+    def saveMonitor(self):
+        self.saveFile(self.monitor,f"{self.path}/configs/monitor.json")
+
+    def initMonitor(self):
+        if not "events" in self.monitor: self.monitor['events'] = {"steal":{}}
 
     def getNetDev(self):
         response = []
@@ -49,6 +57,7 @@ class Monitor(Base):
         steal = (delta / self.hz) / elapsed * 100 / self.cores
         if steal > 1:
             self.logger.warning(f"CPU STEAL: {steal:.2f}%")
+            self.monitor['events']['steal'][time.monotonic()] = steal
         self.steal['prevSteal'] = curr
         self.steal['prevTime'] = time.monotonic()
 
