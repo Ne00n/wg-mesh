@@ -75,8 +75,8 @@ class Latency(Base):
         #grab monitor
         monitor = self.readFile(f'{self.path}/configs/monitor.json')
         if monitor:
-            stealEventCount,stealEventScore = self.countEvents(monitor,'events','steal',False)
-            if stealEventCount > 0: self.logger.info(f"Steal detected, got {stealEventScore} and {stealEventCount} event(s)")
+            eventCount,eventScore = self.countEvents(monitor,'events','steal',False)
+            if eventCount > 0: self.logger.info(f"Steal detected, got {eventScore} and {eventCount} event(s)")
         total,ongoingLoss,ongoingJitter,self.reload,self.noWait,peers = 0,0,0,[],0,[]
         for node in list(config):
             for entry,row in latency.items():
@@ -89,7 +89,6 @@ class Latency(Base):
                     linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",node['nic'], re.MULTILINE)[0]
                     #get average latency
                     current = int(self.getAvrg(row) * 10)
-                    if monitor: current = current + int(stealEventScore)
                     if current > 65534: current = 65534
                     node['base'] = node['cost'] = current
                     if node['nic'] in self.linkState: node['cost'] += self.linkState[node['nic']]['cost']
