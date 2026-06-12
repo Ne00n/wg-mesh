@@ -218,7 +218,7 @@ protocol kernel {{
             template += "\n\treject;\n}"
             template += "\n\nfilter import_OSPF {\n\t if net ~ [ 10.0.0.0/8+, 172.16.0.0/12+, 192.168.0.0/16+ ] then accept;\n"
             template += "\n\n"+importFilter+";\n}"
-            template += f"\n\nprotocol ospf {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
+            template += f"\n\nprotocol ospf {{\n\ttick {config['bird']['tick']};\n\tgraceful restart no;\n\tstub router {isRouter};"
             template += f"\n\tipv4 {{\n\t\timport filter import_OSPF;\n\t\texport filter export_OSPF;\n\t}};"
             template += f"\n\tarea 0 {{"
             for row in latency:
@@ -228,7 +228,7 @@ protocol kernel {{
 
         if config['bird']['ospfv3']:
             template += f"\n\nfilter export_OSPFv3 {{\n\tif (net.len > 48) then reject;\n\tif source ~ [ RTS_DEVICE, RTS_STATIC ] then accept;\n\treject;\n}}"
-            template += f"\n\nprotocol ospf v3 {{\n\ttick {config['bird']['tick']};\n\tgraceful restart yes;\n\tstub router {isRouter};"
+            template += f"\n\nprotocol ospf v3 {{\n\ttick {config['bird']['tick']};\n\tgraceful restart no;\n\tstub router {isRouter};"
             template += f"\n\tipv6 {{\n\t\texport filter export_OSPFv3;\n\t}};"
             template += f"\n\tarea 0 {{"
             for row in latency:
