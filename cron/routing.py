@@ -126,6 +126,9 @@ while True:
             #ignore ipv6 for now
             if "::" in prefix: continue
             if details['updated'] > int(time.time()): continue
+            if not prefix in pingable:
+                logger.warning(f"{prefix} not found in pingable")
+                continue
             for subnet, octects in pingable[prefix].items():
                 subnets.append({"subnet":subnet,"details":details,"pingable":octects})
                 #to reduce memory usage, we break after batchSize
