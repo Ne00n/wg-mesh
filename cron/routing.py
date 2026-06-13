@@ -122,6 +122,9 @@ while True:
             else:
                 pingable = req.json()
                 tools.saveFile(pingable,f"{path}/data/cache/{file}")
+        if not pingable:
+                logger.warning(f"Pingable is empty, likely corrupt, removing.")
+                if os.path.isfile(f"{path}/data/cache/{file}"): os.remove(f"{path}/data/cache/{file}")
         for prefix, details in asnData.items():
             #ignore ipv6 for now
             if "::" in prefix: continue
