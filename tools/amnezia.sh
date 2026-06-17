@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 apt-get update
-apt install -y software-properties-common python3-launchpadlib gnupg2 linux-headers-$(uname -r)
+apt install -y python3-launchpadlib gnupg2 linux-headers-$(uname -r)
 #apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 57290828
 sudo mkdir -p /etc/apt/keyrings
 sudo chmod 755 /etc/apt/keyrings
