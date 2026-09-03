@@ -72,11 +72,6 @@ class Latency(Base):
         if not latency:
             self.logger.warning("No pingable links found.")
             return False
-        #grab monitor
-        monitor = self.readFile(f'{self.path}/configs/monitor.json')
-        if monitor:
-            eventCount,eventScore = self.countEvents(monitor,'events','steal',False)
-            if eventCount > 0: self.logger.info(f"Steal detected, got {eventScore} and {eventCount} event(s)")
         total,ongoingLoss,ongoingJitter,self.reload,self.noWait,peers = 0,0,0,[],0,[]
         for node in list(config):
             for entry,row in latency.items():
