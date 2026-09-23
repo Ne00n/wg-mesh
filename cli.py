@@ -22,8 +22,6 @@ elif sys.argv[1] == "bender":
 elif sys.argv[1] == "connect" or sys.argv[1] == "peer":
     if len(sys.argv) <= 2: exit("URL is missing.")
     cli.connect(sys.argv[2:])
-elif sys.argv[1] == "forward":
-    cli.forward(sys.argv[2])
 elif sys.argv[1] == "tunnel":
     if len(sys.argv) <= 2: exit("tunnel create default/awg or tunnel delete tunnel120")
     cli.tunnel(sys.argv[2:])

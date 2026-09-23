@@ -154,7 +154,6 @@ def index():
             logging.info(f"ID Collision from {requestIP}")
             return HTTPResponse(status=416, body="Collision")
     #generate interface name
-    if payload['forward']: payload['network'] = "fw"
     interfaceType = "v6" if payload['protocol'] == "ipv6" else ""
     interface = wg.getInterface(payload['id'],interfaceType,payload['network'])
     #check if interface exists
@@ -195,7 +194,7 @@ def index():
     wg.saveFile(preSharedKey,f"{folder}/links/{interface}.pre")
     wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
     remotePublic = payload['connectivity']['ipv6'] if "v6" in interface else payload['connectivity']['ipv4']
-    linkConfig = {'remote':f"{payload['prefix']}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType'],"forward":payload['forward'],"mtu":1412}
+    linkConfig = {'remote':f"{payload['prefix']}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType'],"mtu":1412}
     wg.saveFile(linkConfig,f"{folder}/links/{interface}.json")
     logging.debug(f"{interface} up")
     wg.setInterface(interface,"up")

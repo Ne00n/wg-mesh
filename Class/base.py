@@ -60,7 +60,7 @@ class Base:
         return ( ( ipDecimal & netmaskDecimal ) == ( rangeDecimal & netmaskDecimal ) )
 
     def filter(self,entry):
-        ignoreNetworks = ["tunnel","forward"]
+        ignoreNetworks = ["tunnel"]
         if any(network in entry for network in ignoreNetworks): return False
         return True
 

@@ -156,9 +156,6 @@ class Wireguard(Base):
             configPort = re.findall(f"listen-port\s([0-9]+)",config, re.MULTILINE)
             configIP = re.findall(f"ip address add dev.*?([0-9.]+\/31)",config, re.MULTILINE)
             configIPv6 = re.findall(f"ip -6 address add dev.*?([a-zA-Z0-9:]+\/127)",config,re.MULTILINE)
-            if "forward" in file:
-                forwardPort = re.findall(f"--dport ([0-9]+)",config,re.MULTILINE)
-                ports.append(int(forwardPort[0]))
             #Clients are ignored since they use a different subnet
             if not configPort: continue
             ports.append(int(configPort[0]))
@@ -318,7 +315,7 @@ class Wireguard(Base):
             if linkType in local['linkTypes']: available.append(linkType)
         return available
 
-    def connect(self,dest,token="",linkType="",port=51820,network="",forward=False,forwardTo=None,protocols=["ipv4","ipv6"]):
+    def connect(self,dest,token="",linkType="",port=51820,network="",protocols=["ipv4","ipv6"]):
         print(f"Connecting to {dest}")
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
@@ -330,10 +327,6 @@ class Wireguard(Base):
         #ask remote about available protocols
         data = self.AskProtocol(dest,token,network)
         if not data: return status
-        #ask forwardTo node about public ip
-        if forward and forwardTo:
-            forwarded = self.AskProtocol(forwardTo)
-            if not forwarded: return status
         availableProtocols = []
         #start with the protocol which is available
         if data['connectivity']['ipv4'] and self.config['connectivity']['ipv4'] and "ipv4" in protocols:
@@ -354,7 +347,7 @@ class Wireguard(Base):
         for protocol in availableProtocols:
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"protocol":protocol,
-            "initial":self.isInitial,"linkType":linkType,"prefix":subnetPrefix,"network":network,"forward":forward,"connectivity":self.config['connectivity']}
+            "initial":self.isInitial,"linkType":linkType,"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
             if port != 51820: payload["port"] = port
             success, req = self.call(f'{dest}/connect',payload)
             if success == False: return status
@@ -365,11 +358,7 @@ class Wireguard(Base):
                 resp = req.json()
                 #check if v6 or v4
                 interfaceType = "v6" if protocol == "ipv6" else ""
-                if forward and forwarded:
-                    connectivity = f"[{forwarded['connectivity']['ipv6']}]" if protocol == "ipv6" else forwarded['connectivity']['ipv4']
-                    network = "fw"
-                else:
-                    connectivity = f"[{resp['connectivity']['ipv6']}]" if protocol == "ipv6" else resp['connectivity']['ipv4']
+                connectivity = f"[{resp['connectivity']['ipv6']}]" if protocol == "ipv6" else resp['connectivity']['ipv4']
                 #interface
                 interface = self.getInterface(resp['id'],interfaceType,network)
                 #generate config
@@ -378,7 +367,7 @@ class Wireguard(Base):
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
                 self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
-                linkConfig = {'remote':f"{data['subnetPrefix']}.{resp['id']}.1",'remotePublic':connectivity.replace("[","").replace("]",""),"linkType":linkType,"forward":forward,"mtu":1412}
+                linkConfig = {'remote':f"{data['subnetPrefix']}.{resp['id']}.1",'remotePublic':connectivity.replace("[","").replace("]",""),"linkType":linkType,"mtu":1412}
                 self.saveFile(linkConfig,f"{self.path}/links/{interface}.json")
                 self.setInterface(interface,"up")
                 status[protocol]['status'] = True
@@ -391,26 +380,6 @@ class Wireguard(Base):
                 print(f"Got {req.text} as response")
                 return status
         return status
-
-    def forward(self,dest):
-        data = self.AskProtocol(dest)
-        if not data: 
-            print("Unable to fetch public ip from dest")
-            return False
-        splitted = dest.split(".")
-        interface = self.getInterface(splitted[2],"v4","","forward")
-        if os.path.isfile(f"{self.path}/links/{interface}.sh"):
-            self.setInterface(interface,"down")
-            self.cleanInterface(interface,False)
-            print(f"Deleted {interface}")
-        else:
-            print(f"Forwarding to {dest}")
-            configs = self.getConfigs(False)
-            freeSubnet,freeSubnetv6,freePort = self.minimal(configs,0,False)
-            forward = self.Templator.genForward(data['connectivity']['ipv4'],self.config['connectivity']['ipv4'],freePort)
-            self.saveFile(forward,f"{self.path}/links/{interface}.sh")
-            self.setInterface(interface,"up")
-            print(f"Created {interface} to {data['connectivity']['ipv4']} on {freePort}")
 
     def updateLink(self,link,data):
         config = self.readFile(f"{self.path}/links/{link}.sh")
@@ -513,7 +482,7 @@ class Wireguard(Base):
         links = self.getLinks()
         for link,data in links.items():
             filename = link.replace(".sh",".json")
-            if "peer" in filename or "forward" in filename: continue
+            if "peer" in filename: continue
             if upgrade and "mtu" in data['linkConfig']: continue
             print(f"Disconnecting {link}")
             linkState = self.disconnect([link])

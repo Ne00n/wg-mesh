@@ -24,7 +24,7 @@ class CLI(Base):
         self.wg.bender()
 
     def connect(self,params):
-        dest, token, linkType, port, network, forward, forwardTo = "", "dummy", "", 51820, "", False, 0
+        dest, token, linkType, port, network = "", "dummy", "", 51820, ""
         linkTypes = ["default","wgobfs","ipt_xor","amneziawg","awg"]
         self.wg = Wireguard(self.path)
         config = self.wg.getConfig()
@@ -42,13 +42,6 @@ class CLI(Base):
             if param == "peer": 
                 network = "peer"
                 continue
-            if param.startswith("forward"):
-                forwardTarget = re.findall(f"^forward([0-9]+)",param, re.MULTILINE)
-                if forwardTarget:
-                    subnetPrefix = ".".join(config['subnet'].split(".")[:2])
-                    forwardTo = f"http://{subnetPrefix}.{forwardTarget[0]}.1:{config['listenPort']}"
-                forward = True
-                continue
             try:
                 port = int(param)
             except:
@@ -59,20 +52,11 @@ class CLI(Base):
             subnetPrefix = ".".join(config['subnet'].split(".")[:2])
             dest = f"http://{subnetPrefix}.{pipeTarget[0]}.1:{config['listenPort']}"
         if linkType == "awg": linkType = "amneziawg"
-        status = self.wg.connect(dest,token,linkType,port,network,forward,forwardTo)
+        status = self.wg.connect(dest,token,linkType,port,network)
         if self.wg.getInitial():
             if not status['ipv4']['status'] and not status['ipv6']['status']:
                 print(f"Initial link wasn't setup.")
                 return
-                
-    def forward(self,dest):
-        self.wg = Wireguard(self.path)
-        config = self.wg.getConfig()
-        pipeTarget = re.findall(f"^{config['prefix']}([0-9]+)",dest, re.MULTILINE)
-        if pipeTarget:
-            subnetPrefix = ".".join(config['subnet'].split(".")[:2])
-            dest = f"http://{subnetPrefix}.{pipeTarget[0]}.1:{config['listenPort']}"
-        self.wg.forward(dest)
 
     def tunnel(self,params):
         self.wg = Wireguard(self.path)
