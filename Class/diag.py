@@ -139,9 +139,6 @@ class Diag(Base):
         self.logger.info(f"Diagnostics done")
 
     def run(self):
-        if not os.path.isfile(f"{self.path}/configs/state.json"):
-            self.logger.warning("state.json does not exist")
-            return False
         self.runDiagnostic()
         if self.config['linkSettings']['reMesh']: 
             self.runMesh()

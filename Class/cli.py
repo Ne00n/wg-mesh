@@ -239,8 +239,6 @@ class CLI(Base):
         if not config:
             print("Unable to load config.json")
             return
-        if "mesh" in option:
-            self.wg.saveFile({},f"{self.path}/configs/state.json")
         elif "ospfv2" in option:
             config['bird']['ospfv2'] = False
         elif "ospfv3" in option:
@@ -279,8 +277,6 @@ class CLI(Base):
         if not config:
             print("Unable to load config.json")
             return
-        if "mesh" in option:
-            if os.path.isfile(f"{self.path}/configs/state.json"): os.remove(f"{self.path}/configs/state.json")
         elif "ospfv2" in option:
             config['bird']['ospfv2'] = True
         elif "ospfv3" in option:

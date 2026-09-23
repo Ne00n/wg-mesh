@@ -574,10 +574,6 @@ class Wireguard(Base):
         #check for dummy and .gitignore
         if "dummy.sh" in files: files.remove("dummy.sh")
         if ".gitignore" in files: files.remove(".gitignore")
-        #clear state.json if no links left
-        if os.path.isfile(f"{self.path}/configs/state.json") and not files:
-            print("state.json has been reset!")
-            os.remove(f"{self.path}/configs/state.json")
         return status
 
     def setCost(self,link,cost=0):
