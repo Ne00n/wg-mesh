@@ -63,13 +63,8 @@ class CLI(Base):
         if self.wg.getInitial():
             if not status['ipv4']['status'] and not status['ipv6']['status']:
                 print(f"Initial link wasn't setup.")
-                return 
-            print("Waiting for meshing to complete.")
-            for i in range(1, 300):
-                if os.path.isfile(f"{self.path}/configs/state.json"): return
-                time.sleep(1)
-            print("Meshing seems to have failed.")
-
+                return
+                
     def forward(self,dest):
         self.wg = Wireguard(self.path)
         config = self.wg.getConfig()
