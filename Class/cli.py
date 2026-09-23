@@ -12,8 +12,8 @@ class CLI(Base):
         self.templator = Templator()
         self.wg = Wireguard(path,True)
 
-    def init(self,id,listen):
-        self.wg.init(id,listen)
+    def init(self,id):
+        self.wg.init(id)
 
     def used(self):
         self.wg = Wireguard(self.path)

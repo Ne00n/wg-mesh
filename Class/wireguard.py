@@ -109,7 +109,7 @@ class Wireguard(Base):
         for key,ip in config['connectivity'].items():
             if ip is not None: return ip
 
-    def init(self,id,listen):
+    def init(self,id):
         if os.path.isfile(f"{self.path}/config.json"): exit("Config already exists")
         print("Getting external IPv4 and IPv6")
         ipv4 = self.fetch("https://checkip.amazonaws.com")
@@ -122,7 +122,7 @@ class Wireguard(Base):
         bird = {"ospfv2":True,"ospfv3":True,"tick":1,"hello":15,"client":False,"importAll":True,"loglevel":"{ warning, fatal}","reloadInterval":600}
         modules = {"neighbour":False,"update":False}
         notifications = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":"","gotifyMonitor":""}
-        config = {"listen":listen,"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16",
+        config = {"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16",
         "subnetv6":"fe82:","subnetPeer":"172.31.0.0/16","subnetPeerv6":"fe81:","subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],"prefix":"pipe",
         "id":int(id),"networkID":0,"linkTypes":["default"],"linkSettings":{"awgGen":False,"reMesh":True},"defaultLinkType":"default",
         "connectivity":connectivity,"iptables":iptables,"bird":bird,"modules":modules,"latency":{"pingInterval":30},"notifications":notifications}

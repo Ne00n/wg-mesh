@@ -290,6 +290,5 @@ def index():
         logging.info(f"{payload['interface']} started termination thread")
     connectMutex.release()
     return HTTPResponse(status=200, body="link terminated")
-
-listen = '::' if config['listen'] == "public" else f"{subnetPrefix}.{config['id']}.1"
+listen = f"{subnetPrefix}.{config['id']}.1"
 run(host=listen, port=config['listenPort'], server='paste')

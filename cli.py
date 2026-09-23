@@ -11,8 +11,7 @@ cli = CLI(path)
 if len(sys.argv) == 1:
     print(options)
 elif sys.argv[1] == "init":
-    state = sys.argv[3] if len(sys.argv) > 3 else "local"
-    cli.init(sys.argv[2],state)
+    cli.init(sys.argv[2])
 elif sys.argv[1] == "used":
     cli.used()
 elif sys.argv[1] == "status":

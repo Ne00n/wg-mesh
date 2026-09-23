@@ -44,14 +44,11 @@ Keep in mind that some containers such as OVZ or LXC, depending on kernel versio
 The ID needs to be unique, otherwise it will result in collisions.<br>
 Keep in mind, ID's 200 and higher are reserved for clients, they won't get meshed.<br>
 
-Public is used to expose the API to all interfaces, by default it listens only local on 10.0.id.1.<br>
-Use Public only for testing! since everything is transmitted unencrypted, otherwise use a reverse proxy with TLS.<br>
-
 Depending on what Subnet you are using, you either have to increment the ID's by 2 (10.) or by 1 (192/172.)<br>
 If 10.0.x.x/16 is used (default), a /23 is reserved per node, hence you have to increment it by 2.<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 0 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 0
 #Install wg-mesh and initialize the second node
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 2
 ```
@@ -59,7 +56,7 @@ Grab the Token from Node 0<br>
 ```
 wgmesh token
 ```
-Connect Node 2 to Node 0
+Connect Node 2 to Node 0 (You need a reverse proxy conigured at Node 0)
 ```
 wgmesh connect http://<node0IP>:8080 <token>
 ```
@@ -70,7 +67,7 @@ Regarding NAT or in general behind Firewalls, the "connector" is always a Client
 **Example 2+ nodes**<br>
 ```
 #Install wg-mesh and initialize the first node
-curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 0 public
+curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 0
 #Install wg-mesh and initialize the second node
 curl -so- https://raw.githubusercontent.com/Ne00n/wg-mesh/experimental/install.sh | bash -s -- init 2
 #Install wg-mesh and initialize the third node
@@ -80,7 +77,7 @@ Grab the Token from Node 0 with
 ```
 wgmesh token
 ```
-Connect Node 2 to Node 0
+Connect Node 2 to Node 0 (You need a reverse proxy conigured at Node 0)
 ```
 wgmesh connect http://<node0IP>:8080 <token>
 ```
