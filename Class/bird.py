@@ -147,35 +147,3 @@ class Bird(Base):
             if not ip in vxlan: 
                 self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1 dst {ip}")
                 self.cmd(f"sudo bridge fdb append 00:00:00:00:00:00 dev vxlan1v6 dst fd10:0:{splitted[2]}::1 permanent")
-        #To prevent creating connections to new nodes joined afterwards, save state
-        if os.path.isfile(f"{self.path}/configs/state.json"):
-            self.logger.debug("state.json already exist, skipping")
-        else:
-            #remove local machine from list
-            localIP = f"{'.'.join(self.config['subnet'].split('.')[:2])}.{self.config['id']}.1"
-            targets = self.Network.filterLocalIP(targets,localIP)
-            #fetch network interfaces and parse
-            links = self.Network.getBirdLinks()
-            if not links: 
-                self.logger.warning("No wireguard interfaces found") 
-                return False
-            targets = self.Network.filterExisting(targets,links)
-            targets = self.Network.filterLocalLinks(targets,links)
-            targets = self.Network.filterIDs(targets)
-            self.logger.info(f"Possible targets {targets}")
-            #wireguard
-            self.logger.info("meshing")
-            results = {}
-            for target in targets:
-                dest = target.replace(".0/30",".1")
-                #no token needed but external IP for the client
-                self.logger.info(f"Setting up link to {dest}")
-                status = self.wg.connect(f"http://{dest}:{self.config['listenPort']}")
-                if status['ipv4']['status'] or status['ipv6']['status']:
-                    results[target] = True
-                    self.logger.info(f"Link established to http://{dest}:{self.config['listenPort']}")
-                else:
-                    results[target] = False
-                    self.logger.warning(f"Failed to setup link to http://{dest}:{self.config['listenPort']}")
-            self.logger.info("saving state.json")
-            with open(f"{self.path}/configs/state.json", 'w') as f: json.dump(results, f ,indent=4)
