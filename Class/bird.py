@@ -38,30 +38,6 @@ class Bird(Base):
         if (len(targets) != len(latency)): self.logger.warning("Targets do not match expected responses.")
         return targets
 
-    def getIPerf(self,targets):
-        random.shuffle(targets)
-        todo = []
-        #we try to iperf a link 5 times
-        for i in range(5):
-            for row in targets:
-                #skip already benchmarked links
-                if 'cost' in row and row['cost'] != 20000: continue
-                #benchmark
-                self.logger.info(f"Running IPerf to {row['target']} on {row['nic']}")
-                speed = int(self.iperf(row['target']))
-                self.logger.info(f"{speed}Mbit's for {row['target']}")
-                if speed == 0:
-                    #if we fail to run the iperf, put on list
-                    todo.append(row['target'])
-                    row['cost'] = 20000
-                    time.sleep(random.randint(2,10))
-                else:
-                    if row['target'] in todo: todo.remove(row['target'])
-                    row['cost'] = 20000 - speed
-            #when list is empty, exit
-            if not todo: break
-        return targets
-
     def genTargets(self,links):
         result,peers = [],[]
         for link in links:
@@ -102,9 +78,6 @@ class Bird(Base):
             for data in latencyData:
                 linkID = re.findall(f"{self.config['prefix']}.*?([0-9]+)",data['nic'], re.MULTILINE)[0]
                 if (int(linkID) >= 200 or int(self.config['id']) >= 200) and (data['cost'] + 1000) < 65534: data['cost'] += 1000
-        elif self.config['operationMode'] == 2:
-            self.logger.info("IPerf messurement")
-            latencyData = self.getIPerf(nodes)
         self.logger.info("Generating config")
         bird = self.Templator.genBird(latencyData,peers,self.config)
         if bird == "": 
