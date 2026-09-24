@@ -53,10 +53,7 @@ class CLI(Base):
             dest = f"http://{subnetPrefix}.{pipeTarget[0]}.1:{config['listenPort']}"
         if linkType == "awg": linkType = "amneziawg"
         status = self.wg.connect(dest,token,linkType,port,network)
-        if self.wg.getInitial():
-            if not status['ipv4']['status'] and not status['ipv6']['status']:
-                print(f"Initial link wasn't setup.")
-                return
+        print(status)
 
     def tunnel(self,params):
         self.wg = Wireguard(self.path)
