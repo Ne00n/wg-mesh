@@ -48,7 +48,7 @@ class Wireguard(Base):
         if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
         if not os.path.isfile("/etc/bird/bgp.conf"): self.cmd('touch /etc/bird/bgp.conf')
         if not "bird" in self.config: self.config['bird'] = {}
-        if not "modules" in self.config: self.config['modules'] = {"neighbour":False,"update":False}
+        if not "modules" in self.config: self.config['modules'] = {"update":False}
         if not "linkSettings" in self.config: self.config['linkSettings'] = {"awgGen":False,"reMesh":False}
         if not "reMesh" in self.config['linkSettings']: self.config['linkSettings']['reMesh'] = False
         if not "latency" in self.config: self.config['latency'] = {"pingInterval":30}
@@ -120,7 +120,7 @@ class Wireguard(Base):
         connectivity = {"ipv4":ipv4,"ipv6":ipv6,"blacklist":[]}
         iptables = {"leakPrevention":True,"clampMtu":True}
         bird = {"ospfv2":True,"ospfv3":True,"tick":1,"hello":15,"client":False,"importAll":True,"loglevel":"{ warning, fatal}","reloadInterval":600}
-        modules = {"neighbour":False,"update":False}
+        modules = {"update":False}
         notifications = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":"","gotifyMonitor":""}
         config = {"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16",
         "subnetv6":"fe82:","subnetPeer":"172.31.0.0/16","subnetPeerv6":"fe81:","subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],"prefix":"pipe",
@@ -295,18 +295,6 @@ class Wireguard(Base):
             return False
         data = req.json()
         return data
-
-    def getNeighbours(self):
-        lines = self.cmd('birdc show route')[0]
-        routes = lines.splitlines()
-        neighbours = {}
-        for index, line in enumerate(routes):
-            if ".0/30" in line and not "direct" in line:
-                id = re.findall(r"([0-9]+)\.0\/30",line,re.MULTILINE | re.DOTALL)[0]
-                cost = re.findall(r"\([0-9]+/([0-9]+)/[0-9]+\)",line,re.MULTILINE | re.DOTALL)[0]
-                nextLine = routes[index +1]
-                if f"pipe{id}" in nextLine: neighbours[id] = int(cost) / 10
-        return neighbours
 
     def availableLinkTypes(self,local,remote):
         available = []
