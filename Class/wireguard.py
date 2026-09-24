@@ -31,6 +31,7 @@ class Wireguard(Base):
             reconfigureDummy = True
         if not "linkSettings" in self.config: self.config['linkSettings'] = {"awgGen":False,"reMesh":False}
         if not "reMesh" in self.config['linkSettings']: self.config['linkSettings']['reMesh'] = False
+        if not "secret" in self.config: self.config['secret'] = ""
         self.saveFile(self.config,f"{self.path}/configs/config.json")
         if reconfigureDummy: self.reconfigureDummy()
 
@@ -89,7 +90,7 @@ class Wireguard(Base):
         bird = {"ospfv2":True,"ospfv3":True,"tick":1,"hello":15,"client":False,"importAll":True,"loglevel":"{ warning, fatal}","reloadInterval":600}
         modules = {"update":False}
         notifications = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":"","gotifyMonitor":""}
-        config = {"listenPort":8080,"basePort":51820,"operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16",
+        config = {"listenPort":8080,"basePort":51820,"secret":"","operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16",
         "subnetv6":"fe82:","subnetPeer":"172.31.0.0/16","subnetPeerv6":"fe81:","subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],"prefix":"pipe",
         "id":int(id),"networkID":0,"linkTypes":["default"],"linkSettings":{"awgGen":False,"reMesh":True},"defaultLinkType":"default",
         "connectivity":connectivity,"iptables":iptables,"bird":bird,"modules":modules,"latency":{"pingInterval":30},"notifications":notifications}
