@@ -22,12 +22,6 @@ class Wireguard(Base):
 
     def updateConfig(self):
         reconfigureDummy = False
-        if not "defaultLinkType" in self.config: self.config['defaultLinkType'] = "default"
-        if not "listenPort" in self.config: self.config['listenPort'] = 8080
-        if not "operationMode" in self.config: self.config['operationMode'] = 0
-        if not "loglevel" in self.config: self.config['loglevel'] = "info"
-        if not "vxlanOffset" in self.config: self.config['vxlanOffset'] = 0
-        if not "networkID" in self.config: self.config['networkID'] = 0
         if not "iptables" in self.config: self.config['iptables'] = {}
         if not "leakPrevention" in self.config['iptables']: 
             self.config['iptables']['leakPrevention'] = True
@@ -35,35 +29,8 @@ class Wireguard(Base):
         if not "clampMtu" in self.config['iptables']:
             self.config['iptables']['clampMtu'] = True
             reconfigureDummy = True
-        if not "subnet" in self.config: self.config['subnet'] = "10.0.0.0/16"
-        if not "subnetv6" in self.config: self.config['subnetv6'] = "fe82:"
-        if not "subnetPeer" in self.config: self.config['subnetPeer'] = "172.31.0.0/16"
-        if not "subnetPeerv6" in self.config: self.config['subnetPeerv6'] = "fe81:"
-        if not "subnetVXLAN" in self.config: 
-            self.config['subnetVXLAN'] = "10.0.251.0/24"
-            reconfigureDummy = True
-        if not "blacklist" in self.config['connectivity']: self.config['connectivity']['blacklist'] = []
-        if not "AllowedPeers" in self.config: self.config['AllowedPeers'] = []
-        if not "linkTypes" in self.config: self.config['linkTypes'] = ["default"]
-        if not os.path.isfile("/etc/bird/static.conf"): self.cmd('touch /etc/bird/static.conf')
-        if not os.path.isfile("/etc/bird/bgp.conf"): self.cmd('touch /etc/bird/bgp.conf')
-        if not "bird" in self.config: self.config['bird'] = {}
-        if not "modules" in self.config: self.config['modules'] = {"update":False}
         if not "linkSettings" in self.config: self.config['linkSettings'] = {"awgGen":False,"reMesh":False}
         if not "reMesh" in self.config['linkSettings']: self.config['linkSettings']['reMesh'] = False
-        if not "latency" in self.config: self.config['latency'] = {"pingInterval":30}
-        if not "ospfv2" in self.config['bird']: self.config['bird']['ospfv2'] = True
-        if not "ospfv3" in self.config['bird']: self.config['bird']['ospfv3'] = True
-        if not "importAll" in self.config['bird']: self.config['bird']['importAll'] = False
-        if not "tick" in self.config['bird']: self.config['bird']['tick'] = 1
-        if not "hello" in self.config['bird']: self.config['bird']['hello'] = 15
-        if not "client" in self.config['bird']: self.config['bird']['client'] = False
-        if not "loglevel" in self.config['bird']: self.config['bird']['loglevel'] = "{ warning, fatal}"
-        if not "reloadInterval" in self.config['bird']: self.config['bird']['reloadInterval'] = 600
-        if not "notifications" in self.config: self.config['notifications'] = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":"","gotifyMonitor":""}
-        if not "gotifyChanges" in self.config['notifications']: self.config['notifications']['gotifyChanges'] = ""
-        if not "gotifyDiag" in self.config['notifications']: self.config['notifications']['gotifyDiag'] = ""
-        if not "gotifyMonitor" in self.config['notifications']: self.config['notifications']['gotifyMonitor'] = ""
         self.saveFile(self.config,f"{self.path}/configs/config.json")
         if reconfigureDummy: self.reconfigureDummy()
 
