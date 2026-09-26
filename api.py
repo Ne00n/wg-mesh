@@ -96,7 +96,8 @@ def index():
         block(requestIP)
         return HTTPResponse(status=401, body="Invalid Token")
     geo = config['geo'] if "geo" in config else {}
-    return HTTPResponse(status=200, body={'connectivity':config['connectivity'],'geo':geo,'linkTypes':config['linkTypes'],'subnetPrefix':subnetPrefix})
+    connectivity = {'ipv4':bool(config['connectivity']['ipv4']),'ipv6':bool(config['connectivity']['ipv6'])}
+    return HTTPResponse(status=200, body={'connectivity':connectivity,'geo':geo,'linkTypes':config['linkTypes'],'subnetPrefix':subnetPrefix})
 
 @route(f'{config['secret']}/connect', method='POST')
 def index():
