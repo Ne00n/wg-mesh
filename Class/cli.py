@@ -128,37 +128,6 @@ class CLI(Base):
         self.wg = Wireguard(self.path,False,True)
         self.wg.updateConfig()
 
-    def geo(self):
-        config = self.readFile(f"{self.path}/configs/config.json")
-        if not config:
-            print("Unable to load config.json")
-            return
-        if not "geo" in config: config['geo'] = {}
-        requestIP = config['connectivity']['ipv4'] if config['connectivity']['ipv4'] else config['connectivity']['ipv6']
-        headers = {"Origin":"https://ip-api.com"}
-        ipapi, ipapiDataRaw = self.call(f"https://demo.ip-api.com/json/{requestIP}?fields=66842623&lang=en",{},"GET",headers)
-        ipwhois, ipwhoisDataRaw = self.call(f"https://ipwho.is/{requestIP}",{},"GET")
-        if ipapi:
-            ipapiData = ipapiDataRaw.json()
-            config['geo']['countryCode'] = ipapiData['countryCode']
-            config['geo']['continent'] = ipapiData['continent']
-            config['geo']['country'] = ipapiData['country']
-            config['geo']['city'] = ipapiData['city']
-            config['geo']['lat'] = ipapiData['lat']
-            config['geo']['lon'] = ipapiData['lon']
-        if ipwhois:
-            ipwhoisData = ipwhoisDataRaw.json()
-            if not ipapi or ipapiData['countryCode'] != ipwhoisData['country_code'] or ipapiData['city'] != ipwhoisData['city']:
-                print("ipwho.is suggests, the location reported by ip-api is wrong")
-                config['geo']['countryCode'] = ipwhoisData['country_code']
-                config['geo']['continent'] = ipwhoisData['continent']
-                config['geo']['country'] = ipwhoisData['country']
-                config['geo']['city'] = ipwhoisData['city']
-                config['geo']['lat'] = ipwhoisData['latitude']
-                config['geo']['lon'] = ipwhoisData['longitude']
-        print(f"Updated geodata {config['geo']}")
-        self.saveFile(config,f"{self.path}/configs/config.json")
-
     def recover(self):
         stream_handler = logging.StreamHandler()
         stream_handler.setLevel(logging.DEBUG)
