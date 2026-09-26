@@ -256,7 +256,7 @@ class Wireguard(Base):
 
     def AskProtocol(self,dest,token="",network=""):
         #ask remote about available protocols
-        success, req = self.call(f'{dest}/{self.config['secret']}/connectivity',{"token":token,"network":network})
+        success, req = self.call(f"{dest}/{self.config['secret']}/connectivity",{"token":token,"network":network})
         if success == False: return False
         if req.status_code != 200:
             print("Failed to request connectivity info")
