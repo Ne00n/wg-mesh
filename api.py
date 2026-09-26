@@ -81,7 +81,7 @@ def getInternal(requestIP):
     except:
         return False
 
-@route(f'{config['secret']}/connectivity',method='POST')
+@route(f'{config["secret"]}/connectivity',method='POST')
 def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
@@ -99,7 +99,7 @@ def index():
     connectivity = {'ipv4':bool(config['connectivity']['ipv4']),'ipv6':bool(config['connectivity']['ipv6'])}
     return HTTPResponse(status=200, body={'connectivity':connectivity,'geo':geo,'linkTypes':config['linkTypes'],'subnetPrefix':subnetPrefix})
 
-@route(f'{config['secret']}/connect', method='POST')
+@route(f'{config["secret"]}/connect', method='POST')
 def index():
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
@@ -186,7 +186,7 @@ def index():
     if payload['linkType'] == "amneziawg" and config['linkSettings']['awgGen']: response["amneziawg"] = payload['amneziawg']
     return HTTPResponse(status=200, body=response)
 
-@route(f'{config['secret']}/update', method='PATCH')
+@route(f'{config["secret"]}/update', method='PATCH')
 def index():
     #is available
     if not config['modules']['update']:
@@ -229,7 +229,7 @@ def index():
     updateMutex.release()
     return HTTPResponse(status=200, body="link updated")
 
-@route(f'{config['secret']}/disconnect', method='POST')
+@route(f'{config["secret"]}/disconnect', method='POST')
 def index():
     requestIP = getReqIP()
     status, body = check(requestIP,request)
