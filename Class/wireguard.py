@@ -304,7 +304,7 @@ class Wireguard(Base):
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"protocol":protocol,
             "initial":self.isInitial,"linkType":linkType,"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
             if port != 51820: payload["port"] = port
-            success, req = self.call(f'{dest}/{self.config['secret']}/connect',payload)
+            success, req = self.call(f"{dest}/{self.config['secret']}/connect",payload)
             if success == False: return status
             status[protocol]['http'] = req.status_code
             if req.status_code == 412:
@@ -433,7 +433,7 @@ class Wireguard(Base):
                 continue
             data = currentLinks[filename]
             print(f'Calling http://{data["vxlan"]}:{self.config["listenPort"]}/disconnect')
-            success, req = self.call(f'http://{data["vxlan"]}:{self.config["listenPort"]}/{self.config['secret']}/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
+            success, req = self.call(f'http://{data["vxlan"]}:{self.config["listenPort"]}/{self.config["secret"]}/disconnect',{"publicKeyServer":data['publicKey'],"interface":interfaceRemote})
             if success == False and force == False and req is None: 
                 continue
             if req is not None: status[filename]['http'] = req.status_code
