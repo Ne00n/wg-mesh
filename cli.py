@@ -24,8 +24,6 @@ elif sys.argv[1] == "connect" or sys.argv[1] == "peer":
 elif sys.argv[1] == "tunnel":
     if len(sys.argv) <= 2: exit("tunnel create default/awg or tunnel delete tunnel120")
     cli.tunnel(sys.argv[2:])
-elif sys.argv[1] == "proximity":
-    cli.proximity()
 elif sys.argv[1] == "disconnect":
     force,links = False,[]
     sys.argv = sys.argv[2:]

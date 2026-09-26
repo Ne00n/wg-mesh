@@ -363,38 +363,6 @@ class Wireguard(Base):
         print("Already used ID's")
         print(parsed)
 
-    def proximity(self):
-        fpingTargets, existing = [],[]
-        links = self.getLinks()
-        for link,details in links.items(): existing.append(details['remotePublic'])
-        print("Getting Routes")
-        targets = self.Network.getRoutes()
-        print("Getting Connection info")
-        mapping = {}
-        local = f"{self.Network.getSubnetPrefix()}.{self.config['id']}.1"
-        for target in targets:
-            target = target.replace("0/30","1")
-            if target == local: continue
-            resp = self.AskProtocol(f'http://{target}:{self.config["listenPort"]}','')
-            if not resp: continue
-            location = "n/a"
-            if "geo" in resp and "city" in resp["geo"]: location = resp['geo']['city']
-            if not resp['connectivity']['ipv4'] in mapping: mapping[resp['connectivity']['ipv4']] = {"target":target,"location":location}
-            if not resp['connectivity']['ipv6'] in mapping: mapping[resp['connectivity']['ipv6']] = {"target":target,"location":location}
-        for ip in mapping:
-            if ip != None: fpingTargets.append(ip)
-        print("Getting Latency")
-        fping = self.fping(fpingTargets,30)
-        latencyData, result = {}, []
-        print("Parsing Results")
-        for ip in fping: latencyData[ip] = self.getAvrg(fping[ip])
-        latencyData = {k: latencyData[k] for k in sorted(latencyData, key=latencyData.get)}
-        result.append("Target\tIP address\tCity\tConnected\tLatency")
-        result.append("-------\t-------\t-------\t-------\t-------")
-        for index, (ip,latency) in enumerate(latencyData.items()):
-            result.append(f"{mapping[ip]['target']}\t{ip}\t{mapping[ip]['location']}\t{bool(ip in existing)}\t{format(latency,'.2f')}ms")
-        print(self.formatTable(result))
-
     def getFiles(self):
         return os.listdir(f"{self.path}/links/")
         #return [x for x in files if self.filter(x)]

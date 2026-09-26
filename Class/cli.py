@@ -102,10 +102,6 @@ class CLI(Base):
             print(f"Deleting {tunnel}")
             self.wg.removeInterface(tunnel)
 
-    def proximity(self):
-        self.wg = Wireguard(self.path)
-        self.wg.proximity()
-
     def reconnect(self,upgrade=False):
         self.wg = Wireguard(self.path)
         self.wg.reconnect(upgrade)
