@@ -3,7 +3,7 @@ import ipaddress, re
 class Validate():
 
     def id(self,id):
-        result = re.findall(r"^[0-9]{1,3}$",str(id),re.MULTILINE | re.DOTALL)
+        result = re.fullmatch(r"[0-9]{1,3}",str(id))
         if not result: return False
         if int(id) < 0 or int(id) > 250: return False
         return True
@@ -15,12 +15,12 @@ class Validate():
         return True
 
     def network(self,network):
-        result = re.findall(r"^[A-Za-z]{3,6}$",network,re.MULTILINE | re.DOTALL)
+        result = re.fullmatch(r"[A-Za-z]{3,6}",str(network))
         if not result: return False
         return True
 
     def linkType(self,linkType,config):
-        result = re.findall(r"^[A-Za-z_]{5,15}$",linkType,re.MULTILINE | re.DOTALL)
+        result = re.fullmatch(r"[A-Za-z_]{5,15}",str(linkType))
         if not result: return False
         linkTypes = ["default","wgobfs","ipt_xor","amneziawg"]
         if not linkType in linkTypes: return False
@@ -28,13 +28,13 @@ class Validate():
         return True
 
     def prefix(self,prefix):
-        result = re.findall(r"^[0-9.]{4,6}$",prefix,re.MULTILINE | re.DOTALL)
+        result = re.fullmatch(r"[0-9.]{4,6}",str(prefix))
         if not result: return False
         return True
 
     def token(self,payload,tokens):
         if not "token" in payload: return False
-        token = re.findall(r"^([A-Za-z0-9/.=+]{18,60})$",payload['token'],re.MULTILINE | re.DOTALL)
+        token = re.fullmatch(r"[A-Za-z0-9/.=+]{18,60}",str(payload['token']))
         if not token: return False
         if "network" in payload and payload["network"] == "peer":
             if payload['token'] not in tokens['peer']: return False
@@ -43,7 +43,7 @@ class Validate():
         return True
 
     def interface(self,interface):
-        if not re.findall(r"^[A-Za-z0-9]{3,50}$",interface, re.MULTILINE): return False
+        if not re.fullmatch(r"[A-Za-z0-9]{3,50}",str(interface)): return False
         return True
 
     def publicKey(self,publicKey):
