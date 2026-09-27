@@ -200,6 +200,13 @@ def index():
     if "interface" in payload and not validate.interface(payload['interface']):
         logging.info(f"Missing or invalid interface from {requestIP}")
         return HTTPResponse(status=400, body="Invalid Interface")
+    #validate the fields that are written into the link script
+    if "port" in payload and not validate.port(payload['port']):
+        logging.info(f"Invalid port from {requestIP}")
+        return HTTPResponse(status=400, body="Invalid Port")
+    if "xorKey" in payload and not validate.xorKey(payload['xorKey']):
+        logging.info(f"Invalid xor key from {requestIP}")
+        return HTTPResponse(status=400, body="Invalid xor key")
     #check if interface exists
     if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
         logging.info(f"Invalid link from {requestIP}")

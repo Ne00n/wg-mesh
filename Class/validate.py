@@ -9,7 +9,7 @@ class Validate():
         return True
 
     def port(self,port):
-        result = re.findall(r"^[0-9]{4,5}$",str(port),re.MULTILINE | re.DOTALL)
+        result = re.fullmatch(r"[0-9]{4,5}",str(port))
         if not result: return False
         if int(port) < 1024 or int(port) > 65535: return False
         return True
@@ -49,6 +49,11 @@ class Validate():
     def publicKey(self,publicKey):
         if not isinstance(publicKey,str): return False
         if not re.fullmatch(r"[A-Za-z0-9+/]{43}=",publicKey): return False
+        return True
+
+    def xorKey(self,xorKey):
+        if not isinstance(xorKey,str): return False
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}",xorKey): return False
         return True
 
     def protocol(self,protocol):
