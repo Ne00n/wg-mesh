@@ -10,6 +10,7 @@ from pathlib import Path
 
 connectMutex = threading.Lock()
 updateMutex = threading.Lock()
+blocklistMutex = threading.Lock()
 folder = os.path.dirname(os.path.realpath(__file__))
 #wireguard
 wg = Wireguard(folder)
@@ -43,14 +44,15 @@ except:
     logging.warning("Failed to write token file")
 
 def block(requestIP,check=False):
-    if check and requestIP not in blocklist:
-        return False
-    elif not requestIP in blocklist:
-        blocklist[requestIP] = int(time.time()) + randint(120,300)
-    elif time.time() > blocklist[requestIP]:
-        del blocklist[requestIP]
-    else:
-        return True
+    with blocklistMutex:
+        if check and requestIP not in blocklist:
+            return False
+        elif not requestIP in blocklist:
+            blocklist[requestIP] = int(time.time()) + randint(120,300)
+        elif time.time() > blocklist[requestIP]:
+            del blocklist[requestIP]
+        else:
+            return True
 
 def terminateLink(folder,interface,wait=True):
     wg = Wireguard(folder)
