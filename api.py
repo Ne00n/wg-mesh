@@ -145,40 +145,38 @@ def index():
         if config['geo']['countryCode'] in payload['connectivity']['blacklist']:
             return HTTPResponse(status=451,body="Country blacklisted")
     #block any other requests to prevent issues regarding port and ip assignment
-    connectMutex.acquire()
-    #generate new key pair
-    privateKeyServer, publicKeyServer = wg.genKeys()
-    preSharedKey = wg.genPreShared()
-    wgobfsSharedKey = secrets.token_urlsafe(24)
-    #switch to peer subnet if required
-    isPeer = True if payload['network'] == "peer" else False
-    #load configs
-    configs = wg.getConfigs(False)
-    freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,payload['basePort'],isPeer)
-    if not freeSubnet or not freeSubnetv6:
-        connectMutex.release()
-        logging.info(f"Unable to allocate subnet for {requestIP}")
-        return HTTPResponse(status=500, body="Unable to allocate subnet.")
-    #amneziawg
-    amneziaConfig = wg.genAmneziaConfig()
-    #check if amnezia is requested but also if we are using vanilla amnezia or with modded config
-    if payload['linkType'] == "amneziawg" and config['linkSettings']['awgGen'] and amneziaConfig:
-        payload["amneziawg"] = amneziaConfig
-        configAsString = ''.join(f"{k}:{v}," for k, v in amneziaConfig.items())
-        logging.info(f"Used config for amneziawg: {configAsString}")
-    #generate wireguard config
-    serverConfig = templator.genServer(interface,config,payload,freeSubnet,freeSubnetv6,freePort,wgobfsSharedKey)
-    #save
-    logging.debug(f"Creating wireguard link {interface}")
-    wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
-    wg.saveFile(preSharedKey,f"{folder}/links/{interface}.pre")
-    wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
-    remotePublic = payload['connectivity']['ipv6'] if "v6" in interface else payload['connectivity']['ipv4']
-    linkConfig = {'remote':f"{payload['prefix']}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType'],"mtu":1412}
-    wg.saveFile(linkConfig,f"{folder}/links/{interface}.json")
-    logging.debug(f"{interface} up")
-    wg.setInterface(interface,"up")
-    connectMutex.release()
+    with connectMutex:
+        #generate new key pair
+        privateKeyServer, publicKeyServer = wg.genKeys()
+        preSharedKey = wg.genPreShared()
+        wgobfsSharedKey = secrets.token_urlsafe(24)
+        #switch to peer subnet if required
+        isPeer = True if payload['network'] == "peer" else False
+        #load configs
+        configs = wg.getConfigs(False)
+        freeSubnet,freeSubnetv6,freePort = wg.minimal(configs,payload['basePort'],isPeer)
+        if not freeSubnet or not freeSubnetv6:
+            logging.info(f"Unable to allocate subnet for {requestIP}")
+            return HTTPResponse(status=500, body="Unable to allocate subnet.")
+        #amneziawg
+        amneziaConfig = wg.genAmneziaConfig()
+        #check if amnezia is requested but also if we are using vanilla amnezia or with modded config
+        if payload['linkType'] == "amneziawg" and config['linkSettings']['awgGen'] and amneziaConfig:
+            payload["amneziawg"] = amneziaConfig
+            configAsString = ''.join(f"{k}:{v}," for k, v in amneziaConfig.items())
+            logging.info(f"Used config for amneziawg: {configAsString}")
+        #generate wireguard config
+        serverConfig = templator.genServer(interface,config,payload,freeSubnet,freeSubnetv6,freePort,wgobfsSharedKey)
+        #save
+        logging.debug(f"Creating wireguard link {interface}")
+        wg.saveFile(privateKeyServer,f"{folder}/links/{interface}.key")
+        wg.saveFile(preSharedKey,f"{folder}/links/{interface}.pre")
+        wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
+        remotePublic = payload['connectivity']['ipv6'] if "v6" in interface else payload['connectivity']['ipv4']
+        linkConfig = {'remote':f"{payload['prefix']}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType'],"mtu":1412}
+        wg.saveFile(linkConfig,f"{folder}/links/{interface}.json")
+        logging.debug(f"{interface} up")
+        wg.setInterface(interface,"up")
     logging.info(f"{interface} created for {requestIP}")
     response = {"publicKeyServer":publicKeyServer,'preSharedKey':preSharedKey,'wgobfsSharedKey':wgobfsSharedKey,'id':config['id'],'networkID':config['networkID']
     ,'freeSubnet':wg.Network.getHost(freeSubnet),"freeSubnetv6":wg.Network.getHost(freeSubnetv6,"127"),'freePort':freePort,'connectivity':config['connectivity']}
@@ -218,15 +216,14 @@ def index():
         block(requestIP)
         return HTTPResponse(status=400, body="invalid public key")
     #always apply the mutex
-    updateMutex.acquire()
-    #update
-    wg.setInterface(payload['interface'],"down")
-    logging.info(f"{payload['interface']} updating link")
-    wg.updateLink(payload['interface'],payload)
-    wg.setInterface(payload['interface'],"up")
-    #the pipe is fetched every 100ms, make sure we wait until the data is fetched
-    if "cost" in payload: time.sleep(0.1)
-    updateMutex.release()
+    with updateMutex:
+        #update
+        wg.setInterface(payload['interface'],"down")
+        logging.info(f"{payload['interface']} updating link")
+        wg.updateLink(payload['interface'],payload)
+        wg.setInterface(payload['interface'],"up")
+        #the pipe is fetched every 100ms, make sure we wait until the data is fetched
+        if "cost" in payload: time.sleep(0.1)
     return HTTPResponse(status=200, body="link updated")
 
 @route(f'{config["secret"]}/disconnect', method='POST')
@@ -243,32 +240,29 @@ def index():
         logging.info(f"{body} from {requestIP}")
         return HTTPResponse(status=status, body=body)
     #block any other requests to prevent issues regarding port and ip assignment
-    connectMutex.acquire()
-    #check if interface exists
-    if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
-        logging.info(f"Invalid link from {requestIP}")
-        block(requestIP)
-        connectMutex.release()
-        return HTTPResponse(status=400, body="invalid link")
-    #read private key
-    with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
-    #get public key from private key
-    publicKeyServer = wg.getPublic(privateKeyServer)
-    #check if they match
-    if payload['publicKeyServer'] != publicKeyServer:
-        logging.info(f"Invalid public key from {requestIP}")
-        block(requestIP)
-        connectMutex.release()
-        return HTTPResponse(status=400, body="invalid public key")
-    #terminate the link
-    if "wait" in payload and payload['wait'] == False:
-        terminateLink(folder,payload['interface'],False)
-        logging.info(f"{payload['interface']} terminated")
-    else:
-        termination = Thread(target=terminateLink, args=([folder,payload['interface']]))
-        termination.start()
-        logging.info(f"{payload['interface']} started termination thread")
-    connectMutex.release()
+    with connectMutex:
+        #check if interface exists
+        if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
+            logging.info(f"Invalid link from {requestIP}")
+            block(requestIP)
+            return HTTPResponse(status=400, body="invalid link")
+        #read private key
+        with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
+        #get public key from private key
+        publicKeyServer = wg.getPublic(privateKeyServer)
+        #check if they match
+        if payload['publicKeyServer'] != publicKeyServer:
+            logging.info(f"Invalid public key from {requestIP}")
+            block(requestIP)
+            return HTTPResponse(status=400, body="invalid public key")
+        #terminate the link
+        if "wait" in payload and payload['wait'] == False:
+            terminateLink(folder,payload['interface'],False)
+            logging.info(f"{payload['interface']} terminated")
+        else:
+            termination = Thread(target=terminateLink, args=([folder,payload['interface']]))
+            termination.start()
+            logging.info(f"{payload['interface']} started termination thread")
     return HTTPResponse(status=200, body="link terminated")
 listen = f"{subnetPrefix}.{config['id']}.1"
 run(host=listen, port=config['listenPort'], server='paste')
