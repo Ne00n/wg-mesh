@@ -48,6 +48,11 @@ class Validate():
             return 400,"Invalid Interface"
         return None,None
 
+    def publicKey(self,publicKey):
+        if not isinstance(publicKey,str): return False
+        if not re.fullmatch(r"[A-Za-z0-9+/]{43}=",publicKey): return False
+        return True
+
     def protocol(self,protocol):
         allowedProtocols = ["ipv4","ipv6"]
         if not protocol in allowedProtocols: return False
@@ -65,6 +70,9 @@ class Validate():
         return True
 
     def connect(self,payload,config):
+        #validate client public key
+        if not 'clientPublicKey' in payload or not self.publicKey(payload['clientPublicKey']):
+            return 400,"Invalid public key"
         #validate id
         if not 'id' in payload or not self.id(payload['id']): 
             return 400,"Invalid ID"
