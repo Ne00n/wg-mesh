@@ -197,10 +197,9 @@ def index():
         return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate interface name
-    status, body = validate.interface(payload['interface'])
-    if status: 
-        logging.info(f"{body} from {requestIP}")
-        return HTTPResponse(status=status, body=body)
+    if "interface" in payload and not validate.interface(payload['interface']):
+        logging.info(f"Missing or invalid interface from {requestIP}")
+        return HTTPResponse(status=400, body="Invalid Interface")
     #check if interface exists
     if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
         logging.info(f"Invalid link from {requestIP}")

@@ -43,10 +43,8 @@ class Validate():
         return True
 
     def interface(self,interface):
-        result = re.findall(r"^[A-Za-z0-9]{3,50}$",interface, re.MULTILINE)
-        if not result: 
-            return 400,"Invalid Interface"
-        return None,None
+        if not re.findall(r"^[A-Za-z0-9]{3,50}$",interface, re.MULTILINE): return False
+        return True
 
     def publicKey(self,publicKey):
         if not isinstance(publicKey,str): return False
