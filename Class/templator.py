@@ -1,6 +1,15 @@
-import ipaddress, time
+import ipaddress, time, re
 
 class Templator:
+
+    def genAmnezia(self,wgPrefix,interface,amnezia):
+        if not isinstance(amnezia,dict) or not amnezia: return ""
+        options = f"sudo {wgPrefix} set {interface}"
+        for key, value in amnezia.items():
+            if not re.fullmatch(r"[A-Za-z0-9_]{1,15}",str(key)): return ""
+            if not re.fullmatch(r"[0-9]{1,10}",str(value)): return ""
+            options += f" {key} {value}"
+        return options
 
     def genServer(self,interface,config,payload,freeSubnet,freeSubnetv6,serverPort,wgobfsSharedKey=""):
         clientPublicKey,linkType,prefix,connectivity = payload['clientPublicKey'],payload['linkType'],payload['prefix'],payload['connectivity']
@@ -8,9 +17,7 @@ class Templator:
         amneziawg = ""
         wgPrefix = "awg" if linkType == "amneziawg" or linkType == "awg" else "wg"
         if wgPrefix == "awg" and "amneziawg" in payload:
-            amneziawg = f"sudo {wgPrefix} set {interface}"
-            for key, value in payload['amneziawg'].items():
-                amneziawg += f" {key} {value} "
+            amneziawg = self.genAmnezia(wgPrefix,interface,payload['amneziawg'])
         wgProtocol = "amneziawg" if wgPrefix == "awg" else "wireguard"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
@@ -57,9 +64,7 @@ PersistentKeepalive = 20
         amneziawg = ""
         wgPrefix = "awg" if linkType == "amneziawg" or linkType == "awg" else "wg"
         if wgPrefix == "awg" and "amneziawg" in resp:
-            amneziawg = f"sudo {wgPrefix} set {interface}"
-            for key, value in resp['amneziawg'].items():
-                amneziawg += f" {key} {value}"
+            amneziawg = self.genAmnezia(wgPrefix,interface,resp['amneziawg'])
         wgProtocol = "amneziawg" if wgPrefix == "awg" else "wireguard"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I INPUT -p udp -m udp --sport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --unobfs;\n"
         if linkType == "wgobfs": wgobfs += f"sudo iptables -t mangle -I OUTPUT -p udp -m udp --dport {serverPort} -j WGOBFS --key {wgobfsSharedKey} --obfs;\n"
