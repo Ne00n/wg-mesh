@@ -127,16 +127,16 @@ def index():
     #generate interface name
     interfaceType = "v6" if payload['protocol'] == "ipv6" else ""
     interface = wg.getInterface(payload['id'],interfaceType,payload['network'])
-    #check if interface exists
-    if os.path.isfile(f"{folder}/links/{interface}.sh"):
-        logging.info(f"Link already exists, {requestIP}")
-        return HTTPResponse(status=412, body="Link already exists")
     #connectivity blacklist check
     if "connectivity" in payload and "blacklist" in payload['connectivity'] and "geo" in config and "countryCode" in config['geo']:
         if config['geo']['countryCode'] in payload['connectivity']['blacklist']:
             return HTTPResponse(status=451,body="Country blacklisted")
     #block any other requests to prevent issues regarding port and ip assignment
     with connectMutex:
+        #check if interface exists
+        if os.path.isfile(f"{folder}/links/{interface}.sh"):
+            logging.info(f"Link already exists, {requestIP}")
+            return HTTPResponse(status=412, body="Link already exists")
         #generate new key pair
         privateKeyServer, publicKeyServer = wg.genKeys()
         preSharedKey = wg.genPreShared()
