@@ -43,7 +43,7 @@ try:
 except:
     logging.warning("Failed to write token file")
 
-def doWeContinue(requestIP,endpoint,multiplier=0):
+def doWeContinue(requestIP,endpoint,multiplier=1):
     if not requestIP in requests: requests[requestIP] = {"connectivity":[],"connect":[],"update":[],"disconnect":[]}
     requests[requestIP][endpoint].append(int(time.time()) + (30 * multiplier))
     if endpoint in requests[requestIP]:
