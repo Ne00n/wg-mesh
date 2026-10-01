@@ -6,6 +6,7 @@ class Validate():
         result = re.fullmatch(r"[0-9]{1,3}",str(id))
         if not result: return False
         if int(id) < 0 or int(id) > 250: return False
+        if str(int(id)) != str(id): return False
         return True
 
     def port(self,port):
