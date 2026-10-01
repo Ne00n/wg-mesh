@@ -231,19 +231,19 @@ class Wireguard(Base):
         vanilla = random.randint(0, 1)
         if vanilla: return config
         # Junk packets (Jc/Jmin/Jmax may differ between client and server)
-        if _rng.random() < 0.8:
-            config['jc'] = _rng.randint(3, 10)
-            config['jmin'] = _rng.randint(10, 50)
-            config['jmax'] = _rng.randint(config['jmin'] + 50, 1000)  # must be <= 1280
+        if rng.random() < 0.8:
+            config['jc'] = rng.randint(3, 10)
+            config['jmin'] = rng.randint(10, 50)
+            config['jmax'] = rng.randint(config['jmin'] + 50, 1000)  # must be <= 1280
         # Handshake padding (S1/S2 must MATCH on both peers)
         while True:
-            s1 = _rng.randint(15, 150)
-            s2 = _rng.randint(15, 150)
+            s1 = rng.randint(15, 150)
+            s2 = rng.randint(15, 150)
             if s1 != s2 and s1 + 56 != s2:
                 break
         config['s1'], config['s2'] = s1, s2
         # Custom message types (H1-H4 must MATCH on both peers, unique, > 4)
-        h = _rng.sample(range(5, 2**32), 4)
+        h = rng.sample(range(5, 2**32), 4)
         config.update(h1=h[0], h2=h[1], h3=h[2], h4=h[3])
         self.amneziaConfig = config
         return config
