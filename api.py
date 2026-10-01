@@ -1,5 +1,5 @@
 import ipaddress, threading, socket, logging, string, secrets, json, time, os, re
-from bottle import HTTPResponse, route, run, request, template
+from bottle import HTTPResponse, route, run, request, template, abort
 from logging.handlers import RotatingFileHandler
 from Class.wireguard import Wireguard
 from Class.templator import Templator
