@@ -1,4 +1,4 @@
-import urllib.request, ipaddress, requests, random, string, json, time, re, os
+import urllib.request, ipaddress, requests, random, string, secrets, json, time, re, os
 from Class.templator import Templator
 from Class.validate import Validate
 from Class.network import Network
@@ -226,6 +226,7 @@ class Wireguard(Base):
 
     def genAmneziaConfig(self):
         self.amneziaConfig = config = {}
+        rng = secrets.SystemRandom()
         #vanillaAmnezia switch
         vanilla = random.randint(0, 1)
         if vanilla: return config
