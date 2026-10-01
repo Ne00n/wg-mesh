@@ -237,6 +237,8 @@ class CLI(Base):
             config['leakPrevention'] = False
         elif "reMesh" in option:
             config['linkSettings']['reMesh'] = False
+        elif "awgGen" in option:
+            config['linkSettings']['awgGen'] = False
         else:
             print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg / awg, client, notifications, update, leakPrevention, importAll")
             return
@@ -276,6 +278,8 @@ class CLI(Base):
             config['leakPrevention'] = True
         elif "reMesh" in option:
             config['linkSettings']['reMesh'] = True
+        elif "awgGen" in option:
+            config['linkSettings']['awgGen'] = True
         else:
             print("Valid options: mesh, ospfv2, ospfv3, wgobfs, ipt_xor, amneziawg / awg, client, notifications, update, leakPrevention, importAll")
             return
