@@ -48,7 +48,7 @@ def doWeContinue(requestIP,endpoint,multiplier=0):
     requests[requestIP][endpoint].append(int(time.time()) + (30 * multiplier))
     if endpoint in requests[requestIP]:
         for entry in list(requests[requestIP][endpoint]):
-            if time.time() > entry: del requests[requestIP][endpoint][entry]
+            if time.time() > entry: requests[requestIP][endpoint].remove(entry)
     if len(requests[requestIP][endpoint]) > 1: return False
     return True
 
