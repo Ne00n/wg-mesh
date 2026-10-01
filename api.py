@@ -49,7 +49,7 @@ def doWeContinue(requestIP,endpoint,multiplier=1):
     if endpoint in requests[requestIP]:
         for entry in list(requests[requestIP][endpoint]):
             if time.time() > entry: requests[requestIP][endpoint].remove(entry)
-    if len(requests[requestIP][endpoint]) > 1: return False
+    if len(requests[requestIP][endpoint]) > 2: return False
     return True
 
 def terminateLink(folder,interface,wait=True):
