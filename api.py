@@ -76,8 +76,8 @@ def getInternal(requestIP):
 def index():
     if request.content_length > 1000: abort(413)
     requestIP = getReqIP()
-    doWeContinue = processRequest(requestIP,"connectivity")
-    if not doWeContinue:
+    shallWeContinue = doWeContinue(requestIP,"connectivity")
+    if not shallWeContinue:
         logging.info(f"{requestIP} blocked due to rate limit.")
         abort(429)
     isInternal = getInternal(requestIP)
@@ -94,8 +94,8 @@ def index():
     if request.content_length > 1000: abort(413)
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
-    doWeContinue = processRequest(requestIP,"connect")
-    if not doWeContinue:
+    shallWeContinue = doWeContinue(requestIP,"connect")
+    if not shallWeContinue:
         logging.info(f"{requestIP} blocked due to rate limit.")
         abort(429)
     payload = json.load(request.body)
@@ -182,8 +182,8 @@ def index():
         return HTTPResponse(status=400, body="Bad Request")
     #grab IP
     requestIP = getReqIP()
-    doWeContinue = processRequest(requestIP,"update")
-    if not doWeContinue:
+    shallWeContinue = doWeContinue(requestIP,"update")
+    if not shallWeContinue:
         logging.info(f"{requestIP} blocked due to rate limit.")
         abort(429)
     payload = json.load(request.body)
@@ -227,8 +227,8 @@ def index():
 def index():
     if request.content_length > 1000: abort(413)
     requestIP = getReqIP()
-    doWeContinue = processRequest(requestIP,"disconnect")
-    if not doWeContinue:
+    shallWeContinue = doWeContinue(requestIP,"disconnect")
+    if not shallWeContinue:
         logging.info(f"{requestIP} blocked due to rate limit.")
         abort(429)
     payload = json.load(request.body)
