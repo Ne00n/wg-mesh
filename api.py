@@ -10,7 +10,7 @@ from pathlib import Path
 
 connectMutex = threading.Lock()
 updateMutex = threading.Lock()
-blocklistMutex = threading.Lock()
+doWeContinueMutex = threading.Lock()
 folder = os.path.dirname(os.path.realpath(__file__))
 #wireguard
 wg = Wireguard(folder)
@@ -44,13 +44,14 @@ except:
     logging.warning("Failed to write token file")
 
 def doWeContinue(requestIP,endpoint,multiplier=1):
-    if not requestIP in requests: requests[requestIP] = {"connectivity":[],"connect":[],"update":[],"disconnect":[]}
-    requests[requestIP][endpoint].append(int(time.time()) + (30 * multiplier))
-    if endpoint in requests[requestIP]:
-        for entry in list(requests[requestIP][endpoint]):
-            if time.time() > entry: requests[requestIP][endpoint].remove(entry)
-    if len(requests[requestIP][endpoint]) > 2: return False
-    return True
+    with doWeContinueMutex:
+        if not requestIP in requests: requests[requestIP] = {"connectivity":[],"connect":[],"update":[],"disconnect":[]}
+        requests[requestIP][endpoint].append(int(time.time()) + (30 * multiplier))
+        if endpoint in requests[requestIP]:
+            for entry in list(requests[requestIP][endpoint]):
+                if time.time() > entry: requests[requestIP][endpoint].remove(entry)
+        if len(requests[requestIP][endpoint]) > 2: return False
+        return True
 
 def terminateLink(folder,interface,wait=True):
     wg = Wireguard(folder)
