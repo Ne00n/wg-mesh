@@ -27,7 +27,7 @@ levels = {'critical': logging.CRITICAL,'error': logging.ERROR,'warning': logging
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(levels[level])
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',datefmt='%d.%m.%Y %H:%M:%S',level=levels[level],handlers=[RotatingFileHandler(maxBytes=10000000,backupCount=5,filename=f"{folder}/logs/api.log"),stream_handler])
-blocklist = {}
+requests = {}
 #token
 tokens = {"connect":[],"peer":[]}
 for i in range(3):
@@ -43,16 +43,14 @@ try:
 except:
     logging.warning("Failed to write token file")
 
-def block(requestIP,check=False):
-    with blocklistMutex:
-        if check and requestIP not in blocklist:
-            return False
-        elif not requestIP in blocklist:
-            blocklist[requestIP] = int(time.time()) + randint(120,300)
-        elif time.time() > blocklist[requestIP]:
-            del blocklist[requestIP]
-        else:
-            return True
+def doWeContinue(requestIP,endpoint,multiplier=0):
+    if not requestIP in requests: requests[requestIP] = {"connectivity":[],"connect":[],"update":[],"disconnect":[]}
+    requests[requestIP][endpoint] = int(time.time()) + (30 * multiplier)
+    if endpoint in requests[requestIP]:
+        for entry in list(requests[requestIP][endpoint]):
+            if time.time() > entry: del requests[requestIP][endpoint][entry]
+    if len(requests[requestIP][endpoint]) > 1: return False
+    return True
 
 def terminateLink(folder,interface,wait=True):
     wg = Wireguard(folder)
@@ -68,15 +66,6 @@ def getReqIP():
     if ipaddress.ip_address(reqIP).version == 6 and ipaddress.IPv6Address(reqIP).ipv4_mapped: return ipaddress.IPv6Address(reqIP).ipv4_mapped
     return reqIP
 
-def check(requestIP,request):
-    if block(requestIP,check=True): 
-        logging.info(f"{requestIP} in blocklist")
-        return 403,"IP blocked"
-    if request.content_length > 1000: 
-        logging.info(f"{requestIP} payload is to large")
-        return 413,"Payload to large"
-    return None,None
-
 def getInternal(requestIP):
     try:
         return ipaddress.ip_address(requestIP) in ipaddress.ip_network(config['subnet'])
@@ -85,34 +74,35 @@ def getInternal(requestIP):
 
 @route(f'{config["secret"]}/connectivity',method='POST')
 def index():
+    if request.content_length > 1000: abort(413)
     requestIP = getReqIP()
+    doWeContinue = processRequest(requestIP,"connectivity")
+    if not doWeContinue:
+        logging.info(f"{requestIP} blocked due to rate limit.")
+        abort(429)
     isInternal = getInternal(requestIP)
-    status, body = check(requestIP,request)
-    if status: 
-        logging.info(f"{body} from {requestIP}")
-        return HTTPResponse(status=status, body=body)
     payload = json.load(request.body)
     #validate token
     if not isInternal and not validate.token(payload,tokens): 
         logging.info(f"Invalid Token from {requestIP}")
-        block(requestIP)
+        doWeContinue(requestIP,"connectivity",10)
         return HTTPResponse(status=401, body="Invalid Token")
     return HTTPResponse(status=200, body={'connectivity':config['connectivity'],'geo':{},'linkTypes':config['linkTypes'],'subnetPrefix':subnetPrefix})
 
 @route(f'{config["secret"]}/connect', method='POST')
 def index():
+    if request.content_length > 1000: abort(413)
     requestIP = getReqIP()
     isInternal = getInternal(requestIP)
-    #check blacklist + payload size
-    status, body = check(requestIP,request)
-    if status: 
-        logging.info(f"{body} from {requestIP}")
-        return HTTPResponse(status=status, body=body)
+    doWeContinue = processRequest(requestIP,"connect")
+    if not doWeContinue:
+        logging.info(f"{requestIP} blocked due to rate limit.")
+        abort(429)
     payload = json.load(request.body)
     #validate token
     if not isInternal and not validate.token(payload,tokens): 
         logging.info(f"Invalid Token from {requestIP}")
-        block(requestIP)
+        doWeContinue(requestIP,"connect",10)
         return HTTPResponse(status=401, body="Invalid Token")
     #validate payload
     status, body = validate.connect(payload,config)
@@ -186,15 +176,16 @@ def index():
 
 @route(f'{config["secret"]}/update', method='PATCH')
 def index():
+    if request.content_length > 1000: abort(413)
     #is available
     if not config['modules']['update']:
         return HTTPResponse(status=400, body="Bad Request")
     #grab IP
     requestIP = getReqIP()
-    status, body = check(requestIP,request)
-    if status: 
-        logging.info(f"{body} from {requestIP}")
-        return HTTPResponse(status=status, body=body)
+    doWeContinue = processRequest(requestIP,"update")
+    if not doWeContinue:
+        logging.info(f"{requestIP} blocked due to rate limit.")
+        abort(429)
     payload = json.load(request.body)
     #validate interface name
     if "interface" in payload and not validate.interface(payload['interface']):
@@ -210,7 +201,7 @@ def index():
     #check if interface exists
     if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
         logging.info(f"Invalid link from {requestIP}")
-        block(requestIP)
+        doWeContinue(requestIP,"update",10)
         return HTTPResponse(status=400, body="invalid link")
     #read private key
     with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
@@ -219,7 +210,7 @@ def index():
     #check if they match
     if payload['publicKeyServer'] != publicKeyServer:
         logging.info(f"Invalid public key from {requestIP}")
-        block(requestIP)
+        doWeContinue(requestIP,"update",10)
         return HTTPResponse(status=400, body="invalid public key")
     #always apply the mutex
     with updateMutex:
@@ -234,11 +225,12 @@ def index():
 
 @route(f'{config["secret"]}/disconnect', method='POST')
 def index():
+    if request.content_length > 1000: abort(413)
     requestIP = getReqIP()
-    status, body = check(requestIP,request)
-    if status: 
-        logging.info(f"{body} from {requestIP}")
-        return HTTPResponse(status=status, body=body)
+    doWeContinue = processRequest(requestIP,"disconnect")
+    if not doWeContinue:
+        logging.info(f"{requestIP} blocked due to rate limit.")
+        abort(429)
     payload = json.load(request.body)
     #validate interface name
     if "interface" in payload and not validate.interface(payload['interface']):
@@ -249,7 +241,7 @@ def index():
         #check if interface exists
         if not os.path.isfile(f"{folder}/links/{payload['interface']}.sh"):
             logging.info(f"Invalid link from {requestIP}")
-            block(requestIP)
+            doWeContinue(requestIP,"disconnect",10)
             return HTTPResponse(status=400, body="invalid link")
         #read private key
         with open(f"{folder}/links/{payload['interface']}.key", 'r') as file: privateKeyServer = file.read()
@@ -258,7 +250,7 @@ def index():
         #check if they match
         if payload['publicKeyServer'] != publicKeyServer:
             logging.info(f"Invalid public key from {requestIP}")
-            block(requestIP)
+            doWeContinue(requestIP,"disconnect",10)
             return HTTPResponse(status=400, body="invalid public key")
         #terminate the link
         if "wait" in payload and payload['wait'] == False:
