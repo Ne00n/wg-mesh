@@ -45,7 +45,7 @@ except:
 
 def doWeContinue(requestIP,endpoint,multiplier=0):
     if not requestIP in requests: requests[requestIP] = {"connectivity":[],"connect":[],"update":[],"disconnect":[]}
-    requests[requestIP][endpoint] = int(time.time()) + (30 * multiplier)
+    requests[requestIP][endpoint].append(int(time.time()) + (30 * multiplier))
     if endpoint in requests[requestIP]:
         for entry in list(requests[requestIP][endpoint]):
             if time.time() > entry: del requests[requestIP][endpoint][entry]
