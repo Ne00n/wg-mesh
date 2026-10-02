@@ -4,6 +4,7 @@ from logging.handlers import RotatingFileHandler
 from Class.wireguard import Wireguard
 from Class.templator import Templator
 from Class.validate import Validate
+from Class.network import Network
 from threading import Thread
 from random import randint
 from pathlib import Path
@@ -15,6 +16,8 @@ folder = os.path.dirname(os.path.realpath(__file__))
 #wireguard
 wg = Wireguard(folder)
 config = wg.getConfig()
+#network
+net = Network(config)
 #validation
 validate = Validate()
 #pull subnetPrefix
@@ -115,12 +118,11 @@ def index():
     if not "connectivity" in payload: payload['connectivity'] = {"ipv4":"","ipv6":""}
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
-    if not "prefix" in payload: payload['prefix'] = f"{subnetPrefix}"
     payload['basePort'] = config['basePort'] if not "port" in payload else payload['port']
     #initial
     if payload['initial']:
         routes = wg.cmd("birdc show route")[0]
-        subnetPrefixSplitted = payload['prefix'].split(".")
+        subnetPrefixSplitted = net.getSubnetOctet(payload['network'])
         targets = re.findall(f"({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
         if f"{payload['prefix']}.{payload['id']}.0/30" in targets or (payload['prefix'] == "10.0" and f"{payload['prefix']}.{int(payload['id'])+1}.0/30" in targets): 
             logging.info(f"ID Collision from {requestIP}")
@@ -165,7 +167,7 @@ def index():
         wg.saveFile(preSharedKey,f"{folder}/links/{interface}.pre")
         wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
         remotePublic = payload['connectivity']['ipv6'] if "v6" in interface else payload['connectivity']['ipv4']
-        linkConfig = {'remote':f"{payload['prefix']}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType'],"mtu":1412}
+        linkConfig = {'remote':f"{net.subnetSwitch(payload['network'])}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType'],"mtu":1412}
         wg.saveFile(linkConfig,f"{folder}/links/{interface}.json")
         logging.debug(f"{interface} up")
         wg.setInterface(interface,"up")
