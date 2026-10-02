@@ -92,7 +92,7 @@ class Wireguard(Base):
         notifications = {"enabled":False,"gotifyUp":"","gotifyDown":"","gotifyError":"","gotifyDiag":"","gotifyChanges":"","gotifyMonitor":""}
         config = {"listenPort":8080,"basePort":51820,"secret":"","operationMode":0,"loglevel":"info","vxlanOffset":0,"subnet":"10.0.0.0/16",
         "subnetv6":"fe82:","subnetPeer":"172.31.0.0/16","subnetPeerv6":"fe81:","subnetVXLAN":"10.0.251.0/24","AllowedPeers":[],"prefix":"pipe",
-        "id":int(id),"networkID":0,"linkTypes":["default"],"linkSettings":{"awgGen":False,"reMesh":True},"defaultLinkType":"default",
+        "id":int(id),"networkID":0,"linkTypes":["default"],"linkSettings":{"awgGen":True,"reMesh":True},"defaultLinkType":"default",
         "connectivity":connectivity,"iptables":iptables,"bird":bird,"modules":modules,"latency":{"pingInterval":30},"notifications":notifications}
         response = self.saveFile(config,f"{self.path}/configs/config.json")
         if not response: exit("Unable to save config.json")
