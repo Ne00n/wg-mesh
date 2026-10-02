@@ -45,6 +45,9 @@ class Diag(Base):
             count, data, current = 0, links[link], int(time.time())
             isDead = int(time.time()) - 50400 # 14 hours
             remote = data['remote']
+            if not remote in self.network:
+                self.logger.warning(f"{link} not found in network.json!")
+                continue
             if "endpoint" in data['config'] and 'lastOnline' in self.network[remote] and self.network[remote]['lastOnline'] < isDead:
                 self.logger.warning(f"{link} overriding client check")
             elif "endpoint" in data['config']: 
