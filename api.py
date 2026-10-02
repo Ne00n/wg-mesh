@@ -119,12 +119,13 @@ def index():
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
     payload['basePort'] = config['basePort'] if not "port" in payload else payload['port']
+    subnetSplitted,subnetPrefix = self.Network.subnetSwitch(payload['network'])
     #initial
     if payload['initial']:
         routes = wg.cmd("birdc show route")[0]
         subnetPrefixSplitted = net.getSubnetOctet(payload['network'])
         targets = re.findall(f"({subnetPrefixSplitted[0]}\.{subnetPrefixSplitted[1]}\.[0-9]+\.0\/30)",routes, re.MULTILINE)
-        if f"{payload['prefix']}.{payload['id']}.0/30" in targets or (payload['prefix'] == "10.0" and f"{payload['prefix']}.{int(payload['id'])+1}.0/30" in targets): 
+        if f"{subnetPrefix}.{payload['id']}.0/30" in targets or (subnetPrefix == "10.0" and f"{subnetPrefix}.{int(payload['id'])+1}.0/30" in targets): 
             logging.info(f"ID Collision from {requestIP}")
             return HTTPResponse(status=416, body="Collision")
     #generate interface name
@@ -167,7 +168,6 @@ def index():
         wg.saveFile(preSharedKey,f"{folder}/links/{interface}.pre")
         wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
         remotePublic = payload['connectivity']['ipv6'] if "v6" in interface else payload['connectivity']['ipv4']
-        subnetSplitted,subnetPrefix = net.subnetSwitch(payload['network'])
         linkConfig = {'remote':f"{subnetPrefix}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType'],"mtu":1412}
         wg.saveFile(linkConfig,f"{folder}/links/{interface}.json")
         logging.debug(f"{interface} up")
