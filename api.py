@@ -119,7 +119,7 @@ def index():
     if not "network" in payload: payload['network'] = ""
     if not "initial" in payload: payload['initial'] = False
     payload['basePort'] = config['basePort'] if not "port" in payload else payload['port']
-    subnetSplitted,subnetPrefix = self.Network.subnetSwitch(payload['network'])
+    subnetSplitted,subnetPrefix = net.subnetSwitch(payload['network'])
     #initial
     if payload['initial']:
         routes = wg.cmd("birdc show route")[0]
