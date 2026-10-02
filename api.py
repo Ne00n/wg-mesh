@@ -167,7 +167,8 @@ def index():
         wg.saveFile(preSharedKey,f"{folder}/links/{interface}.pre")
         wg.saveFile(serverConfig,f"{folder}/links/{interface}.sh")
         remotePublic = payload['connectivity']['ipv6'] if "v6" in interface else payload['connectivity']['ipv4']
-        linkConfig = {'remote':f"{net.subnetSwitch(payload['network'])}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType'],"mtu":1412}
+        subnetSplitted,subnetPrefix = net.Network.subnetSwitch(payload['network'])
+        linkConfig = {'remote':f"{subnetPrefix}.{payload['id']}.1",'remotePublic':remotePublic.replace("[","").replace("]",""),"linkType":payload['linkType'],"mtu":1412}
         wg.saveFile(linkConfig,f"{folder}/links/{interface}.json")
         logging.debug(f"{interface} up")
         wg.setInterface(interface,"up")
