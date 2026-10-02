@@ -11,6 +11,7 @@ useradd wg-mesh -r -d /opt/wg-mesh -s /bin/bash
 #run init
 ./cli.py $@
 chown -R wg-mesh:wg-mesh /opt/wg-mesh/
+chmod -R 770 /opt/wg-mesh/
 #add wgmesh to /usr/local/bin
 cat <<EOF >>/usr/local/bin/wgmesh
 #!/bin/bash
