@@ -28,11 +28,6 @@ class Validate():
         if not linkType in config['linkTypes']: return False
         return True
 
-    def prefix(self,prefix):
-        result = re.fullmatch(r"[0-9.]{4,6}",str(prefix))
-        if not result: return False
-        return True
-
     def token(self,payload,tokens):
         if not "token" in payload: return False
         token = re.fullmatch(r"[A-Za-z0-9/.=+]{18,60}",str(payload['token']))
@@ -83,9 +78,6 @@ class Validate():
         #validate port
         if "port" in payload and not self.port(payload['port']): 
             return 400,"Invalid Port"
-        #validate prefix
-        if "prefix" in payload and not self.prefix(payload['prefix']): 
-            return 400,"Invalid Prefix"
         #validate network
         if "network" in payload and payload['network'] != "" and not self.network(payload['network']):
             return 400,"Invalid Network"
