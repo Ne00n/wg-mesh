@@ -272,7 +272,6 @@ class Wireguard(Base):
         #generate new key pair
         clientPrivateKey, clientPublicKey = self.genKeys()
         #initial check
-        subnetSplitted,subnetPrefix = self.Network.subnetSwitch(network)
         links = self.Network.getBirdLinks()
         self.isInitial = False if links else True
         status = {"ipv4":{"status":False,"http":0},"ipv6":{"status":False,"http":0}}
@@ -299,7 +298,7 @@ class Wireguard(Base):
         for protocol in availableProtocols:
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"protocol":protocol,
-            "initial":self.isInitial,"linkType":linkType,"prefix":subnetPrefix,"network":network,"connectivity":self.config['connectivity']}
+            "initial":self.isInitial,"linkType":linkType,"network":network,"connectivity":self.config['connectivity']}
             if port != 51820: payload["port"] = port
             success, req = self.call(f"{dest}/{self.config['secret']}/connect",payload)
             if success == False: return status
@@ -314,12 +313,12 @@ class Wireguard(Base):
                 #interface
                 interface = self.getInterface(resp['id'],interfaceType,network)
                 #generate config
-                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType,subnetPrefix,data['subnetPrefix'])
+                clientConfig = self.Templator.genClient(interface,self.config,resp,connectivity,linkType)
                 print(f"Creating & Starting {interface}")
                 self.saveFile(clientPrivateKey,f"{self.path}/links/{interface}.key")
                 self.saveFile(resp['preSharedKey'],f"{self.path}/links/{interface}.pre")
                 self.saveFile(clientConfig,f"{self.path}/links/{interface}.sh")
-                linkConfig = {'remote':f"{data['subnetPrefix']}.{resp['id']}.1",'remotePublic':connectivity.replace("[","").replace("]",""),"linkType":linkType,"mtu":1412}
+                linkConfig = {'remote':f"{self.network.subnetSwitch(network)}.{resp['id']}.1",'remotePublic':connectivity.replace("[","").replace("]",""),"linkType":linkType,"mtu":1412}
                 self.saveFile(linkConfig,f"{self.path}/links/{interface}.json")
                 self.setInterface(interface,"up")
                 status[protocol]['status'] = True
