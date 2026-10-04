@@ -31,10 +31,14 @@ diag = Diag(path,logger)
 waitUntil = 0
 logger.info(f"Ready")
 while not shutdown:
-    currentTime = int(time.time())
-    if currentTime > waitUntil:
-        logger.info(f"Running")
-        diag.run()
-        waitUntil = currentTime + random.randint(1800,3600)
-    else:
-        time.sleep(2)
+    try:
+        currentTime = int(time.time())
+        if currentTime > waitUntil:
+            logger.info(f"Running")
+            diag.run()
+            waitUntil = currentTime + random.randint(1800,3600)
+        else:
+            time.sleep(2)
+    except Exception as e:
+        logger.exception(f'Diag routine crashed {e}')
+        time.sleep(300)
