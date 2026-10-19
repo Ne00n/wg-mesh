@@ -69,7 +69,7 @@ class Validate():
         return True
 
     def validatePublicKey(self,publicKey):
-        if not re.fullmatch(r"^ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI[A-P][A-Za-z0-9+/]{42}( [^\r\n]+)?$",publicKey): return False
+        if not re.fullmatch(r"^ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI[A-Za-z0-9+/]{43}(?: \S*)?\s*$",publicKey): return False
         return True
 
     def connect(self,payload,config):
