@@ -33,7 +33,7 @@ class Wireguard(Base):
         if not "linkSettings" in self.config: self.config['linkSettings'] = {"awgGen":False,"reMesh":False}
         if not "reMesh" in self.config['linkSettings']: self.config['linkSettings']['reMesh'] = False
         if not "secret" in self.config: self.config['secret'] = ""
-        if not os.path.isfile("/opt/wg-mesh/keys/node.pub"): self.cmd('ssh-keygen -t ed25519 -f /opt/wg-mesh/keys/node -q -N ""')
+        if not os.path.isfile("/opt/wg-mesh/keys/node.pub"): self.cmd('ssh-keygen -t ed25519 -f /opt/wg-mesh/keys/node -q -N "" -C ""')
         self.saveFile(self.config,f"{self.path}/configs/config.json")
         if reconfigureDummy: self.reconfigureDummy()
 

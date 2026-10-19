@@ -10,7 +10,7 @@ git checkout experimental
 useradd wg-mesh -r -d /opt/wg-mesh -s /bin/bash
 #run init
 ./cli.py $@
-ssh-keygen -t ed25519 -f /opt/wg-mesh/keys/node -q -N ""
+ssh-keygen -t ed25519 -f /opt/wg-mesh/keys/node -q -N "" -C ""
 chown -R wg-mesh:wg-mesh /opt/wg-mesh/
 chmod 770 /opt/wg-mesh/
 #add wgmesh to /usr/local/bin
