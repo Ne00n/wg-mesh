@@ -68,6 +68,10 @@ class Validate():
             return False
         return True
 
+    def validatePublicKey(self,publicKey):
+        if not re.fullmatch(r"[A-Za-z0-9+/]{42}[AEIMQUYcgkosw048]=",publicKey): return False
+        return True
+
     def connect(self,payload,config):
         #validate client public key
         if not 'clientPublicKey' in payload or not self.publicKey(payload['clientPublicKey']):
