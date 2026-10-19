@@ -14,6 +14,7 @@ class Wireguard(Base):
         if skip: return
         if not os.path.isfile(f"{self.path}/configs/config.json"): exit("Config missing")
         self.config = self.readFile(f'{self.path}/configs/config.json')
+        self.nodePublic = self.readFile(f'{self.path}/keys/node.pub') 
         if onlyConfig: return
         self.amneziaConfig = {}
         self.Network = Network(self.config)
@@ -298,7 +299,7 @@ class Wireguard(Base):
         for protocol in availableProtocols:
             #call destination
             payload = {"clientPublicKey":clientPublicKey,"id":self.config['id'],"token":token,"protocol":protocol,
-            "initial":self.isInitial,"linkType":linkType,"network":network,"connectivity":self.config['connectivity']}
+            "initial":self.isInitial,"linkType":linkType,"network":network,"connectivity":self.config['connectivity'],"publicKey":self.nodePublic}
             if port != 51820: payload["port"] = port
             success, req = self.call(f"{dest}/{self.config['secret']}/connect",payload)
             if success == False: return status
