@@ -92,7 +92,7 @@ def index():
         doWeContinue(requestIP,"connectivity",10)
         return HTTPResponse(status=401, body="Invalid Token")
     #keys
-    if "publicKey" in payload and not os.path.isfile(f"{folder}/keys/{payload['id']}.pub") and self.validatePublicKey(payload['publicKey']):
+    if "publicKey" in payload and not os.path.isfile(f"{folder}/keys/{payload['id']}.pub") and validate.validatePublicKey(payload['publicKey']):
         wg.saveFile(payload['publicKey'],f"{folder}/keys/{payload['id']}.pub")
     geo = config['geo'] if "geo" in config else {}
     return HTTPResponse(status=200, body={'connectivity':config['connectivity'],'geo':geo,'linkTypes':config['linkTypes'],'subnetPrefix':subnetPrefix})
