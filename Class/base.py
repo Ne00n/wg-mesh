@@ -1,4 +1,4 @@
-import subprocess, ipaddress, requests, netaddr, shutil, time, json, re, os
+import subprocess, ipaddress, requests, netaddr, shutil, time, json, jwt, re, os
 from ipaddress import ip_network
 from decimal import Decimal
 
@@ -178,3 +178,14 @@ class Base:
         fileCreation = os.path.getmtime(path)
         fileAge = time.time() - fileCreation
         return fileAge > (3600 * hours)
+
+    def encodeMessage(self,privateKey,payload={}):
+        payload['nbf'] = int(time.time())
+        payload['exp'] = int(time.time() + 3600)
+        return jwt.encode(payload, privateKey, algorithm="EdDSA")
+
+    def decodeMessage(self,publicKey,payload):
+        try:
+            return jwt.decode(payload, publicKey, algorithms=["EdDSA"])
+        except:
+            return False
