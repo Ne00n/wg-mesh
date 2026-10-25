@@ -1,4 +1,4 @@
-import subprocess, ipaddress, requests, netaddr, shutil, time, json, jwt, re, os
+import subprocess, ipaddress, requests, netaddr, shutil, time, json, uuid, jwt, re, os
 from ipaddress import ip_network
 from decimal import Decimal
 
@@ -180,6 +180,7 @@ class Base:
         return fileAge > (3600 * hours)
 
     def encodeMessage(self,privateKey,payload={},targetIDs=[]):
+        payload['jti'] = str(uuid.uuid4())
         payload['nbf'] = int(time.time() - 60)
         payload['exp'] = int(time.time() + 60)
         payload['aud'] = targetIDs
