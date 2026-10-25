@@ -180,8 +180,8 @@ class Base:
         return fileAge > (3600 * hours)
 
     def encodeMessage(self,privateKey,payload={}):
-        payload['nbf'] = int(time.time())
-        payload['exp'] = int(time.time() + 3600)
+        payload['nbf'] = int(time.time() - 60)
+        payload['exp'] = int(time.time() + 60)
         return jwt.encode(payload, privateKey, algorithm="EdDSA")
 
     def decodeMessage(self,publicKey,payload):
