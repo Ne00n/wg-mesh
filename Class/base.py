@@ -179,14 +179,14 @@ class Base:
         fileAge = time.time() - fileCreation
         return fileAge > (3600 * hours)
 
-    def encodeMessage(self,privateKey,payload={},targetID=None):
+    def encodeMessage(self,privateKey,payload={},targetIDs=[]):
         payload['nbf'] = int(time.time() - 60)
         payload['exp'] = int(time.time() + 60)
-        payload['aud'] = targetID
+        payload['aud'] = targetIDs
         return jwt.encode(payload, privateKey, algorithm="EdDSA")
 
-    def decodeMessage(self,publicKey,payload):
+    def decodeMessage(self,publicKey,payload,targetID):
         try:
-            return jwt.decode(payload, publicKey, algorithms=["EdDSA"])
+            return jwt.decode(payload, publicKey, audience=targetID, algorithms=["EdDSA"])
         except:
             return False
